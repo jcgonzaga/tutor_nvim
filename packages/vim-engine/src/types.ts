@@ -86,6 +86,8 @@ export interface UndoEntry {
   readonly before: TextBuffer;
   readonly after: TextBuffer;
   readonly cursor: Position;
+  /** First line (zero-based) the change touched; undo and redo put the cursor there. */
+  readonly top: number;
 }
 
 /** An INSERT session is one undo step, together with the command that started it. */
@@ -93,6 +95,8 @@ export interface InsertSession {
   readonly before: TextBuffer;
   /** `null` until the first modification, which records the cursor at that moment. */
   readonly cursor: Position | null;
+  /** First line modified, `null` until the first modification. */
+  readonly top?: number | null;
   /** The opening command already took its undo snapshot (`c` always does, even if it deleted nothing). */
   readonly touched?: boolean;
 }

@@ -70,7 +70,8 @@ export function charClass(char: string, big: boolean): 0 | 1 | 2 {
   return /[\p{L}\p{N}\p{M}_]/u.test(char) ? 2 : 1;
 }
 
-const cls = (lines: readonly string[], pos: Walker, big: boolean) => charClass(charAt(lines, pos), big);
+const cls = (lines: readonly string[], pos: Walker, big: boolean) =>
+  charClass(charAt(lines, pos), big);
 const isEmptyLine = (lines: readonly string[], line: number) => lineAt(lines, line) === "";
 
 function skipChars(
@@ -87,7 +88,12 @@ function skipChars(
 }
 
 /** `w`/`W`. `eol` stops at the end of the line (used with an operator). Returns `false` where Vim fails. */
-export function fwdWord(lines: readonly string[], pos: Walker, big: boolean, eol: boolean): boolean {
+export function fwdWord(
+  lines: readonly string[],
+  pos: Walker,
+  big: boolean,
+  eol: boolean,
+): boolean {
   const startClass = cls(lines, pos, big);
   const lastLine = pos.line === lines.length - 1;
 

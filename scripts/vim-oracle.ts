@@ -7,7 +7,12 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createVimState, runKeys, parseKeySequence, tokenizeKeySequence } from "@tutor-nvim/vim-engine";
+import {
+  createVimState,
+  runKeys,
+  parseKeySequence,
+  tokenizeKeySequence,
+} from "@tutor-nvim/vim-engine";
 import { ORACLE_CASES } from "../packages/vim-engine/src/oracle/cases";
 import type { OracleFixtures } from "../packages/vim-engine/src/oracle/fixtures";
 
@@ -54,10 +59,14 @@ for (const testCase of ORACLE_CASES) {
   if (names.has(testCase.name)) throw new Error(`Duplicate oracle case: ${testCase.name}`);
   names.add(testCase.name);
   const engine = runKeys(
-    createVimState({ lines: testCase.lines, cursor: { line: testCase.cursor[0], column: testCase.cursor[1] } }),
+    createVimState({
+      lines: testCase.lines,
+      cursor: { line: testCase.cursor[0], column: testCase.cursor[1] },
+    }),
     parseKeySequence(testCase.keys),
   );
-  if (engine.mode !== "normal") throw new Error(`Oracle case must end in NORMAL mode: ${testCase.name}`);
+  if (engine.mode !== "normal")
+    throw new Error(`Oracle case must end in NORMAL mode: ${testCase.name}`);
 }
 
 // Incremental: keep fixtures whose case (name and keys) is unchanged, run only the rest.
@@ -66,7 +75,9 @@ const previous: OracleFixtures["cases"] = existsSync(output)
   : {};
 const pending = ORACLE_CASES.filter((testCase) => previous[testCase.name]?.keys !== testCase.keys);
 
-console.log(`Running ${pending.length} of ${ORACLE_CASES.length} cases through Vim (two agreeing runs each)...`);
+console.log(
+  `Running ${pending.length} of ${ORACLE_CASES.length} cases through Vim (two agreeing runs each)...`,
+);
 const started = Date.now();
 const run = spawnSync("python3", [join(root, "tools/vim-oracle/run_vim.py")], {
   input: JSON.stringify({
@@ -91,7 +102,10 @@ const { version, results } = JSON.parse(run.stdout) as {
 const cases: OracleFixtures["cases"] = {};
 const errors: string[] = [];
 for (const testCase of ORACLE_CASES) {
-  const result = previous[testCase.name]?.keys === testCase.keys ? previous[testCase.name] : results[testCase.name];
+  const result =
+    previous[testCase.name]?.keys === testCase.keys
+      ? previous[testCase.name]
+      : results[testCase.name];
   if (result === undefined || "error" in result) {
     errors.push(`${testCase.name}: ${result === undefined ? "missing" : result.error}`);
   } else {
@@ -101,7 +115,9 @@ for (const testCase of ORACLE_CASES) {
 // Save what worked even if some cases failed: the next run is incremental and only retries the rest.
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, JSON.stringify({ vim: version, cases } satisfies OracleFixtures));
-console.log(`Wrote ${Object.keys(cases).length} fixtures from ${version} in ${Math.round((Date.now() - started) / 1000)}s`);
+console.log(
+  `Wrote ${Object.keys(cases).length} fixtures from ${version} in ${Math.round((Date.now() - started) / 1000)}s`,
+);
 
 if (errors.length > 0) {
   console.error(errors.slice(0, 20).join("\n"));

@@ -11,6 +11,8 @@ export interface RawRange {
   readonly end: Position;
   readonly inclusive: boolean;
   readonly linewise: boolean;
+  /** `dd`/`cc`/`yy`: Vim moves the cursor to the first non-blank before taking the undo position. */
+  readonly doubled?: boolean;
 }
 
 /** Normalized target of an operator. Charwise `end` is exclusive; linewise `endLine` is inclusive. */
@@ -22,6 +24,7 @@ export type Region =
       readonly endLine: number;
       /** Cursor position of the range start; yanks leave the cursor here. */
       readonly anchor: Position;
+      readonly doubled: boolean;
     };
 
 export function rawRangeFromMotion(cursor: Position, motion: MotionResult): RawRange {
@@ -35,7 +38,7 @@ export function rawRangeFromMotion(cursor: Position, motion: MotionResult): RawR
 }
 
 export function currentLineRange(cursor: Position): RawRange {
-  return { start: cursor, end: cursor, inclusive: false, linewise: true };
+  return { start: cursor, end: cursor, inclusive: false, linewise: true, doubled: true };
 }
 
 /**
@@ -46,7 +49,13 @@ export function currentLineRange(cursor: Position): RawRange {
  */
 export function finalizeRange(lines: readonly string[], raw: RawRange): Region {
   if (raw.linewise) {
-    return { kind: "line", startLine: raw.start.line, endLine: raw.end.line, anchor: raw.start };
+    return {
+      kind: "line",
+      startLine: raw.start.line,
+      endLine: raw.end.line,
+      anchor: raw.start,
+      doubled: raw.doubled === true,
+    };
   }
 
   // Text objects may report their ends in either order; Vim swaps them.
@@ -58,7 +67,7 @@ export function finalizeRange(lines: readonly string[], raw: RawRange): Region {
   if (!inclusive && end.column === 0 && end.line > start.line) {
     const endLine = end.line - 1;
     if (leadingBlanks(lines[start.line] ?? "") >= start.column) {
-      return { kind: "line", startLine: start.line, endLine, anchor: start };
+      return { kind: "line", startLine: start.line, endLine, anchor: start, doubled: false };
     }
     end = { line: endLine, column: (lines[endLine] ?? "").length };
     inclusive = false;

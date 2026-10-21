@@ -10,7 +10,10 @@ describe("undo / redo", () => {
 
   it("treats an insert session, with the command that opened it, as one step", () => {
     expect(run("abc", [0, 1], "iXYZ<Esc>u")).toMatchObject({ text: "abc", cursor: [0, 1] });
-    expect(run('a "xyz" b', [0, 4], 'ci"Q<Esc>u')).toMatchObject({ text: 'a "xyz" b', cursor: [0, 3] });
+    expect(run('a "xyz" b', [0, 4], 'ci"Q<Esc>u')).toMatchObject({
+      text: 'a "xyz" b',
+      cursor: [0, 3],
+    });
     expect(run("abc\ndef", [0, 1], "oX<CR>Y<Esc>u").text).toBe("abc\ndef");
   });
 
@@ -28,8 +31,11 @@ describe("undo / redo", () => {
     expect(accepted(cleared, "<C-r>")).toEqual([false]);
   });
 
-  it("restores lines removed by dd and puts the cursor on them", () => {
-    expect(run("one\ntwo\nthree", [1, 2], "ddu")).toMatchObject({ text: "one\ntwo\nthree", cursor: [1, 2] });
+  it("restores lines removed by dd and puts the cursor on them (column capped at the first non-blank)", () => {
+    expect(run("one\ntwo\nthree", [1, 2], "ddu")).toMatchObject({
+      text: "one\ntwo\nthree",
+      cursor: [1, 0],
+    });
     expect(run("one\ntwo\nthree", [1, 2], "ddu<C-r>").text).toBe("one\nthree");
   });
 

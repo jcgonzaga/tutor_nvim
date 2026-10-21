@@ -57,7 +57,11 @@ const right: Motion = {
     const length = lineAt(env.lines, line).length;
     if (env.operator !== null) {
       // Under an operator `l` may step onto the end of line, so `x` deletes the last character.
-      return { position: { line, column: Math.min(column + 1, length) }, kind: "exclusive", ok: true };
+      return {
+        position: { line, column: Math.min(column + 1, length) },
+        kind: "exclusive",
+        ok: true,
+      };
     }
     return column < length - 1
       ? { position: { line, column: column + 1 }, kind: "exclusive", ok: true }
@@ -74,7 +78,10 @@ function vertical(delta: 1 | -1): Motion {
       const target = env.cursor.line + delta;
       if (target < 0 || target >= env.lines.length) return stay(env, "linewise");
       return {
-        position: { line: target, column: resolveColumn(env.desiredColumn, lineAt(env.lines, target)) },
+        position: {
+          line: target,
+          column: resolveColumn(env.desiredColumn, lineAt(env.lines, target)),
+        },
         kind: "linewise",
         ok: true,
         desiredColumn: env.desiredColumn,
@@ -193,11 +200,7 @@ export const MOTIONS: Readonly<Record<string, Motion>> = {
  * a `t` search must not get stuck in front of the same character, so the first
  * candidate is skipped (Vim's default `cpo` without `;`).
  */
-export function searchChar(
-  env: MotionEnv,
-  search: CharSearch,
-  repeat: boolean,
-): MotionResult {
+export function searchChar(env: MotionEnv, search: CharSearch, repeat: boolean): MotionResult {
   const line = lineAt(env.lines, env.cursor.line);
   const step = search.direction === "forward" ? 1 : -1;
   let column = env.cursor.column;

@@ -151,21 +151,22 @@ function motionEnv(state: VimState, operator: Operator | null): MotionEnv {
 // --- undo ----------------------------------------------------------------------------------------
 
 /** Records a finished change; `cursor` is where Vim notes the cursor for undo/redo. */
-function commit(state: VimState, before: TextBuffer, cursor: Position, force = false): VimState {
+function commit(
+  state: VimState,
+  before: TextBuffer,
+  cursor: Position,
+  top: number,
+  force = false,
+): VimState {
   if (!force && sameLines(before, state.buffer)) return state;
-  const entry: UndoEntry = { before, after: state.buffer, cursor };
+  const entry: UndoEntry = { before, after: state.buffer, cursor, top };
   return { ...state, undoStack: [...state.undoStack, entry], redoStack: [] };
 }
 
-function firstDifferingLine(a: TextBuffer, b: TextBuffer): number | null {
-  const shared = Math.min(a.lines.length, b.lines.length);
-  for (let line = 0; line < shared; line++) if (a.lines[line] !== b.lines[line]) return line;
-  return a.lines.length === b.lines.length ? null : shared;
-}
-
 /** Where Vim puts the cursor after undo/redo: the first changed line, at the recorded column if it is that line. */
-function restoredCursor(from: TextBuffer, target: TextBuffer, recorded: Position): Position {
-  let line = firstDifferingLine(from, target) ?? recorded.line;
+function restoredCursor(target: TextBuffer, entry: UndoEntry): Position {
+  const recorded = entry.cursor;
+  let line = entry.top;
   if (recorded.line + 1 === line && line > 0) line--;
 
   if (line >= target.lines.length) {
@@ -173,14 +174,15 @@ function restoredCursor(from: TextBuffer, target: TextBuffer, recorded: Position
     const last = target.lines.length - 1;
     return { line: last, column: firstNonBlankColumn(target.lines[last] ?? "") };
   }
-  const column = recorded.line === line ? recorded.column : firstNonBlankColumn(target.lines[line] ?? "");
+  const column =
+    recorded.line === line ? recorded.column : firstNonBlankColumn(target.lines[line] ?? "");
   return normalizeCursor(target, { line, column }, "normal");
 }
 
 function undo(state: VimState): Step {
   const entry = state.undoStack[state.undoStack.length - 1];
   if (entry === undefined) return fail(state);
-  const cursor = restoredCursor(state.buffer, entry.before, entry.cursor);
+  const cursor = restoredCursor(entry.before, entry);
   return done({
     ...withCursor(state, cursor),
     buffer: entry.before,
@@ -192,7 +194,7 @@ function undo(state: VimState): Step {
 function redo(state: VimState): Step {
   const entry = state.redoStack[state.redoStack.length - 1];
   if (entry === undefined) return fail(state);
-  const cursor = restoredCursor(state.buffer, entry.after, entry.cursor);
+  const cursor = restoredCursor(entry.after, entry);
   return done({
     ...withCursor(state, cursor),
     buffer: entry.after,
@@ -209,7 +211,13 @@ function enterInsert(
   cursor: Position,
   session: InsertSession,
 ): VimState {
-  return { ...withCursor(state, cursor), mode: "insert", buffer, pending: null, insertSession: session };
+  return {
+    ...withCursor(state, cursor),
+    mode: "insert",
+    buffer,
+    pending: null,
+    insertSession: session,
+  };
 }
 
 /** Applies an edit made while typing; the first one fixes the cursor recorded for undo. */
@@ -218,7 +226,11 @@ function typed(state: VimState, buffer: TextBuffer, cursor: Position): Step {
   return done({
     ...withCursor(state, cursor),
     buffer,
-    insertSession: { ...session, cursor: session.cursor ?? state.cursor },
+    insertSession: {
+      ...session,
+      cursor: session.cursor ?? state.cursor,
+      top: session.top ?? state.cursor.line,
+    },
   });
 }
 
@@ -226,13 +238,16 @@ function stepInsert(state: VimState, input: KeyInput): Step {
   if (isEscape(input)) {
     const session = state.insertSession;
     const settled = session
-      ? commit(state, session.before, session.cursor ?? state.cursor, session.touched === true)
+      ? commit(
+          state,
+          session.before,
+          session.cursor ?? state.cursor,
+          session.top ?? state.cursor.line,
+          session.touched === true,
+        )
       : state;
     const cursor = { line: state.cursor.line, column: Math.max(state.cursor.column - 1, 0) };
-    return done(
-      { ...withCursor(settled, cursor), mode: "normal", insertSession: null },
-      true,
-    );
+    return done({ ...withCursor(settled, cursor), mode: "normal", insertSession: null }, true);
   }
 
   if (input.key === "Enter" && !hasCommandModifiers(input)) {
@@ -259,7 +274,13 @@ function promoteToLines(lines: readonly string[], region: Region): Region {
   const rest = (lines[region.end.line] ?? "").slice(region.end.column);
   const startsInIndent = leadingBlanks(lines[region.start.line] ?? "") >= region.start.column;
   if (!/^[ \t]*$/.test(rest) || !startsInIndent) return region;
-  return { kind: "line", startLine: region.start.line, endLine: region.end.line, anchor: region.start };
+  return {
+    kind: "line",
+    startLine: region.start.line,
+    endLine: region.end.line,
+    anchor: region.start,
+    doubled: false,
+  };
 }
 
 function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step {
@@ -282,20 +303,32 @@ function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step
   // registered, but the cursor still goes to the start of the range.
   if (isEmptyRange(raw)) {
     // Vim still takes an undo snapshot, so `u` right after is a visible no-op.
-    const at = normalizeCursor(state.buffer, region.kind === "line" ? region.anchor : region.start, operator === "change" ? "insert" : "normal");
+    const at = normalizeCursor(
+      state.buffer,
+      region.kind === "line" ? region.anchor : region.start,
+      operator === "change" ? "insert" : "normal",
+    );
     return operator === "change"
-      ? done(enterInsert(state, state.buffer, at, { before, cursor: at, touched: true }), true)
-      : done(commit(withCursor(state, at), before, at, true), true);
+      ? done(
+          enterInsert(state, state.buffer, at, { before, cursor: at, top: at.line, touched: true }),
+          true,
+        )
+      : done(commit(withCursor(state, at), before, at, at.line, true), true);
   }
 
   // Deleting characters from an empty line is a silent no-op that leaves the register alone.
   const nothingToDelete =
-    region.kind === "char" && region.start.line === region.end.line && (lines[region.start.line] ?? "") === "";
+    region.kind === "char" &&
+    region.start.line === region.end.line &&
+    (lines[region.start.line] ?? "") === "";
   const register = operator === "delete" && nothingToDelete ? state.register : contents;
-  // For linewise changes Vim records the original column, capped at the first non-blank.
-  const lineUndoCursor = (startLine: number): Position => ({
-    line: startLine,
-    column: Math.min(state.cursor.column, firstNonBlankColumn(lines[startLine] ?? "")),
+  // Undo position for linewise changes. `dd`/`cc` record the column capped at the first
+  // non-blank; `dj`/`dk` keep the start column as is.
+  const lineUndoCursor = (region: Extract<Region, { kind: "line" }>): Position => ({
+    line: region.startLine,
+    column: region.doubled
+      ? Math.min(region.anchor.column, firstNonBlankColumn(lines[region.startLine] ?? ""))
+      : region.anchor.column,
   });
 
   if (region.kind === "line") {
@@ -306,19 +339,33 @@ function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step
         ...lines.slice(region.endLine + 1),
       ]);
       return done(
-        enterInsert({ ...state, register }, buffer, { line: region.startLine, column: 0 }, {
-          before,
-          cursor: lineUndoCursor(region.startLine),
-          touched: true,
-        }),
+        enterInsert(
+          { ...state, register },
+          buffer,
+          { line: region.startLine, column: 0 },
+          {
+            before,
+            cursor: lineUndoCursor(region),
+            top: region.startLine,
+            touched: true,
+          },
+        ),
         true,
       );
     }
-    const buffer = bufferFromLines([...lines.slice(0, region.startLine), ...lines.slice(region.endLine + 1)]);
+    const buffer = bufferFromLines([
+      ...lines.slice(0, region.startLine),
+      ...lines.slice(region.endLine + 1),
+    ]);
     const line = Math.min(region.startLine, buffer.lines.length - 1);
     const cursor = { line, column: firstNonBlankColumn(buffer.lines[line] ?? "") };
     return done(
-      commit({ ...withCursor(state, cursor), buffer, register }, before, lineUndoCursor(region.startLine)),
+      commit(
+        { ...withCursor(state, cursor), buffer, register },
+        before,
+        lineUndoCursor(region),
+        region.startLine,
+      ),
       true,
     );
   }
@@ -326,18 +373,42 @@ function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step
   const { buffer } = replaceRange(state.buffer, region.start, region.end, "");
   if (operator === "change") {
     return done(
-      enterInsert({ ...state, register }, buffer, region.start, { before, cursor: region.start, touched: true }),
+      enterInsert({ ...state, register }, buffer, region.start, {
+        before,
+        cursor: region.start,
+        top: region.start.line,
+        touched: true,
+      }),
       true,
     );
   }
   const cursor = normalizeCursor(buffer, region.start, "normal");
-  return done(commit({ ...withCursor(state, cursor), buffer, register }, before, region.start), true);
+  return done(
+    commit(
+      { ...withCursor(state, cursor), buffer, register },
+      before,
+      region.start,
+      region.start.line,
+    ),
+    true,
+  );
 }
 
 /** `p`/`P`. */
 function put(state: VimState, before: boolean): Step {
   const register = state.register;
-  if (register === null) return fail(state);
+  if (register === null) {
+    // E353 in Vim, which still leaves an (empty) undo step behind.
+    // Vim also records the failed put as the command `.` repeats.
+    return {
+      state: {
+        ...commit(state, state.buffer, state.cursor, state.cursor.line, true),
+        pending: null,
+      },
+      accepted: false,
+      change: true,
+    };
+  }
   const lines = state.buffer.lines;
   const { line, column } = state.cursor;
 
@@ -346,7 +417,10 @@ function put(state: VimState, before: boolean): Step {
     const inserted = register.text.split("\n");
     const buffer = bufferFromLines([...lines.slice(0, at), ...inserted, ...lines.slice(at)]);
     const cursor = { line: at, column: firstNonBlankColumn(inserted[0] ?? "") };
-    return done(commit({ ...withCursor(state, cursor), buffer }, state.buffer, state.cursor), true);
+    return done(
+      commit({ ...withCursor(state, cursor), buffer }, state.buffer, state.cursor, at, true),
+      true,
+    );
   }
 
   const insertAt = { line, column: before || lineText(state) === "" ? column : column + 1 };
@@ -356,28 +430,55 @@ function put(state: VimState, before: boolean): Step {
     register.text.includes("\n") ? insertAt : { line, column: result.end.column - 1 },
     "normal",
   );
-  return done(commit({ ...withCursor(state, cursor), buffer: result.buffer }, state.buffer, state.cursor), true);
+  return done(
+    commit(
+      { ...withCursor(state, cursor), buffer: result.buffer },
+      state.buffer,
+      state.cursor,
+      line,
+      true,
+    ),
+    true,
+  );
 }
 
 // --- NORMAL mode ---------------------------------------------------------------------------------
 
 function moveTo(state: VimState, result: MotionResult): Step {
   const cursor = normalizeCursor(state.buffer, result.position, "normal");
-  const moved = { ...withCursor(state, cursor), desiredColumn: result.desiredColumn ?? cursor.column };
+  const moved = {
+    ...withCursor(state, cursor),
+    desiredColumn: result.desiredColumn ?? cursor.column,
+  };
   return result.ok ? done(moved) : { ...fail(moved) };
 }
 
 /** Runs a motion, either moving the cursor or feeding the pending operator. */
-function applyMotion(state: VimState, operator: Operator | null, result: MotionResult, proceedOnFail: boolean): Step {
+function applyMotion(
+  state: VimState,
+  operator: Operator | null,
+  result: MotionResult,
+  proceedOnFail: boolean,
+): Step {
   if (operator === null) return moveTo(state, result);
   if (!result.ok && !proceedOnFail) return fail(state);
   return applyOperator(state, operator, rawRangeFromMotion(state.cursor, result));
 }
 
-function charSearchStep(state: VimState, operator: Operator | null, kind: CharSearchKind, char: string): Step {
+function charSearchStep(
+  state: VimState,
+  operator: Operator | null,
+  kind: CharSearchKind,
+  char: string,
+): Step {
   const search = newCharSearch(kind, char);
   const withSearch = { ...state, charSearch: search };
-  return applyMotion(withSearch, operator, searchChar(motionEnv(withSearch, operator), search, false), false);
+  return applyMotion(
+    withSearch,
+    operator,
+    searchChar(motionEnv(withSearch, operator), search, false),
+    false,
+  );
 }
 
 function repeatSearchStep(state: VimState, operator: Operator | null, reversed: boolean): Step {
@@ -410,7 +511,10 @@ function stepPending(state: VimState, pending: PendingCommand, input: KeyInput):
 
   const modifier = own(TEXT_OBJECT_MODIFIERS, key);
   if (modifier !== undefined) {
-    return { state: { ...state, pending: { kind: "text-object", operator, modifier } }, accepted: true };
+    return {
+      state: { ...state, pending: { kind: "text-object", operator, modifier } },
+      accepted: true,
+    };
   }
 
   return stepMotionKey(state, operator, key);
@@ -429,7 +533,12 @@ function stepMotionKey(state: VimState, operator: Operator | null, key: string):
 
   const motion = own(MOTIONS, key);
   if (motion === undefined) return fail(state);
-  return applyMotion(state, operator, motion.run(motionEnv(state, operator)), motion.proceedOnFail === true);
+  return applyMotion(
+    state,
+    operator,
+    motion.run(motionEnv(state, operator)),
+    motion.proceedOnFail === true,
+  );
 }
 
 function stepNormal(state: VimState, input: KeyInput): Step {
@@ -454,15 +563,21 @@ function stepNormal(state: VimState, input: KeyInput): Step {
   const { line, column } = state.cursor;
   switch (key) {
     case "i":
-      return done(enterInsert(state, state.buffer, state.cursor, { before: state.buffer, cursor: null }), true);
+      return done(
+        enterInsert(state, state.buffer, state.cursor, { before: state.buffer, cursor: null }),
+        true,
+      );
     case "a": {
       const length = lineText(state).length;
       const cursor = { line, column: Math.min(column + 1, length) };
-      return done(enterInsert(state, state.buffer, cursor, { before: state.buffer, cursor: null }), true);
+      return done(
+        enterInsert(state, state.buffer, cursor, { before: state.buffer, cursor: null }),
+        true,
+      );
     }
     case "o": {
       const buffer = bufferFromLines([...lines.slice(0, line + 1), "", ...lines.slice(line + 1)]);
-      const session = { before: state.buffer, cursor: state.cursor };
+      const session = { before: state.buffer, cursor: state.cursor, top: line + 1 };
       return done(enterInsert(state, buffer, { line: line + 1, column: 0 }, session), true);
     }
     case "x":
@@ -506,7 +621,12 @@ function replay(state: VimState): Step {
   let current: VimState = { ...state, pending: null, repeat: { ...state.repeat, recording: null } };
   for (const key of keys) {
     const step = stepOnce(current, key);
-    if (!step.accepted) return fail(state);
+    if (!step.accepted) {
+      // A failed put still leaves its undo step behind; anything else is all-or-nothing.
+      return step.change === true
+        ? { state: { ...step.state, repeat: state.repeat }, accepted: false, change: true }
+        : fail(state);
+    }
     current = step.state;
   }
   return done({ ...current, repeat: state.repeat });
@@ -519,6 +639,9 @@ function track(before: VimState, input: KeyInput, step: Step): VimState {
   if (recording === null) return step.state;
 
   const last = before.repeat.last;
+  if (!step.accepted && step.change === true && before.mode === "normal") {
+    return { ...step.state, repeat: { last: [...recording, replayable(input)], recording: null } };
+  }
   if (!step.accepted) {
     // A rejected key inside INSERT leaves the session (and its recording) running.
     return before.mode === "insert"

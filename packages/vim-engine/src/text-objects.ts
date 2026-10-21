@@ -1,7 +1,18 @@
 import { leadingBlanks } from "./buffer";
 import type { RawRange } from "./regions";
 import type { Position, TextObjectModifier } from "./types";
-import { backInLine, charAt, charClass, decl, endWord, fwdWord, inc, incl, isBlank, type Walker } from "./words";
+import {
+  backInLine,
+  charAt,
+  charClass,
+  decl,
+  endWord,
+  fwdWord,
+  inc,
+  incl,
+  isBlank,
+  type Walker,
+} from "./words";
 
 /**
  * Text objects, ported from Vim's `current_word`, `current_quote` and
@@ -206,20 +217,29 @@ function blockObject(open: string, close: string, include: boolean): TextObjectF
     let inclusive = false;
     if (startOfLine) {
       incl(lines, end);
-    } else if (startPos.line < end.line || (startPos.line === end.line && startPos.column <= end.column)) {
+    } else if (
+      startPos.line < end.line ||
+      (startPos.line === end.line && startPos.column <= end.column)
+    ) {
       inclusive = true;
     } else {
       // Nothing between the brackets: operate on nothing.
       end.line = startPos.line;
       end.column = startPos.column;
     }
-    return { start: startPos, end: { line: end.line, column: end.column }, inclusive, linewise: false };
+    return {
+      start: startPos,
+      end: { line: end.line, column: end.column },
+      inclusive,
+      linewise: false,
+    };
   };
 }
 
-
 /** Text objects by modifier and key, e.g. `TEXT_OBJECTS.inner['"']` is `i"`. */
-export const TEXT_OBJECTS: Readonly<Record<TextObjectModifier, Readonly<Record<string, TextObjectFinder>>>> = {
+export const TEXT_OBJECTS: Readonly<
+  Record<TextObjectModifier, Readonly<Record<string, TextObjectFinder>>>
+> = {
   inner: {
     w: innerWord,
     '"': quoteObject('"', false),

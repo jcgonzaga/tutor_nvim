@@ -72,4 +72,33 @@ test.describe("M1 vertical practice slice", () => {
     await expect(page.getByTestId("buffer")).toHaveText('const mode = "development";');
     await expect(page.getByRole("application", { name: "Vim practice editor" })).toBeFocused();
   });
+
+  test("undo and redo work, and Ctrl+r redoes instead of reloading the page", async ({ page }) => {
+    await openChallenge(page);
+    const buffer = page.getByTestId("buffer");
+    const original = 'const mode = "development";';
+    const afterX = 'const mode = "devlopment";';
+
+    await page.keyboard.press("x");
+    await expect(buffer).toHaveText(afterX);
+
+    await page.keyboard.press("u");
+    await expect(buffer).toHaveText(original);
+
+    // A reload would reset the buffer to the original and drop the redo history.
+    await page.keyboard.press("Control+r");
+    await expect(buffer).toHaveText(afterX);
+    await expect(page.getByTestId("keystroke-count")).toHaveText("3 keys");
+  });
+
+  test("new commands work in the browser: a motion and an operator", async ({ page }) => {
+    await openChallenge(page);
+    const buffer = page.getByTestId("buffer");
+
+    // 0 w moves onto `mode`; cw changes that word (not the blanks after it).
+    await page.keyboard.type("0wcwname");
+    await page.keyboard.press("Escape");
+    await expect(buffer).toHaveText('const name = "development";');
+    await expect(page.getByTestId("vim-mode")).toHaveText("NORMAL");
+  });
 });

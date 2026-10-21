@@ -125,5 +125,8 @@ export function firstNonBlankColumn(line: string): number {
 }
 
 export function sameLines(a: TextBuffer, b: TextBuffer): boolean {
-  return a === b || (a.lines.length === b.lines.length && a.lines.every((line, i) => line === b.lines[i]));
+  return (
+    a === b ||
+    (a.lines.length === b.lines.length && a.lines.every((line, i) => line === b.lines[i]))
+  );
 }

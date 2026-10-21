@@ -5,7 +5,10 @@ describe("insert transitions", () => {
   it("a appends after the cursor character, o opens a line below", () => {
     expect(run("abc", [0, 1], "aX<Esc>")).toMatchObject({ text: "abXc", cursor: [0, 2] });
     expect(run("abc", [0, 2], "aX<Esc>")).toMatchObject({ text: "abcX", cursor: [0, 3] });
-    expect(run("abc\nxyz", [0, 1], "oQ<Esc>")).toMatchObject({ text: "abc\nQ\nxyz", cursor: [1, 0] });
+    expect(run("abc\nxyz", [0, 1], "oQ<Esc>")).toMatchObject({
+      text: "abc\nQ\nxyz",
+      cursor: [1, 0],
+    });
   });
 
   it("handle empty buffers and lines", () => {
@@ -59,7 +62,10 @@ describe("operators", () => {
     expect(run("a,b,c", [0, 0], "dt,").text).toBe(",b,c");
     expect(run("a,b,c", [0, 0], "f,d;").text).toBe("ac");
     expect(run("foo bar", [0, 0], "yw").register).toEqual({ text: "foo ", linewise: false });
-    expect(run("foo bar", [0, 4], "yb")).toMatchObject({ cursor: [0, 0], register: { text: "foo ", linewise: false } });
+    expect(run("foo bar", [0, 4], "yb")).toMatchObject({
+      cursor: [0, 0],
+      register: { text: "foo ", linewise: false },
+    });
   });
 
   it("dw on the last word of a line stops at the end of the line", () => {
@@ -73,7 +79,10 @@ describe("operators", () => {
   });
 
   it("dj/dk are linewise and fail at the buffer edges", () => {
-    expect(run("a\nb\nc", [0, 0], "dj")).toMatchObject({ text: "c", register: { text: "a\nb", linewise: true } });
+    expect(run("a\nb\nc", [0, 0], "dj")).toMatchObject({
+      text: "c",
+      register: { text: "a\nb", linewise: true },
+    });
     expect(run("a\nb\nc", [2, 0], "dk").text).toBe("a");
     expect(run("a\nb", [1, 0], "dj").text).toBe("a\nb");
   });
@@ -83,7 +92,11 @@ describe("operators", () => {
   });
 
   it("x deletes the character under the cursor into the register", () => {
-    expect(run("abc", [0, 1], "x")).toMatchObject({ text: "ac", cursor: [0, 1], register: { text: "b", linewise: false } });
+    expect(run("abc", [0, 1], "x")).toMatchObject({
+      text: "ac",
+      cursor: [0, 1],
+      register: { text: "b", linewise: false },
+    });
     expect(run("abc", [0, 2], "x")).toMatchObject({ text: "ab", cursor: [0, 1] });
     expect(run("", [0, 0], "x")).toMatchObject({ text: "", register: null });
   });
@@ -129,7 +142,10 @@ describe("text objects", () => {
     expect(run("f(a, (b), c)", [0, 1], "di(").text).toBe("f()");
     expect(run("f(a, (b), c)", [0, 11], "di(").text).toBe("f()");
     expect(run("f(a, (b), c)", [0, 6], "da(").text).toBe("f(a, , c)");
-    expect(run("fn(\n  a,\n  b\n)", [1, 2], "di(")).toMatchObject({ text: "fn(\n)", cursor: [1, 0] });
+    expect(run("fn(\n  a,\n  b\n)", [1, 2], "di(")).toMatchObject({
+      text: "fn(\n)",
+      cursor: [1, 0],
+    });
     expect(run("fn(\n  a,\n  b\n)", [1, 2], "ci(X<Esc>").text).toBe("fn(\nX\n)");
   });
 
