@@ -18,17 +18,18 @@ export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
   const retryRef = useRef<HTMLButtonElement>(null);
   const finished = evaluation !== null;
 
-  // The hint button wakes up when the next hint becomes available.
+  // The hint button wakes up when the next hint becomes available. A timer can fire a hair before
+  // the clock reaches `nextHintAt`, so the effect depends on `now` and re-arms until it has passed.
   const [now, setNow] = useState(() => performance.now());
   const nextHintAt = hints.next?.availableAt ?? null;
   useEffect(() => {
-    if (nextHintAt === null) return;
+    if (nextHintAt === null || now >= nextHintAt) return;
     const timer = setTimeout(
       () => setNow(performance.now()),
-      Math.max(nextHintAt - performance.now(), 0),
+      Math.max(nextHintAt - performance.now(), 1),
     );
     return () => clearTimeout(timer);
-  }, [nextHintAt]);
+  }, [nextHintAt, now]);
   const hintReady = !finished && nextHintAt !== null && now >= nextHintAt;
 
   useEffect(() => {
