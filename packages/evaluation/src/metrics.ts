@@ -76,7 +76,10 @@ export interface AttemptMetrics {
   readonly keystrokes: number;
   /** Keystrokes beyond the shortest optimal solution. */
   readonly unnecessaryKeystrokes: number;
-  /** Rejected inputs. */
+  /**
+   * Vim: rejected inputs. Shell: commands that failed (non-zero exit) plus rejected inputs, since a
+   * mistyped command is the shell's way of saying the input was wrong.
+   */
   readonly errors: number;
   readonly hintsUsed: number;
 }
@@ -118,10 +121,18 @@ export function computeMetrics(
   const medianInterKeyLatencyMs = median(gaps);
   const maxInterKeyLatencyMs = gaps.length === 0 ? null : Math.max(...gaps);
 
-  const errors = events.filter((event) => !event.accepted).length;
+  const rejected = events.filter((event) => !event.accepted).length;
+  // In the shell the keys of a failed command were spent for nothing: they count against accuracy.
+  const failedCommands =
+    attempt.kind === "shell"
+      ? attempt.state.transcript.filter((entry) => entry.status !== 0 && entry.status !== 130)
+      : [];
+  const errors = rejected + failedCommands.length;
+  const wastedKeys = rejected + failedCommands.reduce((sum, entry) => sum + entry.keys, 0);
   const hintsUsed = attempt.hints.length;
 
-  const accuracyScore = success && keystrokes > 0 ? (100 * (keystrokes - errors)) / keystrokes : 0;
+  const accuracyScore =
+    success && keystrokes > 0 ? clamp((100 * (keystrokes - wastedKeys)) / keystrokes) : 0;
   const efficiencyScore = success && keystrokes > 0 ? clamp((100 * optimal) / keystrokes) : 0;
   const strategyScore = config.strategyScores[strategy];
   const independenceScore = success ? clamp(100 - config.hintPenalty * hintsUsed) : 0;

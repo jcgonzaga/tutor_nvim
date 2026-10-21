@@ -1,6 +1,10 @@
 import { parse as parseYaml } from "yaml";
 import type { z } from "zod";
-import { exerciseSchema, type Exercise } from "./schema";
+import { vimExerciseSchema, type VimExercise } from "./schema";
+import { shellExerciseSchema, type ShellExercise } from "./shell";
+
+/** Any exercise: the learner practices either in the Vim simulator or in the shell simulator. */
+export type Exercise = VimExercise | ShellExercise;
 
 export class ExerciseValidationError extends Error {
   readonly issues: readonly string[];
@@ -25,9 +29,35 @@ export function formatIssues(error: z.ZodError): string[] {
 
 /** Validates and normalizes one exercise. Throws `ExerciseValidationError`. */
 export function parseExercise(input: unknown, source?: string): Exercise {
-  const result = exerciseSchema.safeParse(input);
+  // Content written before `kind` existed is Vim; an unknown kind is reported as such.
+  const kind =
+    typeof input === "object" && input !== null && "kind" in input ? (input.kind ?? "vim") : "vim";
+  if (kind !== "vim" && kind !== "shell") {
+    throw new ExerciseValidationError(
+      [`kind: must be "vim" or "shell", got ${JSON.stringify(kind)}`],
+      source,
+    );
+  }
+  const result = (kind === "shell" ? shellExerciseSchema : vimExerciseSchema).safeParse(input);
   if (!result.success) throw new ExerciseValidationError(formatIssues(result.error), source);
   return result.data;
+}
+
+export const isVimExercise = (exercise: Exercise): exercise is VimExercise =>
+  exercise.kind === "vim";
+export const isShellExercise = (exercise: Exercise): exercise is ShellExercise =>
+  exercise.kind === "shell";
+
+/** For code that only handles Vim exercises (the Vim engine, its tests and its tools). */
+export function parseVimExercise(input: unknown, source?: string): VimExercise {
+  const exercise = parseExercise(input, source);
+  if (exercise.kind !== "vim") {
+    throw new ExerciseValidationError(
+      [`kind: expected a Vim exercise, got "${exercise.kind}"`],
+      source,
+    );
+  }
+  return exercise;
 }
 
 export function parseExerciseYaml(text: string, source?: string): Exercise {

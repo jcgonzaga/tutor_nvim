@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseExercise, type Exercise, type ExerciseInput } from "@tutor-nvim/exercise-schema";
+import {
+  parseVimExercise,
+  type VimExercise,
+  type VimExerciseInput,
+} from "@tutor-nvim/exercise-schema";
 import { bufferToText, parseKeySequence } from "@tutor-nvim/vim-engine";
 import {
   DEFAULT_EVALUATION_CONFIG,
@@ -8,11 +12,11 @@ import {
   evaluateGoal,
   simulateSolution,
   startAttempt,
-  type Attempt,
+  type VimAttempt,
 } from "./index";
 
-function exerciseWith(overrides: Partial<ExerciseInput> = {}): Exercise {
-  return parseExercise({
+function exerciseWith(overrides: Partial<VimExerciseInput> = {}): VimExercise {
+  return parseVimExercise({
     schemaVersion: 1,
     id: "vim-ci-quotes-001",
     slug: "vim.ci-quotes.basic-001",
@@ -34,11 +38,11 @@ function exerciseWith(overrides: Partial<ExerciseInput> = {}): Exercise {
 
 /** Plays `sequence`; timestamps default to 10 ms apart, or are given explicitly (one per key). */
 function play(
-  exercise: Exercise,
+  exercise: VimExercise,
   startedAt: number,
   sequence: string,
   timestamps?: number[],
-): Attempt {
+): VimAttempt {
   const keys = parseKeySequence(sequence);
   if (timestamps) expect(timestamps).toHaveLength(keys.length);
   return keys.reduce(

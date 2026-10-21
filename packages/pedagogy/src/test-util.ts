@@ -2,7 +2,7 @@ import {
   parseExercise,
   parseSkill,
   type Exercise,
-  type ExerciseInput,
+  type VimExerciseInput,
   type Skill,
 } from "@tutor-nvim/exercise-schema";
 import { DEFAULT_PEDAGOGY_CONFIG } from "./config";
@@ -37,7 +37,7 @@ export function exerciseFor(
   options: { language?: string; context?: string; difficulty?: number; transfer?: boolean } = {},
 ): Exercise {
   const { language, context, difficulty = 2, transfer = false } = options;
-  const overrides: Partial<ExerciseInput> = {
+  const overrides: Partial<VimExerciseInput> = {
     metadata: {
       ...(language === undefined ? {} : { language }),
       ...(context === undefined ? {} : { context }),

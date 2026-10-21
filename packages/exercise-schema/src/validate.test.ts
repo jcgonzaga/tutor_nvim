@@ -2,10 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   ExerciseValidationError,
-  parseExercise,
+  parseVimExercise,
   parseExerciseYaml,
   validateExerciseCollection,
-  type ExerciseInput,
+  type VimExerciseInput,
 } from "./index";
 
 const CANONICAL_PATH = new URL(
@@ -13,7 +13,7 @@ const CANONICAL_PATH = new URL(
   import.meta.url,
 );
 
-function validInput(): ExerciseInput {
+function validInput(): VimExerciseInput {
   return {
     schemaVersion: 1,
     id: "vim-ci-quotes-001",
@@ -35,7 +35,7 @@ function validInput(): ExerciseInput {
 
 function issuesFor(input: unknown): readonly string[] {
   try {
-    parseExercise(input);
+    parseVimExercise(input);
   } catch (error) {
     if (error instanceof ExerciseValidationError) return error.issues;
     throw error;
@@ -49,7 +49,9 @@ describe("exercise schema v1", () => {
       readFileSync(CANONICAL_PATH, "utf8"),
       "vim-ci-quotes-001.yaml",
     );
+    if (exercise.kind !== "vim") throw new Error("expected a Vim exercise");
 
+    expect(exercise.kind).toBe("vim");
     expect(exercise.id).toBe("vim-ci-quotes-001");
     expect(exercise.slug).toBe("vim.ci-quotes.basic-001");
     expect(exercise.skillIds).toEqual(["vim.operator.change", "vim.textobject.inner-quotes"]);
@@ -74,7 +76,7 @@ describe("exercise schema v1", () => {
   });
 
   it("applies defaults for optional sections", () => {
-    const exercise = parseExercise(validInput());
+    const exercise = parseVimExercise(validInput());
     expect(exercise.environment).toEqual({ type: "simulator", profile: "vim-basic-v1" });
     expect(exercise.antiPatterns).toEqual([]);
     expect(exercise.hints).toEqual([]);
@@ -162,7 +164,7 @@ describe("exercise schema v1", () => {
 
 describe("exercise schema: objectives, hints, metadata", () => {
   it("normalizes cursor_at, mode_equals and compound objectives", () => {
-    const exercise = parseExercise({
+    const exercise = parseVimExercise({
       ...validInput(),
       objective: {
         type: "all",
@@ -212,7 +214,7 @@ describe("exercise schema: objectives, hints, metadata", () => {
       "hints.1.afterMs: a hint cannot become available before the previous one",
     ]);
     expect(() =>
-      parseExercise({
+      parseVimExercise({
         ...validInput(),
         hints: [
           { afterMs: 4000, level: 1, text: "ok" },
@@ -234,7 +236,7 @@ describe("exercise schema: objectives, hints, metadata", () => {
 
   it("accepts setup keys, normalizing them to canonical tokens, and rejects invalid ones", () => {
     const base = validInput();
-    const exercise = parseExercise({
+    const exercise = parseVimExercise({
       ...base,
       initialState: { ...base.initialState, setupKeys: "dw<Esc>" },
     });
@@ -245,7 +247,7 @@ describe("exercise schema: objectives, hints, metadata", () => {
   });
 
   it("accepts context and transfer tags, and rejects malformed tags", () => {
-    const exercise = parseExercise({
+    const exercise = parseVimExercise({
       ...validInput(),
       metadata: {
         language: "python",
@@ -262,10 +264,10 @@ describe("exercise schema: objectives, hints, metadata", () => {
 });
 
 describe("validateExerciseCollection", () => {
-  const a = parseExercise(validInput());
+  const a = parseVimExercise(validInput());
 
   it("passes unique exercises", () => {
-    const b = parseExercise({
+    const b = parseVimExercise({
       ...validInput(),
       id: "vim-ci-quotes-002",
       slug: "vim.ci-quotes.basic-002",

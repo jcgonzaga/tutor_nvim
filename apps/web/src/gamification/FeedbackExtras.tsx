@@ -47,15 +47,19 @@ export function FeedbackExtras({
     <div className="space-y-3">
       <RewardLine award={award} {...(combo ? { combo } : {})} />
       <GhostComparison rows={rows} />
-      <button
-        type="button"
-        className={quietButton}
-        aria-expanded={replaying}
-        onClick={() => setReplaying((current) => !current)}
-      >
-        {replaying ? "Hide replay" : "Replay"}
-      </button>
-      {replaying ? <ReplayPanel exercise={exercise} sources={sources} /> : null}
+      {exercise.kind === "vim" ? (
+        <>
+          <button
+            type="button"
+            className={quietButton}
+            aria-expanded={replaying}
+            onClick={() => setReplaying((current) => !current)}
+          >
+            {replaying ? "Hide replay" : "Replay"}
+          </button>
+          {replaying ? <ReplayPanel exercise={exercise} sources={sources} /> : null}
+        </>
+      ) : null}
     </div>
   );
 }

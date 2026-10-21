@@ -1,10 +1,14 @@
-import { parseExercise, type Exercise, type ExerciseInput } from "@tutor-nvim/exercise-schema";
+import {
+  parseVimExercise,
+  type VimExercise,
+  type VimExerciseInput,
+} from "@tutor-nvim/exercise-schema";
 import { parseKeySequence } from "@tutor-nvim/vim-engine";
-import { advanceAttempt, startAttempt, type Attempt } from "./attempt";
+import { advanceAttempt, startAttempt, type VimAttempt } from "./attempt";
 
 /** The canonical `ci"` exercise with any field overridden; the input is validated like real content. */
-export function exerciseWith(overrides: Partial<ExerciseInput> = {}): Exercise {
-  return parseExercise({
+export function exerciseWith(overrides: Partial<VimExerciseInput> = {}): VimExercise {
+  return parseVimExercise({
     schemaVersion: 1,
     id: "vim-test-001",
     slug: "vim.test.basic-001",
@@ -26,10 +30,10 @@ export function exerciseWith(overrides: Partial<ExerciseInput> = {}): Exercise {
 
 /** Plays `sequence` key by key; timestamps default to 10 ms apart, or are given one per key. */
 export function play(
-  exercise: Exercise,
+  exercise: VimExercise,
   sequence: string,
   options: { startedAt?: number; timestamps?: readonly number[] } = {},
-): Attempt {
+): VimAttempt {
   const { startedAt = 0, timestamps } = options;
   const keys = parseKeySequence(sequence);
   if (timestamps && timestamps.length !== keys.length) {

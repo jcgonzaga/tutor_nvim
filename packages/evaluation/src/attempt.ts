@@ -9,8 +9,9 @@ import {
   type VimMode,
   type VimState,
 } from "@tutor-nvim/vim-engine";
-import type { Exercise } from "@tutor-nvim/exercise-schema";
-import { evaluateGoal } from "./goal";
+import { dispatchShellKey, initShell, type ShellState } from "@tutor-nvim/shell-engine";
+import type { Exercise, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
+import { goalMet } from "./goal";
 import type { HintReveal } from "./hints";
 
 /** Input stamped by the adapter (`performance.now()`), in milliseconds. */
@@ -34,17 +35,16 @@ export interface InputEvent {
   readonly alt: boolean;
   readonly shift: boolean;
   readonly meta: boolean;
-  /** Mode the engine was in when the input arrived. */
-  readonly mode: VimMode;
+  /** Mode the engine was in when the input arrived (`shell` for the terminal). */
+  readonly mode: VimMode | "shell";
+  /** In the shell the caret sits on line 0 at the end of what has been typed. */
   readonly cursorBefore: Position;
   readonly cursorAfter: Position;
   readonly accepted: boolean;
 }
 
-export interface Attempt {
+interface AttemptBase {
   readonly startedAt: number;
-  readonly initialState: VimState;
-  readonly state: VimState;
   readonly events: readonly InputEvent[];
   /** Timestamp of the input that satisfied the goal; `null` while in progress. */
   readonly completedAt: number | null;
@@ -52,7 +52,46 @@ export interface Attempt {
   readonly hints: readonly HintReveal[];
 }
 
+export interface VimAttempt extends AttemptBase {
+  readonly kind: "vim";
+  readonly initialState: VimState;
+  readonly state: VimState;
+}
+
+export interface ShellAttempt extends AttemptBase {
+  readonly kind: "shell";
+  readonly initialState: ShellState;
+  readonly state: ShellState;
+}
+
+/** An attempt in either simulator; `kind` tells which, and always matches its exercise's. */
+export type Attempt = VimAttempt | ShellAttempt;
+
+export function startAttempt(exercise: VimExercise, startedAt: number): VimAttempt;
+export function startAttempt(exercise: ShellExercise, startedAt: number): ShellAttempt;
+export function startAttempt(exercise: Exercise, startedAt: number): Attempt;
 export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
+  if (exercise.kind === "shell") {
+    const { files, modes, cwd } = exercise.initialState;
+    const initialState = initShell({
+      files: Object.fromEntries(
+        Object.entries(files).map(([path, content]) => {
+          const mode = modes[path];
+          return [path, mode === undefined ? content : { content, mode }];
+        }),
+      ),
+      cwd: cwd === "" ? "." : cwd,
+    });
+    return {
+      kind: "shell",
+      startedAt,
+      initialState,
+      state: initialState,
+      events: [],
+      completedAt: null,
+      hints: [],
+    };
+  }
   const initialState = runKeys(
     createVimState({
       lines: exercise.initialState.lines,
@@ -61,13 +100,45 @@ export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
     }),
     exercise.initialState.setupKeys.map(keyInputFromToken),
   );
-  return { startedAt, initialState, state: initialState, events: [], completedAt: null, hints: [] };
+  return {
+    kind: "vim",
+    startedAt,
+    initialState,
+    state: initialState,
+    events: [],
+    completedAt: null,
+    hints: [],
+  };
 }
 
 /** Telemetry only: runs the engine and appends the event. Knows nothing about goals. */
-export function recordInput(attempt: Attempt, input: TimedKeyInput): Attempt {
+export function recordInput<A extends Attempt>(attempt: A, input: TimedKeyInput): A {
+  if (attempt.kind === "shell") {
+    const { state, accepted } = dispatchShellKey(attempt.state, input);
+    const event: InputEvent = {
+      ...baseEvent(attempt, input, accepted),
+      mode: "shell",
+      cursorBefore: { line: 0, column: attempt.state.line.length },
+      cursorAfter: { line: 0, column: state.line.length },
+    };
+    return { ...attempt, state, events: [...attempt.events, event] } as A;
+  }
   const { state, accepted } = dispatch(attempt.state, input);
   const event: InputEvent = {
+    ...baseEvent(attempt, input, accepted),
+    mode: attempt.state.mode,
+    cursorBefore: attempt.state.cursor,
+    cursorAfter: state.cursor,
+  };
+  return { ...attempt, state, events: [...attempt.events, event] } as A;
+}
+
+function baseEvent(
+  attempt: Attempt,
+  input: TimedKeyInput,
+  accepted: boolean,
+): Omit<InputEvent, "mode" | "cursorBefore" | "cursorAfter"> {
+  return {
     sequence: attempt.events.length,
     timestamp: input.timestamp,
     key: input.key,
@@ -77,26 +148,22 @@ export function recordInput(attempt: Attempt, input: TimedKeyInput): Attempt {
     alt: input.alt === true,
     shift: input.shift === true,
     meta: input.meta === true,
-    mode: attempt.state.mode,
-    cursorBefore: attempt.state.cursor,
-    cursorAfter: state.cursor,
     accepted,
   };
-  return { ...attempt, state, events: [...attempt.events, event] };
 }
 
 /**
  * Records an input and marks the attempt complete the first time the goal is
  * met. Completed attempts are frozen: later input is ignored.
  */
-export function advanceAttempt(
+export function advanceAttempt<A extends Attempt>(
   exercise: Exercise,
-  attempt: Attempt,
+  attempt: A,
   input: TimedKeyInput,
-): Attempt {
+): A {
   if (attempt.completedAt !== null) return attempt;
   const next = recordInput(attempt, input);
-  return evaluateGoal(exercise, next.state).met ? { ...next, completedAt: input.timestamp } : next;
+  return goalMet(exercise, next) ? { ...next, completedAt: input.timestamp } : next;
 }
 
 /**
@@ -104,6 +171,6 @@ export function advanceAttempt(
  * solved one, and evaluating it reports `success: false`, so giving up is an honest failed attempt
  * rather than a missing one. Calling it on an attempt that already ended changes nothing.
  */
-export function giveUpAttempt(attempt: Attempt, at: number): Attempt {
+export function giveUpAttempt<A extends Attempt>(attempt: A, at: number): A {
   return attempt.completedAt === null ? { ...attempt, completedAt: at } : attempt;
 }

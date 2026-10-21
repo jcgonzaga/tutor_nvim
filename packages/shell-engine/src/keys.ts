@@ -24,27 +24,43 @@ export interface ShellKeyResult {
  */
 export function dispatchShellKey(state: ShellState, input: ShellKeyInput): ShellKeyResult {
   const { key } = input;
-  const accept = (next: ShellState): ShellKeyResult => ({ state: next, accepted: true });
+  // Every key press counts towards the line it belongs to, ignored ones included (telemetry
+  // records them too); Enter and Ctrl+C close that line.
+  const accept = (next: ShellState): ShellKeyResult => ({
+    state: next.transcript === state.transcript ? { ...next, pressed: state.pressed + 1 } : next,
+    accepted: true,
+  });
+  const ignore = (): ShellKeyResult => ({
+    state: { ...state, pressed: state.pressed + 1 },
+    accepted: false,
+  });
 
   if (input.ctrl) {
     if (key === "u") return accept({ ...state, line: "", historyIndex: null });
     if (key === "c") {
-      const entry = { prompt: promptOf(state), command: `${state.line}^C`, output: "" };
+      const entry = {
+        prompt: promptOf(state),
+        command: `${state.line}^C`,
+        output: "",
+        status: 130,
+        keys: state.pressed + 1,
+      };
       return accept({
         ...state,
         line: "",
         historyIndex: null,
         status: 130,
+        pressed: 0,
         transcript: [...state.transcript, entry],
       });
     }
-    return { state, accepted: false };
+    return ignore();
   }
-  if (input.alt || input.meta) return { state, accepted: false };
+  if (input.alt || input.meta) return ignore();
 
   switch (key) {
     case "Enter":
-      return accept(runCommandLine(state, state.line));
+      return accept(runCommandLine({ ...state, pressed: state.pressed + 1 }, state.line));
     case "Backspace":
       return accept({ ...state, line: state.line.slice(0, -1) });
     case "ArrowUp": {
@@ -66,7 +82,7 @@ export function dispatchShellKey(state: ShellState, input: ShellKeyInput): Shell
       // A single character (letters, digits, punctuation, space).
       if ([...key].length === 1)
         return accept({ ...state, line: state.line + key, historyIndex: null });
-      return { state, accepted: false };
+      return ignore();
   }
 }
 

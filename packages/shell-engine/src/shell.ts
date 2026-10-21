@@ -55,6 +55,10 @@ export interface TranscriptEntry {
   readonly prompt: string;
   readonly command: string;
   readonly output: string;
+  /** Exit status of the command (130 for a line abandoned with Ctrl+C). */
+  readonly status: number;
+  /** Key presses spent on this line, from the end of the previous entry. */
+  readonly keys: number;
 }
 
 export interface ShellState {
@@ -68,6 +72,8 @@ export interface ShellState {
   readonly history: readonly string[];
   /** Index into `history` while browsing with the arrow keys; `null` when typing a new line. */
   readonly historyIndex: number | null;
+  /** Key presses since the last transcript entry; it becomes that entry's `keys`. */
+  readonly pressed: number;
   readonly transcript: readonly TranscriptEntry[];
 }
 
@@ -99,6 +105,7 @@ export function initShell(init: ShellInit = {}): ShellState {
     line: "",
     history: [],
     historyIndex: null,
+    pressed: 0,
     transcript: [],
   };
 }
@@ -313,7 +320,11 @@ export function runCommandLine(state: ShellState, text: string): ShellState {
     line: "",
     history: text.trim() === "" ? state.history : [...state.history, text],
     historyIndex: null,
-    transcript: [...state.transcript, { prompt, command: text, output: run.output }],
+    pressed: 0,
+    transcript: [
+      ...state.transcript,
+      { prompt, command: text, output: run.output, status: run.status, keys: state.pressed },
+    ],
   };
 }
 

@@ -1,5 +1,11 @@
-import { dispatch, keyInputFromToken, type Position, type VimMode } from "@tutor-nvim/vim-engine";
-import type { Exercise } from "@tutor-nvim/exercise-schema";
+import {
+  dispatch,
+  keyInputFromToken,
+  type Position,
+  type VimMode,
+  type VimState,
+} from "@tutor-nvim/vim-engine";
+import type { Exercise, VimExercise } from "@tutor-nvim/exercise-schema";
 import { startAttempt, type Attempt } from "./attempt";
 
 /** A run as it is stored: logical keys (`ci"`, `<Esc>`) and the time of each since the start. */
@@ -29,7 +35,7 @@ export interface ReplayFrame {
  * optimal one.
  */
 export function buildReplay(
-  exercise: Exercise,
+  exercise: VimExercise,
   run: { readonly keys: readonly string[]; readonly times?: readonly number[] },
 ): ReplayFrame[] {
   let state = startAttempt(exercise, 0).state;
@@ -46,7 +52,7 @@ function frameOf(
   index: number,
   key: string | null,
   accepted: boolean,
-  state: ReturnType<typeof startAttempt>["state"],
+  state: VimState,
   atMs: number | null,
 ): ReplayFrame {
   return {

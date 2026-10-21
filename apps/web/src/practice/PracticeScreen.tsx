@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { pendingKeys } from "@tutor-nvim/vim-engine";
+import { promptOf } from "@tutor-nvim/shell-engine";
 import {
   describeFeedback,
   type Attempt,
@@ -9,6 +10,7 @@ import {
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import { shouldPreventDefault, toKeyInput } from "../input/keyboard";
 import { EditorView } from "./EditorView";
+import { TerminalView } from "./TerminalView";
 import { ModePill } from "../ui/ModePill";
 import { quietButton } from "../ui/styles";
 import { ResultPanel } from "./ResultPanel";
@@ -122,7 +124,7 @@ export function PracticeScreen({
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const input = toKeyInput(event.nativeEvent, performance.now());
     if (input === null) return;
-    if (shouldPreventDefault(input)) event.preventDefault();
+    if (shouldPreventDefault(input, attempt.kind)) event.preventDefault();
     sendInput(input);
   }
 
@@ -132,7 +134,7 @@ export function PracticeScreen({
     editorRef.current?.focus();
   }
 
-  const { state, events } = attempt;
+  const { events } = attempt;
   const lastEvent = events[events.length - 1];
   const finishedPractice: FinishedPractice | null =
     evaluation && feedback ? { attempt, evaluation, feedback } : null;
@@ -188,30 +190,50 @@ export function PracticeScreen({
             <div
               ref={editorRef}
               role="application"
-              aria-label="Vim practice editor"
+              aria-label={
+                attempt.kind === "shell" ? "Terminal practice area" : "Vim practice editor"
+              }
               aria-describedby="instruction"
               tabIndex={0}
               onKeyDown={handleKeyDown}
               className="focus-visible:outline-offset-[-2px]"
             >
-              <EditorView
-                lines={state.buffer.lines}
-                cursor={state.cursor}
-                mode={state.mode}
-                pending={state.pending !== null}
-              />
+              {attempt.kind === "shell" ? (
+                <TerminalView state={attempt.state} />
+              ) : (
+                <EditorView
+                  lines={attempt.state.buffer.lines}
+                  cursor={attempt.state.cursor}
+                  mode={attempt.state.mode}
+                  pending={attempt.state.pending !== null}
+                />
+              )}
             </div>
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line bg-sunken px-4 py-2.5 font-mono text-sm">
               <div className="flex items-center gap-3.5">
-                <ModePill mode={state.mode} pending={state.pending !== null} />
-                <output
-                  data-testid="pending-command"
-                  aria-label="pending command"
-                  aria-live="off"
-                  className="text-ink"
-                >
-                  {pendingKeys(state.pending)}
-                </output>
+                {attempt.kind === "shell" ? (
+                  <>
+                    <span
+                      data-testid="shell-mode"
+                      className="rounded-md border border-line-strong px-2.5 py-1 text-sm font-bold tracking-[0.04em] text-ink-2"
+                    >
+                      TERMINAL
+                    </span>
+                    <span className="text-ink-3">{promptOf(attempt.state)}</span>
+                  </>
+                ) : (
+                  <>
+                    <ModePill mode={attempt.state.mode} pending={attempt.state.pending !== null} />
+                    <output
+                      data-testid="pending-command"
+                      aria-label="pending command"
+                      aria-live="off"
+                      className="text-ink"
+                    >
+                      {pendingKeys(attempt.state.pending)}
+                    </output>
+                  </>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-ink-2">
                 {lastEvent && !lastEvent.accepted ? (
@@ -231,7 +253,9 @@ export function PracticeScreen({
                     {`${lastEvent.logicalKey} not accepted`}
                   </span>
                 ) : null}
-                <span aria-label="cursor position">{`${state.cursor.line + 1}:${state.cursor.column + 1}`}</span>
+                {attempt.kind === "vim" ? (
+                  <span aria-label="cursor position">{`${attempt.state.cursor.line + 1}:${attempt.state.cursor.column + 1}`}</span>
+                ) : null}
                 {combo > 0 ? (
                   <span data-testid="combo">
                     Combo <strong className="text-ink">×{combo}</strong>

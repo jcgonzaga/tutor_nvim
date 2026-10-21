@@ -1,4 +1,5 @@
-import type { AntiPatternId, Exercise } from "@tutor-nvim/exercise-schema";
+import type { AntiPatternId, Exercise, ShellAntiPatternId } from "@tutor-nvim/exercise-schema";
+import type { TranscriptEntry } from "@tutor-nvim/shell-engine";
 import type { Attempt, InputEvent } from "./attempt";
 
 /** Thresholds live in configuration, not in detectors or UI. */
@@ -12,16 +13,22 @@ export interface AntiPatternConfig {
   readonly excessiveHjkl: { readonly minPresses: number };
   /** `repeated_escape`: this many Escape presses in a row. */
   readonly repeatedEscape: { readonly minRun: number };
+  /** `repeated_failed_command`: the same command failing this many times. */
+  readonly repeatedFailedCommand: { readonly minRepeats: number };
+  /** `cd_up_chain`: this many `cd ..` commands where one path would do. */
+  readonly cdUpChain: { readonly minRun: number };
 }
 
 export const DEFAULT_ANTI_PATTERN_CONFIG: AntiPatternConfig = {
   repeatedX: { minRun: 3 },
   excessiveHjkl: { minPresses: 4 },
   repeatedEscape: { minRun: 3 },
+  repeatedFailedCommand: { minRepeats: 3 },
+  cdUpChain: { minRun: 3 },
 };
 
 export interface AntiPatternHit {
-  readonly id: AntiPatternId;
+  readonly id: AntiPatternId | ShellAntiPatternId;
   /** Size of the offense: run length, or number of presses. */
   readonly count: number;
   /** `sequence` numbers of the input events involved, for feedback and replay. */
@@ -61,7 +68,10 @@ function longestRun(
   return best;
 }
 
-const hit = (id: AntiPatternId, events: readonly InputEvent[]): AntiPatternHit => ({
+const hit = (
+  id: AntiPatternId | ShellAntiPatternId,
+  events: readonly InputEvent[],
+): AntiPatternHit => ({
   id,
   count: events.length,
   sequences: events.map((event) => event.sequence),
@@ -99,6 +109,65 @@ const DETECTORS: Readonly<Record<AntiPatternId, Detector>> = {
   },
 };
 
+/**
+ * The shell detectors read the commands the learner ran. A command's `sequences` are the numbers
+ * of the key events that typed it, so feedback can point at them.
+ */
+interface ShellContext {
+  readonly entries: readonly (TranscriptEntry & { readonly sequences: readonly number[] })[];
+}
+
+const failed = (entry: TranscriptEntry): boolean => entry.status !== 0 && entry.status !== 130;
+
+/** Pairs each transcript entry with the key events that typed it (entries are consecutive runs of keys). */
+function withSequences(
+  entries: readonly TranscriptEntry[],
+  events: readonly InputEvent[],
+): ShellContext["entries"] {
+  let cursor = 0;
+  return entries.map((entry) => {
+    const sequences = events.slice(cursor, cursor + entry.keys).map((event) => event.sequence);
+    cursor += entry.keys;
+    return { ...entry, sequences };
+  });
+}
+
+const shellHit = (id: ShellAntiPatternId, entries: ShellContext["entries"]): AntiPatternHit => ({
+  id,
+  count: entries.length,
+  sequences: entries.flatMap((entry) => [...entry.sequences]),
+});
+
+const SHELL_DETECTORS: Readonly<
+  Record<
+    ShellAntiPatternId,
+    (context: ShellContext, config: AntiPatternConfig) => AntiPatternHit | null
+  >
+> = {
+  repeated_failed_command: ({ entries }, config) => {
+    const failures = new Map<string, ShellContext["entries"]>();
+    for (const entry of entries.filter(failed)) {
+      failures.set(entry.command.trim(), [...(failures.get(entry.command.trim()) ?? []), entry]);
+    }
+    const worst = [...failures.values()].sort((a, b) => b.length - a.length)[0];
+    return worst && worst.length >= config.repeatedFailedCommand.minRepeats
+      ? shellHit("repeated_failed_command", worst)
+      : null;
+  },
+
+  cd_up_chain: ({ entries }, config) => {
+    const ups = entries.filter((entry) => /^cd\s+\.\.\/?$/.test(entry.command.trim()));
+    return ups.length >= config.cdUpChain.minRun ? shellHit("cd_up_chain", ups) : null;
+  },
+
+  rm_rf_wildcard: ({ entries }) => {
+    const risky = entries.filter((entry) =>
+      /^rm\s+(?:-\S+\s+)*-\S*[rR]\S*\s+.*[*]/.test(entry.command.trim()),
+    );
+    return risky.length > 0 ? shellHit("rm_rf_wildcard", risky) : null;
+  },
+};
+
 /** Shortest declared optimal solution: the keystroke baseline for efficiency and thresholds. */
 export function optimalKeystrokes(exercise: Exercise): number {
   const optimal = exercise.solutions.filter((solution) => solution.classification === "optimal");
@@ -115,10 +184,19 @@ export function detectAntiPatterns(
   attempt: Attempt,
   config: AntiPatternConfig = DEFAULT_ANTI_PATTERN_CONFIG,
 ): AntiPatternHit[] {
-  const context: DetectionContext = {
-    events: attempt.events,
-    optimalKeystrokes: optimalKeystrokes(exercise),
-    config,
-  };
-  return exercise.antiPatterns.flatMap((id) => DETECTORS[id](context) ?? []);
+  if (exercise.kind === "shell" && attempt.kind === "shell") {
+    const context: ShellContext = {
+      entries: withSequences(attempt.state.transcript, attempt.events),
+    };
+    return exercise.antiPatterns.flatMap((id) => SHELL_DETECTORS[id](context, config) ?? []);
+  }
+  if (exercise.kind === "vim") {
+    const context: DetectionContext = {
+      events: attempt.events,
+      optimalKeystrokes: optimalKeystrokes(exercise),
+      config,
+    };
+    return exercise.antiPatterns.flatMap((id) => DETECTORS[id](context) ?? []);
+  }
+  return [];
 }

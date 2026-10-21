@@ -1,5 +1,9 @@
-import { parseExerciseYaml, ExerciseValidationError, type LoadedExercise } from "./validate";
-import type { Exercise } from "./schema";
+import {
+  parseExerciseYaml,
+  ExerciseValidationError,
+  type Exercise,
+  type LoadedExercise,
+} from "./validate";
 import { parseSkillYaml, type Skill } from "./skill";
 
 export interface ContentSource {

@@ -9,7 +9,7 @@ import {
   revealHint,
   startAttempt,
 } from "@tutor-nvim/evaluation";
-import { loadContent, parseExerciseYaml } from "@tutor-nvim/exercise-schema";
+import { isVimExercise, loadContent, parseExerciseYaml } from "@tutor-nvim/exercise-schema";
 import { parseKeySequence } from "@tutor-nvim/vim-engine";
 
 import { readContentInput } from "../scripts/content-fs";
@@ -18,7 +18,9 @@ const bundle = loadContent(readContentInput());
 const source = fileURLToPath(
   new URL("../content/exercises/vim-ci-quotes-001.yaml", import.meta.url),
 );
-const exercise = parseExerciseYaml(readFileSync(source, "utf8"), "vim-ci-quotes-001.yaml");
+const parsed = parseExerciseYaml(readFileSync(source, "utf8"), "vim-ci-quotes-001.yaml");
+if (!isVimExercise(parsed)) throw new Error("the canonical exercise is a Vim exercise");
+const exercise = parsed;
 
 describe("M1 vertical slice (YAML -> engine -> telemetry -> evaluation)", () => {
   it("evaluates a learner typing the optimal sequence with browser-like key events", () => {
@@ -77,8 +79,10 @@ describe("M1 vertical slice (YAML -> engine -> telemetry -> evaluation)", () => 
 
 describe("M3 flows over the real content (exercise -> attempt -> evaluation)", () => {
   const bundleExercise = (slug: string) => {
-    const found = bundle.exercises.find((candidate) => candidate.slug === slug);
-    if (!found) throw new Error(`missing exercise ${slug}`);
+    const found = bundle.exercises
+      .filter(isVimExercise)
+      .find((candidate) => candidate.slug === slug);
+    if (!found) throw new Error(`missing Vim exercise ${slug}`);
     return found;
   };
 

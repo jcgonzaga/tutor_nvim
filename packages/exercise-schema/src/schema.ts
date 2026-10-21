@@ -159,7 +159,7 @@ const hintSchema = z.strictObject({
 });
 
 /** Hints reveal progressively: levels count 1, 2, 3... and never become available earlier than the previous one. */
-const hintsSchema = z.array(hintSchema).superRefine((hints, ctx) => {
+export const hintsSchema = z.array(hintSchema).superRefine((hints, ctx) => {
   hints.forEach((hint, index) => {
     if (hint.level !== index + 1) {
       ctx.addIssue({
@@ -184,7 +184,7 @@ const environmentSchema = z.strictObject({
   profile: z.string().min(1),
 });
 
-const metadataSchema = z.strictObject({
+export const metadataSchema = z.strictObject({
   /** Language of the buffer, e.g. `javascript`. */
   language: z.string().min(1).optional(),
   /** Where the situation happens, e.g. `config-file`; transfer exercises vary it. */
@@ -194,9 +194,11 @@ const metadataSchema = z.strictObject({
   transferTags: z.array(tagSchema).default([]),
 });
 
-export const exerciseSchema = z
+export const vimExerciseSchema = z
   .strictObject({
     schemaVersion: z.literal(EXERCISE_SCHEMA_VERSION),
+    /** What the learner practices in: the Vim simulator (the default) or the shell simulator. */
+    kind: z.literal("vim").default("vim"),
     id: idSchema,
     slug: slugSchema,
     title: z.string().min(1),
@@ -243,11 +245,11 @@ export const exerciseSchema = z
     })),
   }));
 
-/** Raw content shape (what YAML/JSON authors write). */
-export type ExerciseInput = z.input<typeof exerciseSchema>;
-/** Normalized exercise consumed by the engine, evaluation and UI. */
-export type Exercise = z.output<typeof exerciseSchema>;
-export type ExerciseSolution = Exercise["solutions"][number];
+/** Raw content shape of a Vim exercise (what YAML/JSON authors write). */
+export type VimExerciseInput = z.input<typeof vimExerciseSchema>;
+/** Normalized Vim exercise consumed by the Vim engine, evaluation and UI. */
+export type VimExercise = z.output<typeof vimExerciseSchema>;
+export type ExerciseSolution = VimExercise["solutions"][number];
 export type ExerciseObjective = Objective;
-export type ExerciseHint = Exercise["hints"][number];
+export type ExerciseHint = VimExercise["hints"][number];
 export type AntiPatternId = (typeof ANTI_PATTERN_IDS)[number];

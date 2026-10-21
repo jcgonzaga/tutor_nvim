@@ -1,5 +1,5 @@
 import type { AttemptEvaluation } from "@tutor-nvim/evaluation";
-import type { AntiPatternId } from "@tutor-nvim/exercise-schema";
+import type { AntiPatternId, ShellAntiPatternId } from "@tutor-nvim/exercise-schema";
 
 interface ResultPanelProps {
   readonly evaluation: AttemptEvaluation;
@@ -9,12 +9,16 @@ interface ResultPanelProps {
 }
 
 /** Learner-facing wording for each anti-pattern; the detection itself lives in the evaluation package. */
-const ANTI_PATTERN_LABELS: Readonly<Record<AntiPatternId, string>> = {
+const ANTI_PATTERN_LABELS: Readonly<Record<AntiPatternId | ShellAntiPatternId, string>> = {
   repeated_x: "Repeated x: try a motion or operator that deletes more at once",
   excessive_hjkl: "Many h/j/k/l presses: look for a faster motion",
   arrow_keys: "Arrow keys: stay on the home row",
   insert_mode_navigation: "Moving around in INSERT mode: leave it with Esc first",
   repeated_escape: "Esc pressed repeatedly: once is enough",
+  repeated_failed_command:
+    "The same command failed again and again: read the error, then change it",
+  cd_up_chain: "Several cd .. in a row: one path (cd ../..) gets you there at once",
+  rm_rf_wildcard: "rm -r with a wildcard deletes a lot at once: name what you mean to remove",
 };
 
 function formatMs(ms: number | null): string {

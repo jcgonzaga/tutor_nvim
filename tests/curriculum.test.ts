@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadContent, type Exercise } from "@tutor-nvim/exercise-schema";
+import { isVimExercise, loadContent, type Exercise } from "@tutor-nvim/exercise-schema";
 import { EXERCISE_MODES } from "@tutor-nvim/exercise-schema";
 import { readContentInput } from "../scripts/content-fs";
 
@@ -106,7 +106,9 @@ describe("command coverage per content group", () => {
 
   it("has at least five meaningful variants of the high-priority patterns", () => {
     for (const pattern of ['ci"', "ci(", "ciw", "cw", "dd", "dw"]) {
-      const variants = exercises.filter((exercise) => allKeys(exercise).includes(pattern));
+      const variants = exercises
+        .filter(isVimExercise)
+        .filter((exercise) => allKeys(exercise).includes(pattern));
       expect(variants.length, pattern).toBeGreaterThanOrEqual(5);
       // "Meaningful" means different situations, not copies: distinct buffers.
       const buffers = new Set(variants.map((exercise) => exercise.initialState.lines.join("\n")));

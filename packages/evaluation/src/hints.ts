@@ -35,7 +35,7 @@ export function canRevealHint(exercise: Exercise, attempt: Attempt, now: number)
 }
 
 /** Reveals the next hint if it is available at `now`; otherwise returns the attempt unchanged. */
-export function revealHint(exercise: Exercise, attempt: Attempt, now: number): Attempt {
+export function revealHint<A extends Attempt>(exercise: Exercise, attempt: A, now: number): A {
   const { next } = hintStatus(exercise, attempt);
   if (next === null || !canRevealHint(exercise, attempt, now)) return attempt;
   return { ...attempt, hints: [...attempt.hints, { level: next.hint.level, timestamp: now }] };

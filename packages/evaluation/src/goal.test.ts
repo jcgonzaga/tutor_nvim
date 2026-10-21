@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { ExerciseInput } from "@tutor-nvim/exercise-schema";
+import type { VimExerciseInput } from "@tutor-nvim/exercise-schema";
 import { evaluateGoal } from "./goal";
 import { exerciseWith, play } from "./test-util";
 
 const TEXT = "alpha beta\ngamma delta\n";
 
-function navigation(objective: ExerciseInput["objective"]) {
+function navigation(objective: VimExerciseInput["objective"]) {
   return exerciseWith({
     initialState: { buffer: TEXT, cursor: { line: 1, column: 1 } },
     objective,

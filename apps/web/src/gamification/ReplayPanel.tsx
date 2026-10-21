@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildReplay } from "@tutor-nvim/evaluation";
-import type { Exercise } from "@tutor-nvim/exercise-schema";
+import type { VimExercise } from "@tutor-nvim/exercise-schema";
 import { EditorView } from "../practice/EditorView";
 import { quietButton } from "../ui/styles";
 
@@ -38,7 +38,7 @@ export function ReplayPanel({
   exercise,
   sources,
 }: {
-  readonly exercise: Exercise;
+  readonly exercise: VimExercise;
   readonly sources: readonly ReplaySource[];
 }) {
   const [sourceId, setSourceId] = useState(sources[0]?.id ?? "");

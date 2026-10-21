@@ -7,7 +7,7 @@ import {
   type AntiPatternConfig,
   type AntiPatternHit,
 } from "./antipatterns";
-import { evaluateGoal } from "./goal";
+import { goalMet } from "./goal";
 import {
   computeMetrics,
   DEFAULT_METRICS_CONFIG,
@@ -50,7 +50,7 @@ export function evaluateAttempt(
   attempt: Attempt,
   config: EvaluationConfig = DEFAULT_EVALUATION_CONFIG,
 ): AttemptEvaluation {
-  const success = evaluateGoal(exercise, attempt.state).met;
+  const success = goalMet(exercise, attempt);
   const antiPatterns = detectAntiPatterns(exercise, attempt, config.antiPatterns);
   const strategy = classifyStrategy({
     exercise,

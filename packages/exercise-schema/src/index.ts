@@ -3,17 +3,28 @@ export {
   EXERCISE_MODES,
   EXERCISE_SCHEMA_VERSION,
   SOLUTION_CLASSIFICATIONS,
-  exerciseSchema,
+  vimExerciseSchema,
   type AntiPatternId,
-  type Exercise,
   type ExerciseHint,
-  type ExerciseInput,
+  type VimExercise,
+  type VimExerciseInput,
   type ExerciseObjective,
   type ExerciseSolution,
   type Objective,
   type RawObjective,
   type SolutionClassification,
 } from "./schema";
+export {
+  SHELL_ANTI_PATTERN_IDS,
+  keysForCommand,
+  shellExerciseSchema,
+  type RawShellObjective,
+  type ShellAntiPatternId,
+  type ShellExercise,
+  type ShellExerciseInput,
+  type ShellObjective,
+  type ShellSolution,
+} from "./shell";
 export {
   SKILL_DOMAINS,
   SKILL_SCHEMA_VERSION,
@@ -26,9 +37,13 @@ export {
 export {
   ExerciseValidationError,
   formatIssues,
+  isShellExercise,
+  isVimExercise,
   parseExercise,
+  parseVimExercise,
   parseExerciseYaml,
   validateExerciseCollection,
+  type Exercise,
   type LoadedExercise,
 } from "./validate";
 export {

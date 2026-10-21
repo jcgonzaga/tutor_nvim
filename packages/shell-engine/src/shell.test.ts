@@ -150,3 +150,27 @@ describe("typing", () => {
     expect(state.history).toEqual(["pwd"]);
   });
 });
+
+describe("what the transcript remembers about each line", () => {
+  it("keeps the exit status and the key presses spent on every line", () => {
+    let state = initShell();
+    state = typeCommand(state, "pwd"); // p w d + Enter
+    state = typeCommand(state, "lss"); // l s s + Enter, fails
+    for (const key of "abc") state = dispatchShellKey(state, { key }).state;
+    state = dispatchShellKey(state, { key: "Backspace" }).state;
+    state = dispatchShellKey(state, { key: "c", ctrl: true }).state;
+    expect(state.transcript.map(({ command, status, keys }) => [command, status, keys])).toEqual([
+      ["pwd", 0, 4],
+      ["lss", 127, 4],
+      ["ab^C", 130, 5],
+    ]);
+    expect(state.pressed).toBe(0);
+  });
+
+  it("counts the keys the terminal ignored too, as telemetry does", () => {
+    let state = initShell();
+    state = dispatchShellKey(state, { key: "F5" }).state;
+    state = dispatchShellKey(state, { key: "x", alt: true }).state;
+    expect(state.pressed).toBe(2);
+  });
+});

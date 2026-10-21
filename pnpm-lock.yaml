@@ -141,6 +141,9 @@ importers:
       '@tutor-nvim/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@tutor-nvim/shell-engine':
+        specifier: workspace:*
+        version: link:../../packages/shell-engine
       '@tutor-nvim/vim-engine':
         specifier: workspace:*
         version: link:../../packages/vim-engine
@@ -178,6 +181,9 @@ importers:
       '@tutor-nvim/exercise-schema':
         specifier: workspace:*
         version: link:../exercise-schema
+      '@tutor-nvim/shell-engine':
+        specifier: workspace:*
+        version: link:../shell-engine
       '@tutor-nvim/vim-engine':
         specifier: workspace:*
         version: link:../vim-engine

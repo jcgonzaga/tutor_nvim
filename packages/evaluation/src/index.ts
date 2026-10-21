@@ -5,13 +5,20 @@ export {
   startAttempt,
   type Attempt,
   type InputEvent,
+  type ShellAttempt,
   type TimedKeyInput,
+  type VimAttempt,
 } from "./attempt";
 export {
   evaluateGoal,
   evaluateObjective,
+  evaluateShellGoal,
+  evaluateShellObjective,
+  goalMet,
   type GoalEvaluation,
   type ObjectiveEvaluation,
+  type ShellGoalEvaluation,
+  type ShellObjectiveEvaluation,
 } from "./goal";
 export {
   DEFAULT_ANTI_PATTERN_CONFIG,

@@ -34,7 +34,11 @@ describe("content", () => {
 
           expect(evaluation.success).toBe(true);
           expect(evaluation.strategy).toBe(solution.classification);
-          if (exercise.objective.type === "buffer_equals") {
+          if (
+            exercise.kind === "vim" &&
+            attempt.kind === "vim" &&
+            exercise.objective.type === "buffer_equals"
+          ) {
             expect(bufferToText(attempt.state.buffer)).toBe(
               exercise.objective.targetLines.join("\n"),
             );

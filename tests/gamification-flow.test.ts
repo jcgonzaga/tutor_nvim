@@ -7,7 +7,7 @@ import {
   simulateSolution,
   describeFeedback,
 } from "@tutor-nvim/evaluation";
-import { loadContent, type Exercise } from "@tutor-nvim/exercise-schema";
+import { isVimExercise, loadContent, type Exercise } from "@tutor-nvim/exercise-schema";
 import {
   DAY_MS,
   DEFAULT_GAMIFICATION_CONFIG,
@@ -39,7 +39,7 @@ const exerciseOf = (id: string): Exercise => {
 const START = Date.UTC(2026, 0, 5, 9, 0, 0);
 const dayOf = (at: number) => new Date(at).toISOString().slice(0, 10);
 
-function solveOptimally(exercise: Exercise) {
+function solveOptimally<E extends Exercise>(exercise: E) {
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   if (!optimal) throw new Error(`${exercise.slug} has no optimal solution`);
   return simulateSolution(exercise, optimal, { stepMs: 150 });
@@ -171,8 +171,11 @@ describe("the game layer over the real curriculum", () => {
     expect(stored.length).toBeGreaterThan(20);
     for (const [exerciseId, run] of stored) {
       const exercise = exerciseOf(exerciseId);
+      // Replay shows an editor, so it only exists for Vim exercises.
+      if (!isVimExercise(exercise)) continue;
       const frames = buildReplay(exercise, run);
       const live = solveOptimally(exercise);
+      if (live.kind !== "vim") continue;
       const last = frames[frames.length - 1];
       expect(last?.lines, exercise.slug).toEqual(live.state.buffer.lines);
       expect(last?.cursor, exercise.slug).toEqual(live.state.cursor);
@@ -197,7 +200,7 @@ describe("every exercise can be shown to the learner as a ghost", () => {
     for (const exercise of exercises) {
       const master = masterRun(exercise);
       expect(master, exercise.slug).not.toBeNull();
-      if (!master) continue;
+      if (!master || !isVimExercise(exercise)) continue;
       const frames = buildReplay(exercise, master);
       const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
       const live = simulateSolution(exercise, optimal ?? exercise.solutions[0]!);

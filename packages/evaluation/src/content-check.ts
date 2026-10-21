@@ -2,7 +2,7 @@ import type { ContentBundle, Exercise } from "@tutor-nvim/exercise-schema";
 import { startAttempt } from "./attempt";
 import { detectAntiPatterns } from "./antipatterns";
 import { evaluateAttempt } from "./evaluate";
-import { evaluateGoal } from "./goal";
+import { goalMet } from "./goal";
 import { simulateSolution } from "./simulate";
 
 /**
@@ -14,7 +14,7 @@ export function checkExercise(exercise: Exercise): string[] {
   const errors: string[] = [];
 
   // A goal that already holds before the learner does anything teaches nothing.
-  if (evaluateGoal(exercise, startAttempt(exercise, 0).state).met) {
+  if (goalMet(exercise, startAttempt(exercise, 0))) {
     errors.push(`${where}: the objective is already satisfied by the initial state`);
   }
 
