@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic-002
+slug: vim.navigation-atomic.basic-002
+
+title: "Move up and left"
+instruction: 'Move the cursor onto the "a" of "alpha" (two lines up, then left).'
+
+skillIds:
+  - vim.navigation.atomic
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    alpha beta
+    gamma delta
+    epsilon zeta
+  cursor:
+    line: 3
+    column: 4
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 1
+
+solutions:
+  - sequence: "kkhhh"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "k goes up, h goes left."
+  - afterMs: 8000
+    level: 2
+    text: "Two lines up, then three characters left."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

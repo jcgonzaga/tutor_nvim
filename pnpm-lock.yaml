@@ -65,6 +65,9 @@ importers:
       '@tutor-nvim/exercise-schema':
         specifier: workspace:*
         version: link:../../packages/exercise-schema
+      '@tutor-nvim/pedagogy':
+        specifier: workspace:*
+        version: link:../../packages/pedagogy
       '@tutor-nvim/vim-engine':
         specifier: workspace:*
         version: link:../../packages/vim-engine
@@ -74,6 +77,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.3.1(react@19.3.1)
+      zod:
+        specifier: ^4.1.0
+        version: 4.6.7
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.0

@@ -1,16 +1,52 @@
-import { exercises } from "./exercises";
-import { PracticeScreen } from "./practice/PracticeScreen";
+import { FreePractice } from "./FreePractice";
+import { HomeScreen } from "./home/HomeScreen";
+import { SkillDetailScreen } from "./map/SkillDetailScreen";
+import { SkillMapScreen } from "./map/SkillMapScreen";
+import { NoticeBanner } from "./NoticeBanner";
+import { OnboardingScreen } from "./onboarding/OnboardingScreen";
+import { ProgressScreen } from "./progress/ProgressScreen";
+import { useProfile } from "./profile/ProfileProvider";
+import { useEffect } from "react";
+import { useRoute, type Navigate, type Route } from "./router";
+import { SessionScreen } from "./session/SessionScreen";
 
 export function App() {
-  const requested = new URLSearchParams(window.location.search).get("exercise");
-  const index = Math.max(
-    0,
-    exercises.findIndex((candidate) => candidate.slug === requested),
-  );
-  const exercise = exercises[index];
-  // Wraps around, so "Next exercise" always has somewhere to go.
-  const next = exercises[(index + 1) % exercises.length];
+  const { route, navigate } = useRoute();
+  // Free practice needs no profile: it is a single exercise, not part of the learner's progress.
+  if (route.name === "practice") return <FreePractice slug={route.slug} />;
 
-  if (!exercise) return <p className="p-6">No exercises found.</p>;
-  return <PracticeScreen key={exercise.id} exercise={exercise} nextSlug={next?.slug ?? null} />;
+  return (
+    <>
+      <NoticeBanner />
+      <Screen route={route} navigate={navigate} />
+    </>
+  );
+}
+
+function Screen({ route, navigate }: { readonly route: Route; readonly navigate: Navigate }) {
+  const { profile } = useProfile();
+  const needsOnboarding = !profile.onboarding.completed;
+
+  // Everything but free practice starts with onboarding, once. The flow lives on its own route,
+  // so it stays on screen (to show the estimate) after the profile counts as onboarded.
+  useEffect(() => {
+    if (needsOnboarding && route.name !== "onboarding")
+      navigate({ name: "onboarding" }, { replace: true });
+  }, [needsOnboarding, route.name, navigate]);
+
+  if (needsOnboarding || route.name === "onboarding") {
+    return <OnboardingScreen navigate={navigate} />;
+  }
+  switch (route.name) {
+    case "session":
+      return <SessionScreen navigate={navigate} />;
+    case "map":
+      return <SkillMapScreen />;
+    case "skill":
+      return <SkillDetailScreen slug={route.slug} />;
+    case "progress":
+      return <ProgressScreen />;
+    default:
+      return <HomeScreen navigate={navigate} />;
+  }
 }

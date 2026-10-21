@@ -1,21 +1,61 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { pendingKeys } from "@tutor-nvim/vim-engine";
+import {
+  describeFeedback,
+  type Attempt,
+  type AttemptEvaluation,
+  type Feedback,
+} from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import { shouldPreventDefault, toKeyInput } from "../input/keyboard";
 import { EditorView } from "./EditorView";
 import { ResultPanel } from "./ResultPanel";
 import { usePracticeAttempt } from "./usePracticeAttempt";
 
-interface PracticeScreenProps {
-  readonly exercise: Exercise;
-  readonly nextSlug: string | null;
+/** An attempt that ended, solved or given up. */
+export interface FinishedPractice {
+  readonly attempt: Attempt;
+  readonly evaluation: AttemptEvaluation;
+  readonly feedback: Feedback;
 }
 
-export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
-  const { attempt, evaluation, hints, sendInput, requestHint, reset } =
+interface PracticeScreenProps {
+  readonly exercise: Exercise;
+  /** Small label above the instruction. */
+  readonly eyebrow?: string;
+  /** Minimal progress for sessions and calibration, e.g. "3 of 12". */
+  readonly progress?: string;
+  /** Called once when the attempt ends. The parent records it; the screen stays on the result. */
+  readonly onFinish?: (finished: FinishedPractice) => void;
+  /** Offers a button that ends the attempt as a failure ("Skip", "I don't know"). */
+  readonly giveUpLabel?: string;
+  /** Replaces the default result panel; `retry` starts the same exercise again. */
+  readonly renderResult?: (finished: FinishedPractice, retry: () => void) => ReactNode;
+  /** Free practice only: where "Next exercise" leads. */
+  readonly nextSlug?: string | null;
+}
+
+const secondaryButton =
+  "rounded border border-zinc-600 px-3 py-1 text-xs hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400 disabled:cursor-not-allowed disabled:text-zinc-500 disabled:hover:bg-transparent";
+
+/**
+ * The practice loop for one exercise: instruction, editor, mode and immediate feedback. It is the
+ * same screen for free practice, calibration probes and session items; the caller decides what
+ * happens at the end (`onFinish`, `renderResult`). Keyboard capture is scoped to the editor.
+ */
+export function PracticeScreen({
+  exercise,
+  eyebrow = "Challenge",
+  progress,
+  onFinish,
+  giveUpLabel,
+  renderResult,
+  nextSlug = null,
+}: PracticeScreenProps) {
+  const { attempt, evaluation, hints, sendInput, requestHint, giveUp, reset } =
     usePracticeAttempt(exercise);
   const editorRef = useRef<HTMLDivElement>(null);
-  const retryRef = useRef<HTMLButtonElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
   const finished = evaluation !== null;
 
   // The hint button wakes up when the next hint becomes available. A timer can fire a hair before
@@ -32,13 +72,31 @@ export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
   }, [nextHintAt, now]);
   const hintReady = !finished && nextHintAt !== null && now >= nextHintAt;
 
+  // The editor owns the keyboard on arrival and again after "Try again" (which restarts the clock).
   useEffect(() => {
     editorRef.current?.focus();
-  }, []);
+  }, [attempt.startedAt]);
+
+  // Reported once per ended attempt. The ref also keeps React's double-invoked dev effects from
+  // reporting the same attempt twice, which would count it as two attempts.
+  const reported = useRef<Attempt | null>(null);
+  const onFinishRef = useRef(onFinish);
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  });
+  const feedback = useMemo(
+    () => (evaluation ? describeFeedback(exercise, attempt, evaluation) : null),
+    [exercise, attempt, evaluation],
+  );
+  useEffect(() => {
+    if (evaluation === null || feedback === null || reported.current === attempt) return;
+    reported.current = attempt;
+    onFinishRef.current?.({ attempt, evaluation, feedback });
+  }, [attempt, evaluation, feedback]);
 
   useEffect(() => {
-    // The editor is frozen once solved: hand keyboard focus to the next action.
-    if (finished) retryRef.current?.focus();
+    // The editor is frozen once the attempt ended: hand keyboard focus to the next action.
+    if (finished) resultRef.current?.querySelector<HTMLElement>("button, a")?.focus();
   }, [finished]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -46,11 +104,6 @@ export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
     if (input === null) return;
     if (shouldPreventDefault(input)) event.preventDefault();
     sendInput(input);
-  }
-
-  function handleRetry() {
-    reset();
-    editorRef.current?.focus();
   }
 
   function handleHint() {
@@ -61,12 +114,17 @@ export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
   const { state, events } = attempt;
   const lastEvent = events[events.length - 1];
   const modeLabel = state.mode.toUpperCase();
+  const finishedPractice: FinishedPractice | null =
+    evaluation && feedback ? { attempt, evaluation, feedback } : null;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-zinc-100">
       <div className="w-full max-w-2xl space-y-4">
         <header>
-          <p className="text-xs uppercase tracking-widest text-zinc-400">Challenge</p>
+          <div className="flex items-baseline justify-between text-xs uppercase tracking-widest text-zinc-400">
+            <p>{eyebrow}</p>
+            {progress ? <p data-testid="practice-progress">{progress}</p> : null}
+          </div>
           <h1 id="instruction" className="mt-1 text-lg">
             {exercise.instruction}
           </h1>
@@ -108,7 +166,7 @@ export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
           </div>
         </div>
 
-        {exercise.hints.length > 0 && !finished ? (
+        {!finished && (exercise.hints.length > 0 || giveUpLabel) ? (
           <div className="text-sm">
             <ol data-testid="hints" aria-live="polite" className="space-y-1 text-zinc-300">
               {hints.revealed.map((hint) => (
@@ -118,26 +176,38 @@ export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
                 </li>
               ))}
             </ol>
-            {hints.next ? (
-              <button
-                type="button"
-                onClick={handleHint}
-                disabled={!hintReady}
-                className="mt-2 rounded border border-zinc-600 px-3 py-1 text-xs hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400 disabled:cursor-not-allowed disabled:text-zinc-500 disabled:hover:bg-transparent"
-              >
-                {hintReady ? "Show hint" : "Hint available soon"}
-              </button>
-            ) : null}
+            <div className="mt-2 flex gap-3">
+              {hints.next ? (
+                <button
+                  type="button"
+                  onClick={handleHint}
+                  disabled={!hintReady}
+                  className={secondaryButton}
+                >
+                  {hintReady ? "Show hint" : "Hint available soon"}
+                </button>
+              ) : null}
+              {giveUpLabel ? (
+                <button type="button" onClick={giveUp} className={secondaryButton}>
+                  {giveUpLabel}
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : null}
 
-        {evaluation ? (
-          <ResultPanel
-            ref={retryRef}
-            evaluation={evaluation}
-            onRetry={handleRetry}
-            nextHref={nextSlug ? `?exercise=${encodeURIComponent(nextSlug)}` : null}
-          />
+        {finishedPractice ? (
+          <div ref={resultRef}>
+            {renderResult ? (
+              renderResult(finishedPractice, reset)
+            ) : (
+              <ResultPanel
+                evaluation={finishedPractice.evaluation}
+                onRetry={reset}
+                nextHref={nextSlug ? `?exercise=${encodeURIComponent(nextSlug)}` : null}
+              />
+            )}
+          </div>
         ) : null}
       </div>
     </main>

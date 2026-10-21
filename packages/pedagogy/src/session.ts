@@ -190,9 +190,16 @@ export function buildDailySession(
   );
 
   // Learn: skills still in `learning`, earliest tier first; easiest exercise first.
+  // Skills calibration placed the learner past are only a quick check, so they go after the rest.
+  const placed = new Set(learner.placed ?? []);
   const learnSkills = skills
     .filter((skill) => stages[skill.slug] === "learning" && !dueSkills.has(skill.slug))
-    .sort((a, b) => a.tier - b.tier || a.slug.localeCompare(b.slug))
+    .sort(
+      (a, b) =>
+        Number(placed.has(a.slug)) - Number(placed.has(b.slug)) ||
+        a.tier - b.tier ||
+        a.slug.localeCompare(b.slug),
+    )
     .map((skill) => skill.slug);
   const learn: SessionItem[] = [];
   for (const slug of learnSkills) {

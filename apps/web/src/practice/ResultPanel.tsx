@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import type { AttemptEvaluation } from "@tutor-nvim/evaluation";
 import type { AntiPatternId } from "@tutor-nvim/exercise-schema";
 
@@ -25,10 +24,7 @@ function formatMs(ms: number | null): string {
 const buttonClass =
   "rounded border border-zinc-500 px-3 py-1 text-sm hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400";
 
-export const ResultPanel = forwardRef<HTMLButtonElement, ResultPanelProps>(function ResultPanel(
-  { evaluation, onRetry, nextHref },
-  retryRef,
-) {
+export function ResultPanel({ evaluation, onRetry, nextHref }: ResultPanelProps) {
   const { success, strategy, metrics, antiPatterns } = evaluation;
   const rows: ReadonlyArray<readonly [label: string, testId: string, value: string]> = [
     ["Strategy", "result-strategy", strategy],
@@ -70,7 +66,7 @@ export const ResultPanel = forwardRef<HTMLButtonElement, ResultPanelProps>(funct
         </ul>
       ) : null}
       <div className="mt-4 flex gap-3">
-        <button ref={retryRef} type="button" onClick={onRetry} className={buttonClass}>
+        <button type="button" onClick={onRetry} className={buttonClass}>
           Try again
         </button>
         {nextHref ? (
@@ -81,4 +77,4 @@ export const ResultPanel = forwardRef<HTMLButtonElement, ResultPanelProps>(funct
       </div>
     </section>
   );
-});
+}

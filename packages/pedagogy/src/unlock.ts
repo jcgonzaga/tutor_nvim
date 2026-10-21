@@ -14,6 +14,9 @@ export type StageMap = Readonly<Record<string, MasteryStage>>;
  * graph is resolved recursively with memoization. Content validation rejects cycles; a cycle
  * that slips through leaves its members locked instead of looping.
  *
+ * A skill the learner was placed past (`learner.placed`) counts as a satisfied prerequisite
+ * without having the evidence.
+ *
  * Disabled skills are not part of the graph: they are `locked`, and a prerequisite pointing at
  * one is ignored rather than blocking its dependents forever.
  */
@@ -26,6 +29,7 @@ export function resolveStages(
   const stages = new Map<string, MasteryStage>();
   const visiting = new Set<string>();
   const needed = stageRank(config.unlock.minPrerequisiteStage);
+  const placed = new Set(learner.placed ?? []);
 
   const stageOf = (slug: string): MasteryStage => {
     const known = stages.get(slug);
@@ -40,7 +44,7 @@ export function resolveStages(
     visiting.add(slug);
     const unlocked = skill.prerequisites.every((prerequisite) => {
       const required = bySlug.get(prerequisite);
-      if (required === undefined || !required.enabled) return true;
+      if (required === undefined || !required.enabled || placed.has(prerequisite)) return true;
       return stageRank(stageOf(prerequisite)) >= needed;
     });
     visiting.delete(slug);

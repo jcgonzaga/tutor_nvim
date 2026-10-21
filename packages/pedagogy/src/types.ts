@@ -50,6 +50,12 @@ export interface UserSkill {
 /** Everything the pedagogy engine knows about one learner. Keyed by skill slug. */
 export interface LearnerState {
   readonly skills: Readonly<Record<string, UserSkill>>;
+  /**
+   * Skills calibration placed the learner past (the initial estimate, PRD 41). They count as
+   * satisfied prerequisites, so what builds on them unlocks, but they carry no evidence and
+   * never mastery: a placed skill is still `learning` until the learner actually practices it.
+   */
+  readonly placed?: readonly string[];
 }
 
 export const EMPTY_LEARNER: LearnerState = { skills: {} };

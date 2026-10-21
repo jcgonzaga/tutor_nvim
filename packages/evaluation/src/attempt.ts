@@ -98,3 +98,12 @@ export function advanceAttempt(
   const next = recordInput(attempt, input);
   return evaluateGoal(exercise, next.state).met ? { ...next, completedAt: input.timestamp } : next;
 }
+
+/**
+ * Ends an attempt the learner did not solve (they chose to move on). The attempt is frozen like a
+ * solved one, and evaluating it reports `success: false`, so giving up is an honest failed attempt
+ * rather than a missing one. Calling it on an attempt that already ended changes nothing.
+ */
+export function giveUpAttempt(attempt: Attempt, at: number): Attempt {
+  return attempt.completedAt === null ? { ...attempt, completedAt: at } : attempt;
+}

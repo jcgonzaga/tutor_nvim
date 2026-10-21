@@ -123,7 +123,7 @@ export function refreshStages(
       next[skill.slug] = { ...createUserSkill(skill.slug), stage };
     }
   }
-  return { skills: next };
+  return { ...learner, skills: next };
 }
 
 /**
@@ -143,5 +143,5 @@ export function recordAttempt(
     updated[skillId] = skill;
     updates.push(update);
   }
-  return { learner: refreshStages(skills, { skills: updated }, config), updates };
+  return { learner: refreshStages(skills, { ...learner, skills: updated }, config), updates };
 }

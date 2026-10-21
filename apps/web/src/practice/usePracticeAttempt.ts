@@ -2,6 +2,7 @@ import { useCallback, useMemo, useReducer } from "react";
 import {
   advanceAttempt,
   evaluateAttempt,
+  giveUpAttempt,
   hintStatus,
   revealHint,
   startAttempt,
@@ -20,6 +21,7 @@ interface PracticeState {
 type PracticeAction =
   | { readonly type: "input"; readonly input: TimedKeyInput }
   | { readonly type: "hint"; readonly at: number }
+  | { readonly type: "giveUp"; readonly at: number }
   | { readonly type: "reset"; readonly at: number };
 
 function reducer(state: PracticeState, action: PracticeAction): PracticeState {
@@ -28,6 +30,8 @@ function reducer(state: PracticeState, action: PracticeAction): PracticeState {
       return { ...state, attempt: advanceAttempt(state.exercise, state.attempt, action.input) };
     case "hint":
       return { ...state, attempt: revealHint(state.exercise, state.attempt, action.at) };
+    case "giveUp":
+      return { ...state, attempt: giveUpAttempt(state.attempt, action.at) };
     case "reset":
       return { ...state, attempt: startAttempt(state.exercise, action.at) };
   }
@@ -48,7 +52,8 @@ export function usePracticeAttempt(exercise: Exercise) {
 
   const sendInput = useCallback((input: TimedKeyInput) => dispatch({ type: "input", input }), []);
   const requestHint = useCallback(() => dispatch({ type: "hint", at: performance.now() }), []);
+  const giveUp = useCallback(() => dispatch({ type: "giveUp", at: performance.now() }), []);
   const reset = useCallback(() => dispatch({ type: "reset", at: performance.now() }), []);
 
-  return { attempt, evaluation, hints, sendInput, requestHint, reset };
+  return { attempt, evaluation, hints, sendInput, requestHint, giveUp, reset };
 }

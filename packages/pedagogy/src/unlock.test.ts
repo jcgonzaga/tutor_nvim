@@ -69,4 +69,25 @@ describe("prerequisite unlock engine (T-404)", () => {
       "vim.y": "locked",
     });
   });
+
+  describe("placement", () => {
+    it("unlocks what builds on a placed skill, with no evidence at all", () => {
+      const placed: LearnerState = { skills: {}, placed: ["vim.a"] };
+      const stages = resolveStages(chain, placed, CONFIG);
+      expect(stages).toEqual({ "vim.a": "learning", "vim.b": "learning", "vim.c": "locked" });
+    });
+
+    it("never makes the placed skill itself more than learning: mastery needs evidence", () => {
+      const stages = resolveStages(chain, { skills: {}, placed: ["vim.a", "vim.b"] }, CONFIG);
+      expect(
+        Object.values(stages).every((stage) => stage === "learning" || stage === "locked"),
+      ).toBe(true);
+      expect(stages["vim.c"]).toBe("learning");
+    });
+
+    it("needs every prerequisite placed or practiced", () => {
+      const stages = resolveStages(chain, { skills: {}, placed: ["vim.b"] }, CONFIG);
+      expect(stages["vim.c"]).toBe("locked"); // vim.a is neither placed nor practiced
+    });
+  });
 });

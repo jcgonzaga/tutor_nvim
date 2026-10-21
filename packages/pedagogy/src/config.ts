@@ -112,6 +112,13 @@ export interface PedagogyConfig {
     readonly jitter: number;
     /** Never repeat the same skill more than this many times in a row when an alternative exists. */
     readonly maxSameSkillRun: number;
+    /** A skill that keeps lapsing comes back inside one session at most this many times. */
+    readonly maxInSessionRepeats: number;
+  };
+  /** Bounds of what a stored profile keeps, so local storage cannot grow without limit. */
+  readonly profile: {
+    readonly maxHistory: number;
+    readonly maxSessionSummaries: number;
   };
 }
 
@@ -172,5 +179,7 @@ export const DEFAULT_PEDAGOGY_CONFIG: PedagogyConfig = {
     warmupMinStage: "fluent",
     jitter: 0.05,
     maxSameSkillRun: 2,
+    maxInSessionRepeats: 2,
   },
+  profile: { maxHistory: 1000, maxSessionSummaries: 60 },
 };

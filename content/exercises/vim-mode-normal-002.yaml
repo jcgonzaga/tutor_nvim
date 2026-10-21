@@ -1,0 +1,54 @@
+schemaVersion: 1
+
+id: vim-mode-normal-002
+slug: vim.mode-normal.basic-002
+
+title: "Leave INSERT mode in code"
+instruction: "You just finished typing this line in INSERT mode. Go back to NORMAL mode."
+
+skillIds:
+  - vim.mode.normal
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    print("hi")
+  cursor:
+    line: 1
+    column: 12
+  vimMode: insert
+
+objective:
+  type: mode_equals
+  mode: normal
+
+solutions:
+  - sequence: "<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Keys only act as commands in NORMAL mode."
+  - afterMs: 8000
+    level: 2
+    text: "Press Esc once."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 4
+  transferTags: []

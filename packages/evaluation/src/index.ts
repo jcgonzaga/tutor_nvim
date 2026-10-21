@@ -1,5 +1,6 @@
 export {
   advanceAttempt,
+  giveUpAttempt,
   recordInput,
   startAttempt,
   type Attempt,
@@ -44,3 +45,4 @@ export {
 } from "./evaluate";
 export { simulateSolution } from "./simulate";
 export { checkContent, checkExercise } from "./content-check";
+export { describeFeedback, type Feedback, type FeedbackKind } from "./feedback";

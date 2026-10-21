@@ -6,6 +6,7 @@ import {
   type DailySession,
   type SessionRequest,
 } from "./session";
+import { refreshStages } from "./progress";
 import { resolveStages } from "./unlock";
 import { EMPTY_LEARNER, type LearnerState } from "./types";
 import { CONFIG, DAY_MS, FAILED, PERFECT, T0, exerciseFor, replay, skillOf } from "./test-util";
@@ -258,5 +259,27 @@ describe("daily session builder (T-408)", () => {
     const session = buildDailySession(request(EMPTY_LEARNER, { history }), CONFIG);
     expect(session.learn.map((item) => item.exerciseId)).not.toContain("ex-a-1");
     expect(session.learn).toHaveLength(CONFIG.session.counts.learn);
+  });
+});
+
+describe("placement (calibration)", () => {
+  it("gives a learner placed past the basics a useful first session: new skills first, quick checks after", () => {
+    const placed = refreshStages(skills, { skills: {}, placed: ["vim.a"] }, CONFIG);
+    const session = buildDailySession(request(placed, { now: T0 }));
+    const learn = session.learn.map((entry) => entry.skillId);
+
+    // vim.b and vim.c unlock through the placement, so they come before the placed vim.a itself.
+    expect(learn[0]).not.toBe("vim.a");
+    const firstPlaced = learn.indexOf("vim.a");
+    if (firstPlaced !== -1) {
+      expect(learn.slice(firstPlaced).every((skillId) => skillId === "vim.a")).toBe(true);
+    }
+  });
+
+  it("without placement a new learner can only start at the roots", () => {
+    const session = buildDailySession(request(EMPTY_LEARNER, { now: T0 }));
+    const learn = session.learn.map((entry) => entry.skillId);
+    expect(learn.length).toBeGreaterThan(0);
+    expect(learn.every((skillId) => skillId === "vim.a")).toBe(true);
   });
 });

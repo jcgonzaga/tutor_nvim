@@ -4,12 +4,14 @@ Web-first, gamified trainer for Linux basics, Vim/Neovim and (later) LazyVim.
 Source of truth: [`docs/PRD.md`](docs/PRD.md), [`AGENTS.md`](AGENTS.md),
 [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
 
-Current state: **Milestone 4** (pedagogy engine) on top of the exercise platform (M3), the Vim
-core (M2) and the first practice slice (M1):
+Current state: **Milestone 5** (local product MVP: onboarding, calibration, daily session, skill
+map, local progress) on top of the pedagogy engine (M4), the exercise platform (M3), the Vim core
+(M2) and the first practice slice (M1):
 [`m1-vertical-slice`](docs/architecture/m1-vertical-slice.md),
 [`m2-vim-core`](docs/architecture/m2-vim-core.md),
 [`m3-exercise-platform`](docs/architecture/m3-exercise-platform.md),
-[`m4-pedagogy-engine`](docs/architecture/m4-pedagogy-engine.md).
+[`m4-pedagogy-engine`](docs/architecture/m4-pedagogy-engine.md),
+[`m5-local-product`](docs/architecture/m5-local-product.md).
 
 ## Commands
 
@@ -17,7 +19,7 @@ Requires Node 22+ and pnpm 10.
 
 ```bash
 pnpm install
-pnpm dev               # practice screen at http://localhost:5173
+pnpm dev               # app at http://localhost:5173 (onboarding on first visit)
 pnpm typecheck
 pnpm lint
 pnpm test              # unit + integration (Vitest)
@@ -28,9 +30,9 @@ pnpm test:e2e          # Playwright (starts the dev server itself)
 pnpm build
 ```
 
-Use `?exercise=<slug>` to open a specific exercise, e.g.
-`/?exercise=vim.ci-quotes.basic-001`. Without it the first exercise opens, and "Next exercise"
-walks through the rest.
+The app starts with onboarding, then the daily home. Progress is stored in this browser only
+(`localStorage`); no account is needed. Use `?exercise=<slug>` for free practice on a specific
+exercise (not recorded), e.g. `/?exercise=vim.ci-quotes.basic-001`.
 
 ## Layout
 
