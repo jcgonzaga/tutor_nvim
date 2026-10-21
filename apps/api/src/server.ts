@@ -2,6 +2,7 @@ import { createFakeVerifier } from "./auth/fake";
 import { createNeonVerifier } from "./auth/neon";
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
+import { productionLoggerOptions } from "./observability";
 import { loadContentBundle } from "./content";
 import { connectPglite, connectPostgres } from "./db/client";
 import { syncContent } from "./db/syncContent";
@@ -27,7 +28,17 @@ const app = await buildApp({
   verifier,
   corsOrigins: config.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
   rateLimitMax: config.RATE_LIMIT_MAX,
+  logger: productionLoggerOptions(config.LOG_LEVEL),
 });
+
+// A process that hit something nobody handled is in an unknown state: say so, then exit and let the
+// platform restart it.
+for (const event of ["uncaughtException", "unhandledRejection"] as const) {
+  process.on(event, (reason) => {
+    app.log.fatal({ err: reason }, event);
+    process.exit(1);
+  });
+}
 
 const shutdown = async () => {
   await app.close();
@@ -38,6 +49,6 @@ process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
 await app.listen({ host: config.HOST, port: config.PORT });
-console.log(
+app.log.info(
   `API listening on :${config.PORT} (auth=${config.AUTH_MODE}, db=${config.DATABASE_URL ? "postgres" : "in-process"})`,
 );

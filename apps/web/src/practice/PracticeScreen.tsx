@@ -31,6 +31,10 @@ interface PracticeScreenProps {
   readonly giveUpLabel?: string;
   /** Replaces the default result panel; `retry` starts the same exercise again. */
   readonly renderResult?: (finished: FinishedPractice, retry: () => void) => ReactNode;
+  /** Called once when the exercise appears on screen. */
+  readonly onStart?: () => void;
+  /** Called with the level of a hint when the learner asks for it. */
+  readonly onHint?: (level: number) => void;
   /** Combo of the session in play; shown next to the mode when it is above zero. */
   readonly combo?: number;
   /** Free practice only: where "Next exercise" leads. */
@@ -52,6 +56,8 @@ export function PracticeScreen({
   onFinish,
   giveUpLabel,
   renderResult,
+  onStart,
+  onHint,
   combo = 0,
   nextSlug = null,
 }: PracticeScreenProps) {
@@ -79,6 +85,18 @@ export function PracticeScreen({
   useEffect(() => {
     editorRef.current?.focus();
   }, [attempt.startedAt]);
+
+  // Told once per exercise shown. The ref keeps React's double-invoked dev effects from telling twice.
+  const started = useRef(false);
+  const onStartRef = useRef(onStart);
+  useEffect(() => {
+    onStartRef.current = onStart;
+  });
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    onStartRef.current?.();
+  }, []);
 
   // Reported once per ended attempt. The ref also keeps React's double-invoked dev effects from
   // reporting the same attempt twice, which would count it as two attempts.
@@ -110,6 +128,7 @@ export function PracticeScreen({
   }
 
   function handleHint() {
+    if (hints.next) onHint?.(hints.next.hint.level);
     requestHint();
     editorRef.current?.focus();
   }
@@ -153,13 +172,15 @@ export function PracticeScreen({
             <span data-testid="vim-mode" className="rounded bg-zinc-800 px-2 py-0.5 font-semibold">
               {modeLabel}
             </span>
-            <span
+            {/* <output> may carry a name (a bare span may not); not live, so keys are not announced. */}
+            <output
               data-testid="pending-command"
               aria-label="pending command"
+              aria-live="off"
               className="text-zinc-300"
             >
               {pendingKeys(state.pending)}
-            </span>
+            </output>
           </div>
           <div className="flex items-center gap-4 text-zinc-400">
             {lastEvent && !lastEvent.accepted ? (

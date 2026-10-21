@@ -1,6 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { AnalyticsProvider } from "./analytics/AnalyticsProvider";
 import { App } from "./App";
+import { PrefsProvider } from "./prefs/PrefsProvider";
+import { ErrorBoundary } from "./monitoring/ErrorBoundary";
+import {
+  createErrorReporter,
+  httpSender,
+  installGlobalErrorHandlers,
+} from "./monitoring/errorReporter";
+import { parseRoute } from "./router";
 import { CloudProvider } from "./cloud/CloudProvider";
 import { readCloudConfig } from "./cloud/config";
 import { loadAuthClient } from "./cloud/loadAuth";
@@ -12,14 +21,39 @@ const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element");
 
 const storage = browserStorage();
+
+// Error reporting (T-906): to the API when one is configured, otherwise only to the console.
+const errorUrl =
+  import.meta.env.VITE_ERROR_URL ??
+  (import.meta.env.VITE_API_URL
+    ? `${String(import.meta.env.VITE_API_URL).replace(/\/$/, "")}/api/client-errors`
+    : null);
+const reporter = createErrorReporter({
+  send: (report) => {
+    console.error("[error]", report.message);
+    if (errorUrl) httpSender(errorUrl)(report);
+  },
+  build: import.meta.env.VITE_BUILD_ID ?? import.meta.env.MODE,
+  route: () => parseRoute(window.location.search, window.location.hash).name,
+});
+installGlobalErrorHandlers(reporter);
 const cloudConfig = readCloudConfig(import.meta.env);
 
 createRoot(root).render(
   <StrictMode>
-    <ProfileProvider storage={storage}>
-      <CloudProvider config={cloudConfig} storage={storage} loadAuth={loadAuthClient}>
-        <App />
-      </CloudProvider>
-    </ProfileProvider>
+    <ErrorBoundary reporter={reporter}>
+      <PrefsProvider storage={storage}>
+        <AnalyticsProvider
+          url={import.meta.env.VITE_ANALYTICS_URL ?? null}
+          build={import.meta.env.VITE_BUILD_ID ?? import.meta.env.MODE}
+        >
+          <ProfileProvider storage={storage}>
+            <CloudProvider config={cloudConfig} storage={storage} loadAuth={loadAuthClient}>
+              <App />
+            </CloudProvider>
+          </ProfileProvider>
+        </AnalyticsProvider>
+      </PrefsProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

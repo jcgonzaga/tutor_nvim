@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { count, sql } from "drizzle-orm";
 import { loadContentBundle } from "../content";
-import { connectPglite, type DbHandle } from "./client";
+import type { DbHandle } from "./client";
+import { openTestDb } from "../test-util";
 import { exerciseSkills, exercises, skillPrerequisites, skills } from "./schema";
 import { syncContent } from "./syncContent";
 
@@ -9,7 +10,7 @@ const bundle = loadContentBundle();
 let handle: DbHandle;
 
 beforeAll(async () => {
-  handle = await connectPglite();
+  handle = await openTestDb();
 });
 afterAll(async () => handle.close());
 

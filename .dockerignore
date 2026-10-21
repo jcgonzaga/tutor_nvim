@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+.git
+.github
+test-results
+playwright-report
+coverage
+docs
+tests
+tools
+*.md
+!content/**

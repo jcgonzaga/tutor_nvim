@@ -23,6 +23,9 @@ export default defineConfig({
       env: {
         VITE_API_URL: `http://localhost:${API_PORT}`,
         VITE_AUTH_MODE: "fake",
+        // A stub endpoint: the privacy tests intercept it, no other test ever sends there.
+        VITE_ANALYTICS_URL: "https://analytics.test/collect",
+        VITE_BUILD_ID: "e2e",
       },
     },
     {

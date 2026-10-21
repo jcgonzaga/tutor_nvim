@@ -58,6 +58,9 @@ export function HomeScreen({ navigate }: { readonly navigate: (route: Route) => 
         <a href="#/progress" className={linkClass}>
           Progress
         </a>
+        <a href="#/settings" className={linkClass}>
+          Settings
+        </a>
         {cloud.enabled ? (
           <a href="#/account" className={linkClass}>
             {cloud.user ? "Account" : "Sign in"}

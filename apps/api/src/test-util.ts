@@ -5,7 +5,8 @@ import type { AttemptSubmissionInput } from "@tutor-nvim/shared";
 import { buildApp, type AppDeps } from "./app";
 import { createFakeVerifier, fakeToken } from "./auth/fake";
 import { loadContentBundle } from "./content";
-import { connectPglite, type DbHandle } from "./db/client";
+import pg from "pg";
+import { connectPglite, connectPostgres, type DbHandle } from "./db/client";
 import { syncContent } from "./db/syncContent";
 
 export const bundle = loadContentBundle();
@@ -15,6 +16,36 @@ export const exerciseNamed = (slug: string): Exercise => {
   if (!found) throw new Error(`No exercise ${slug}`);
   return found;
 };
+
+/**
+ * A fresh, migrated database. In-process Postgres by default; set `TEST_DATABASE_URL` to a server
+ * (CI does) and every test file runs the same queries on real Postgres through the `pg` driver, in
+ * its own throwaway database.
+ */
+export async function openTestDb(): Promise<DbHandle> {
+  const admin = process.env.TEST_DATABASE_URL;
+  if (!admin) return connectPglite();
+
+  const name = `test_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const client = new pg.Client({ connectionString: admin });
+  await client.connect();
+  await client.query(`create database ${name}`);
+  await client.end();
+
+  const url = new URL(admin);
+  url.pathname = `/${name}`;
+  const handle = await connectPostgres(url.toString());
+  return {
+    db: handle.db,
+    async close() {
+      await handle.close();
+      const cleaner = new pg.Client({ connectionString: admin });
+      await cleaner.connect();
+      await cleaner.query(`drop database if exists ${name} with (force)`);
+      await cleaner.end();
+    },
+  };
+}
 
 export interface TestApi {
   readonly app: FastifyInstance;
@@ -34,7 +65,7 @@ export interface TestApi {
 export const T0 = Date.UTC(2026, 9, 21, 9, 0, 0);
 
 export async function createTestApi(overrides: Partial<AppDeps> = {}): Promise<TestApi> {
-  const handle = await connectPglite();
+  const handle = await openTestDb();
   await syncContent(handle.db, bundle);
   const clock = { now: T0 };
   const app = await buildApp({

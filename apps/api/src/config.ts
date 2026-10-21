@@ -15,6 +15,10 @@ const envSchema = z
     NEON_AUTH_JWKS_URL: z.url().optional(),
     /** Comma-separated list of web origins allowed by CORS. */
     CORS_ORIGIN: z.string().default("http://localhost:5173"),
+    /** pino log level. */
+    LOG_LEVEL: z
+      .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+      .default("info"),
     /** Requests per minute per client for the whole API. */
     RATE_LIMIT_MAX: z.coerce.number().int().positive().default(300),
   })

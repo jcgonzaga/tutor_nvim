@@ -1,11 +1,17 @@
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import { sql } from "drizzle-orm";
+import Fastify, {
+  type FastifyInstance,
+  type FastifyRequest,
+  type FastifyServerOptions,
+} from "fastify";
 import { ZodError } from "zod";
 import type { ContentBundle } from "@tutor-nvim/exercise-schema";
 import type { TokenVerifier } from "./auth/verifier";
 import type { Db } from "./db/client";
-import { HttpError } from "./errors";
+import { HttpError, parse } from "./errors";
+import { clientErrorSchema, type ClientError, type ErrorReporter } from "./observability";
 import { registerAttemptRoutes } from "./routes/attempts";
 import { registerMeRoutes } from "./routes/me";
 import { registerProgressRoutes } from "./routes/progress";
@@ -22,6 +28,12 @@ export interface AppDeps {
   readonly corsOrigins?: readonly string[];
   /** Requests per minute per client. */
   readonly rateLimitMax?: number;
+  /** Fastify logger options (JSON lines). Off by default so tests stay quiet. */
+  readonly logger?: FastifyServerOptions["logger"];
+  /** Receives unexpected server errors (T-906). Failures are always logged as well. */
+  readonly reporter?: ErrorReporter;
+  /** Receives errors reported by the browser (T-906). They are always logged as well. */
+  readonly onClientError?: (error: ClientError) => void;
 }
 
 /** The authenticated caller of a request. */
@@ -48,7 +60,14 @@ export const callerOf = (request: FastifyRequest): Caller => {
  * finished attempts.
  */
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
-  const app = Fastify({ logger: false, bodyLimit: 4 * 1024 * 1024 });
+  const app = Fastify({
+    logger: deps.logger ?? false,
+    bodyLimit: 4 * 1024 * 1024,
+    // A caller (or a proxy in front of us) can supply the id; it is echoed so a user can quote it.
+    requestIdHeader: "x-request-id",
+    requestIdLogLabel: "requestId",
+    genReqId: () => crypto.randomUUID(),
+  });
   const now = deps.now ?? (() => Date.now());
 
   await app.register(cors, {
@@ -60,7 +79,11 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   app.decorateRequest("caller", null);
 
-  app.setErrorHandler((error, _request, reply) => {
+  app.addHook("onSend", async (request, reply) => {
+    reply.header("x-request-id", request.id);
+  });
+
+  app.setErrorHandler((error, request, reply) => {
     if (error instanceof HttpError) {
       return reply.status(error.status).send({ error: error.code, message: error.message });
     }
@@ -74,11 +97,42 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
         .status(status)
         .send({ error: code.toLowerCase(), message: (error as Error).message });
     }
-    app.log.error(error);
-    return reply.status(500).send({ error: "internal", message: "Something went wrong" });
+    // Unexpected: log it with the request id, tell the reporter, and say nothing about the cause.
+    request.log.error({ err: error }, "unhandled error");
+    deps.reporter?.report(error, {
+      requestId: request.id,
+      method: request.method,
+      route: request.routeOptions?.url ?? "unknown",
+      userId: request.caller?.id ?? null,
+    });
+    return reply
+      .status(500)
+      .send({ error: "internal", message: "Something went wrong", requestId: request.id });
   });
 
+  // Liveness: the process is up. Readiness: it can reach its database (what a load balancer checks).
   app.get("/api/health", async () => ({ ok: true }));
+  app.get("/api/ready", async (_request, reply) => {
+    try {
+      await deps.db.execute(sql`select 1`);
+      return { ready: true };
+    } catch {
+      return reply.status(503).send({ ready: false });
+    }
+  });
+
+  // The browser's error reports (T-906). Anonymous on purpose (a crash can happen before sign-in),
+  // so it is small, strictly validated and rate-limited harder than the rest of the API.
+  app.post(
+    "/api/client-errors",
+    { bodyLimit: 16 * 1024, config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
+    async (request, reply) => {
+      const clientError = parse(clientErrorSchema, request.body);
+      request.log.warn({ clientError }, "client error");
+      deps.onClientError?.(clientError);
+      return reply.status(204).send();
+    },
+  );
 
   await app.register(async (api) => {
     api.addHook("onRequest", async (request) => {

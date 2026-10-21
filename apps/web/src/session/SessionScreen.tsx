@@ -9,19 +9,25 @@ import {
   isRunFinished,
   runProgress,
   startSession,
+  summarizeRun,
   type ComboResult,
+  type FinishedAttemptResult,
   type PersonalBestMetric,
   type Profile,
   type RunRecord,
   type XpAward,
 } from "@tutor-nvim/pedagogy";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
+import { useAnalytics } from "../analytics/AnalyticsProvider";
+import { eventsForAttempt, eventsForCompletedSession } from "../analytics/derive";
 import { useCloud } from "../cloud/CloudProvider";
 import { localDateKey } from "../clock";
 import { exerciseIdsForSkill, exercises, findExercise, skills } from "../exercises";
 import { FeedbackPanel } from "../practice/FeedbackPanel";
 import { FeedbackExtras } from "../gamification/FeedbackExtras";
 import { rewardInputFor } from "../gamification/rewards";
+import { usePrefs } from "../prefs/PrefsProvider";
+import { cueFor, playCue } from "../prefs/sound";
 import { PracticeScreen, type FinishedPractice } from "../practice/PracticeScreen";
 import { useProfile } from "../profile/ProfileProvider";
 import type { Route } from "../router";
@@ -68,6 +74,8 @@ const completeOptions = {
 export function SessionScreen({ navigate }: { readonly navigate: (route: Route) => void }) {
   const { profile, clock, update, getProfile } = useProfile();
   const cloud = useCloud();
+  const analytics = useAnalytics();
+  const { prefs } = usePrefs();
   const [held, setHeld] = useState<Held | null>(null);
   const today = localDateKey(clock.now());
   const active = activeSessionFor(profile, today);
@@ -81,6 +89,7 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       // A session left over from an earlier day closes as abandoned; the cloud hears about it too.
       cloud.recordSession(getProfile(), stale, { finishedAt: clock.now(), abandoned: true });
     }
+    const alreadyActive = activeSessionFor(getProfile(), today) !== null;
     update((current) => {
       if (activeSessionFor(current, today) !== null) return current;
       const now = clock.now();
@@ -100,7 +109,17 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       });
       return startSession(stale, plan, now);
     });
-  }, [profile.onboarding.completed, today, clock, update, getProfile, cloud]);
+    const started = activeSessionFor(getProfile(), today);
+    if (!alreadyActive && started) {
+      analytics.track({
+        name: "session_started",
+        props: {
+          items: started.run.pending.length,
+          reviews: started.run.plan.reviews.length,
+        },
+      });
+    }
+  }, [profile.onboarding.completed, today, clock, update, getProfile, cloud, analytics]);
 
   if (active === null) return null;
   const run = active.run;
@@ -115,8 +134,14 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
     );
     const reward = rewardInputFor(finished, at, true);
     const previousBest = getProfile().gamification.bestRuns[exercise.id] ?? null;
+    const before = getProfile();
     const captured: {
-      value?: { improved: readonly PersonalBestMetric[]; award: XpAward; combo: ComboResult };
+      value?: {
+        improved: readonly PersonalBestMetric[];
+        award: XpAward;
+        combo: ComboResult;
+        updates: FinishedAttemptResult["updates"];
+      };
     } = {};
     update((current: Profile) => {
       // Learning first, then the game: `finishAttempt` keeps them apart (XP never feeds mastery).
@@ -126,7 +151,12 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
         { exercise, metrics: finished.evaluation.metrics, at },
         reward,
       );
-      captured.value = { improved: result.improved, award: result.award, combo: result.combo };
+      captured.value = {
+        improved: result.improved,
+        award: result.award,
+        combo: result.combo,
+        updates: result.updates,
+      };
       return completeSessionItem(
         result.profile,
         {
@@ -142,7 +172,28 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       );
     });
     if (!captured.value) return;
-    setHeld({ exercise, index: run.completed.length, previousBest, ...captured.value });
+    const { updates, ...shown } = captured.value;
+    setHeld({ exercise, index: run.completed.length, previousBest, ...shown });
+
+    // Usage events (only sent if the learner allowed it) and the optional sound.
+    const after = getProfile();
+    for (const event of eventsForAttempt({
+      exercise,
+      evaluation: finished.evaluation,
+      feedback: finished.feedback.kind,
+      keystrokes: finished.attempt.events.length,
+      before,
+      after,
+      result: { improved: shown.improved, updates },
+    })) {
+      analytics.track(event);
+    }
+    const rewards = after.activeSession?.rewards;
+    if (rewards && after.activeSession && !before.activeSession?.rewards) {
+      const summary = summarizeRun(after.activeSession.run, skills, after.learner, at);
+      for (const event of eventsForCompletedSession({ summary, rewards })) analytics.track(event);
+    }
+    if (prefs.sound) playCue(cueFor(finished.feedback.kind));
   }
 
   if (held === null && isRunFinished(run)) {
@@ -201,6 +252,15 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       progress={`${Math.min(shownIndex + 1, total)} of ${total}`}
       giveUpLabel="I don't know this"
       combo={active.combo.current}
+      onStart={() =>
+        analytics.track({
+          name: "exercise_started",
+          props: { exerciseId: exercise.id, block: block ?? "session", repeat: Boolean(repeat) },
+        })
+      }
+      onHint={(level) =>
+        analytics.track({ name: "hint_used", props: { exerciseId: exercise.id, level } })
+      }
       onFinish={(finished) => handleFinish(exercise, finished)}
       renderResult={(finished) => (
         <FeedbackPanel

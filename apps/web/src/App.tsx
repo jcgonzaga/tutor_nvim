@@ -9,6 +9,7 @@ import { ProgressScreen } from "./progress/ProgressScreen";
 import { useProfile } from "./profile/ProfileProvider";
 import { useEffect } from "react";
 import { useRoute, type Navigate, type Route } from "./router";
+import { SettingsScreen } from "./prefs/SettingsScreen";
 import { SessionScreen } from "./session/SessionScreen";
 
 export function App() {
@@ -50,6 +51,8 @@ function Screen({ route, navigate }: { readonly route: Route; readonly navigate:
       return <SkillDetailScreen slug={route.slug} />;
     case "progress":
       return <ProgressScreen />;
+    case "settings":
+      return <SettingsScreen analyticsAvailable={Boolean(import.meta.env.VITE_ANALYTICS_URL)} />;
     default:
       return <HomeScreen navigate={navigate} />;
   }

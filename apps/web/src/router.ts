@@ -15,6 +15,7 @@ export type Route =
   | { readonly name: "skill"; readonly slug: string }
   | { readonly name: "progress" }
   | { readonly name: "account" }
+  | { readonly name: "settings" }
   | { readonly name: "practice"; readonly slug: string };
 
 export function parseRoute(search: string, hash: string): Route {
@@ -33,6 +34,8 @@ export function parseRoute(search: string, hash: string): Route {
       return { name: "progress" };
     case "account":
       return { name: "account" };
+    case "settings":
+      return { name: "settings" };
     case "skill": {
       const slug = decodeURIComponent(rest.join("/"));
       return slug ? { name: "skill", slug } : { name: "map" };

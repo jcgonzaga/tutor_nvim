@@ -10,6 +10,12 @@ import {
 
 export const root = fileURLToPath(new URL("..", import.meta.url));
 
+/**
+ * Where content lives. `CONTENT_ROOT` points the validation scripts at another directory (the CI
+ * gate tests use it to prove a broken copy is rejected); by default it is `content/`.
+ */
+export const contentRoot = process.env.CONTENT_ROOT ?? join(root, "content");
+
 function* yamlFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
@@ -19,9 +25,9 @@ function* yamlFiles(dir: string): Generator<string> {
 }
 
 function read(kind: "skills" | "exercises"): ContentSource[] {
-  return [...yamlFiles(join(root, "content", kind))]
+  return [...yamlFiles(join(contentRoot, kind))]
     .sort()
-    .map((file) => ({ path: relative(root, file), text: readFileSync(file, "utf8") }));
+    .map((file) => ({ path: relative(contentRoot, file), text: readFileSync(file, "utf8") }));
 }
 
 /** Reads `content/skills` and `content/exercises` from disk. */
