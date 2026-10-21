@@ -17,7 +17,8 @@ map, local progress) on top of the pedagogy engine (M4), the exercise platform (
 [`m6-cloud-persistence`](docs/architecture/m6-cloud-persistence.md) (+ [ADRs](docs/architecture/adr)),
 [`m7-content`](docs/architecture/m7-content.md),
 [`m8-gamification`](docs/architecture/m8-gamification.md),
-[`m9-hardening`](docs/architecture/m9-hardening.md) (+ [deployment](docs/deployment.md)).
+[`m9-hardening`](docs/architecture/m9-hardening.md) (+ [deployment](docs/deployment.md)),
+[`m10-linux-simulator`](docs/architecture/m10-linux-simulator.md) (engine only so far).
 
 ## Commands
 
@@ -50,6 +51,7 @@ exercise (not recorded), e.g. `/?exercise=vim.ci-quotes.basic-001`.
 | `packages/vim-engine`      | Framework-free Vim simulator: `(state, key) -> state` |
 | `packages/exercise-schema` | Zod schemas, YAML parsing, normalization, validation  |
 | `packages/evaluation`      | Attempt telemetry, goal check, strategy, metrics      |
+| `packages/shell-engine`    | Framework-free Linux shell simulator (virtual files)  |
 | `packages/pedagogy`        | Mastery, unlocks, review scheduler, daily sessions    |
 | `apps/web`                 | React UI: renders state, captures keyboard            |
 | `apps/api`                 | Fastify + Drizzle API: auth, attempts, progress       |
