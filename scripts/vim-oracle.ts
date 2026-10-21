@@ -98,11 +98,12 @@ for (const testCase of ORACLE_CASES) {
     cases[testCase.name] = { ...result, keys: testCase.keys } as OracleFixtures["cases"][string];
   }
 }
+// Save what worked even if some cases failed: the next run is incremental and only retries the rest.
+mkdirSync(dirname(output), { recursive: true });
+writeFileSync(output, JSON.stringify({ vim: version, cases } satisfies OracleFixtures));
+console.log(`Wrote ${Object.keys(cases).length} fixtures from ${version} in ${Math.round((Date.now() - started) / 1000)}s`);
+
 if (errors.length > 0) {
   console.error(errors.slice(0, 20).join("\n"));
   throw new Error(`${errors.length} oracle cases failed to run`);
 }
-
-mkdirSync(dirname(output), { recursive: true });
-writeFileSync(output, JSON.stringify({ vim: version, cases } satisfies OracleFixtures));
-console.log(`Wrote ${Object.keys(cases).length} fixtures from ${version} in ${Math.round((Date.now() - started) / 1000)}s`);

@@ -149,9 +149,9 @@ const UNDO_SEQUENCES = [
   "xu", "xxu", "xxuu", "xxuuu", "xu<C-r>", "xxuu<C-r>", "xxuu<C-r><C-r>", "<C-r>", "u", "uu",
   "ixy<Esc>u", "ixy<Esc>u<C-r>", "axy<Esc>u", "axy<Esc>u<C-r>", "oxy<Esc>u", "oxy<Esc>u<C-r>", "ixy<Esc>ixy<Esc>u", "ixy<Esc>ixy<Esc>uu",
   "dwu", "dwu<C-r>", "ddu", "ddu<C-r>", "dduu", "yyPu", "yyPu<C-r>", "ddpu", "ddpu<C-r>", "xpu", "xpu<C-r>", "xpuu",
-  "cwQ<Esc>u", "cwQ<Esc>u<C-r>", "ciwQ<Esc>u", "ciwQ<Esc>u<C-r>", "ccQ<Esc>u", "ccQ<Esc>u<C-r>", "dw.u", "dw..u", "dw..uu", "dw..uuu<C-r>",
+  "cwZ<Esc>u", "cwZ<Esc>u<C-r>", "ciwZ<Esc>u", "ciwZ<Esc>u<C-r>", "ccZ<Esc>u", "ccZ<Esc>u<C-r>", "dw.u", "dw..u", "dw..uu", "dw..uuu<C-r>",
   "wxu", "wxu<C-r>", "wxxuu<C-r>", "yypu", "yyPuu", "xuxu", "xxxuuu<C-r><C-r><C-r>", "xux", "xuxu<C-r>",
-  "iQ<Esc>xu", "dwiQ<Esc>uu", "dwiQ<Esc>uu<C-r>", "dwiQ<Esc>uu<C-r><C-r>",
+  "iZ<Esc>xu", "dwiZ<Esc>uu", "dwiZ<Esc>uu<C-r>", "dwiZ<Esc>uu<C-r><C-r>",
 ];
 for (const at of positions(UNDO_BUFFER, 5)) for (const keys of UNDO_SEQUENCES) add("undo", UNDO_BUFFER, at, keys);
 
@@ -159,7 +159,7 @@ for (const at of positions(UNDO_BUFFER, 5)) for (const keys of UNDO_SEQUENCES) a
 
 const DOT_BUFFER = ['a "x" b "y" c', "foo bar baz qux", "(one) (two) (three)"];
 const DOT_SEQUENCES = [
-  ".", "x.", "xx.", "x..", "dw.", "dw..", "dd.", "dd..", "cwQ<Esc>w.", "cwQ<Esc>ww.", "ciwQ<Esc>w.", "ciwQ<Esc>ww.", 'ci"Q<Esc>f"f".', 'ci"Q<Esc>f".', "ci(Q<Esc>f(.", "ci(Q<Esc>.", "da(.", "da(f(.", "iQ<Esc>.", "iQ<Esc>l.", "aQ<Esc>.", "oQ<Esc>.", "oQ<Esc>..", "yy.", "yyp.", "x.u", "x.uu", "dw.u", "dwu.", "xjx.", "xj.", "pu.", "ddp.", "ddP.", "dwP.", "x.p", "cwQ<Esc>j0.", "cwQ<Esc>u.", "iA<CR>B<Esc>.", "ih<Esc>j.", "dfa.", "dta.", "dfa;.", "dt,.", "dt,;.", "cfaZ<Esc>.", "x,.", "xf,.", "xf,x.", "ylp.", "diw.", "diwj.", "d$.", "d$j.",
+  ".", "x.", "xx.", "x..", "dw.", "dw..", "dd.", "dd..", "cwZ<Esc>w.", "cwZ<Esc>ww.", "ciwZ<Esc>w.", "ciwZ<Esc>ww.", 'ci"Z<Esc>f"f".', 'ci"Z<Esc>f".', "ci(Z<Esc>f(.", "ci(Z<Esc>.", "da(.", "da(f(.", "iZ<Esc>.", "iZ<Esc>l.", "aZ<Esc>.", "oZ<Esc>.", "oZ<Esc>..", "yy.", "yyp.", "x.u", "x.uu", "dw.u", "dwu.", "xjx.", "xj.", "pu.", "ddp.", "ddP.", "dwP.", "x.p", "cwZ<Esc>j0.", "cwZ<Esc>u.", "iA<CR>B<Esc>.", "ih<Esc>j.", "dfa.", "dta.", "dfa;.", "dt,.", "dt,;.", "cfaZ<Esc>.", "x,.", "xf,.", "xf,x.", "ylp.", "diw.", "diwj.", "d$.", "d$j.",
 ];
 for (const at of positions(DOT_BUFFER, 7)) for (const keys of DOT_SEQUENCES) add("dot", DOT_BUFFER, at, keys);
 
