@@ -68,6 +68,6 @@ describe("progressive timed hints", () => {
     };
     const { metrics } = evaluateAttempt(exercise, solved);
     expect(metrics.hintsUsed).toBe(1);
-    expect(metrics.recoveryScore).toBe(75);
+    expect(metrics.independenceScore).toBe(75);
   });
 });

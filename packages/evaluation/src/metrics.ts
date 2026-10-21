@@ -18,7 +18,7 @@ export interface MetricsConfig {
     readonly strategy: number;
     readonly efficiency: number;
     readonly fluency: number;
-    readonly recovery: number;
+    readonly independence: number;
   };
   readonly fluency: {
     readonly firstInput: LatencyBand;
@@ -31,7 +31,7 @@ export interface MetricsConfig {
       readonly maxInterKey: number;
     };
   };
-  /** Points taken off the recovery score for each hint used. */
+  /** Points taken off the independence score for each hint used. */
   readonly hintPenalty: number;
 }
 
@@ -44,8 +44,9 @@ export const DEFAULT_METRICS_CONFIG: MetricsConfig = {
     "anti-pattern": 20,
     failed: 0,
   },
-  // PRD 25: accuracy 35, strategy 25, efficiency 15, fluency 15, recovery 10.
-  weights: { accuracy: 0.35, strategy: 0.25, efficiency: 0.15, fluency: 0.15, recovery: 0.1 },
+  // PRD 25: accuracy 35, strategy 25, efficiency 15, fluency 15, and a 10 weight the PRD calls
+  // "recovery" without defining it; it is implemented as `independence` (see docs/architecture/m3).
+  weights: { accuracy: 0.35, strategy: 0.25, efficiency: 0.15, fluency: 0.15, independence: 0.1 },
   fluency: {
     firstInput: { idealMs: 400, worstMs: 4000 },
     medianInterKey: { idealMs: 150, worstMs: 1500 },
@@ -64,7 +65,7 @@ export interface AttemptMetrics {
   /** Speed of the hands, scaled by accuracy so fast sloppy runs do not score; 0 unless solved. */
   readonly fluencyScore: number;
   /** Finishing without leaning on hints; 0 unless solved. */
-  readonly recoveryScore: number;
+  readonly independenceScore: number;
   readonly performanceScore: number;
   /** Time from the exercise being shown to the first input; `null` if there was none. */
   readonly firstInputLatencyMs: number | null;
@@ -123,7 +124,7 @@ export function computeMetrics(
   const accuracyScore = success && keystrokes > 0 ? (100 * (keystrokes - errors)) / keystrokes : 0;
   const efficiencyScore = success && keystrokes > 0 ? clamp((100 * optimal) / keystrokes) : 0;
   const strategyScore = config.strategyScores[strategy];
-  const recoveryScore = success ? clamp(100 - config.hintPenalty * hintsUsed) : 0;
+  const independenceScore = success ? clamp(100 - config.hintPenalty * hintsUsed) : 0;
 
   // Weighted mean of the latency components that exist (a one-key attempt has no inter-key gaps).
   const parts = [
@@ -155,7 +156,7 @@ export function computeMetrics(
       strategyScore * weights.strategy +
       efficiencyScore * weights.efficiency +
       fluencyScore * weights.fluency +
-      recoveryScore * weights.recovery,
+      independenceScore * weights.independence,
   );
 
   return {
@@ -164,7 +165,7 @@ export function computeMetrics(
     strategyScore,
     efficiencyScore,
     fluencyScore,
-    recoveryScore,
+    independenceScore,
     performanceScore,
     firstInputLatencyMs,
     medianInterKeyLatencyMs,

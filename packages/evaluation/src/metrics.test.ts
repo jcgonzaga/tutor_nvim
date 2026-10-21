@@ -24,7 +24,7 @@ describe("metrics v1", () => {
       strategyScore: 100,
       efficiencyScore: 100,
       fluencyScore: 100,
-      recoveryScore: 100,
+      independenceScore: 100,
       performanceScore: 100,
       errors: 0,
       unnecessaryKeystrokes: 0,
@@ -39,7 +39,7 @@ describe("metrics v1", () => {
       accuracyScore: 0,
       efficiencyScore: 0,
       fluencyScore: 0,
-      recoveryScore: 0,
+      independenceScore: 0,
       performanceScore: 0,
     });
   });
@@ -93,7 +93,7 @@ describe("metrics v1", () => {
     expect(sloppy.fluencyScore).toBe(50);
   });
 
-  it("takes hints off the recovery score", () => {
+  it("takes hints off the independence score", () => {
     const attempt = play(exercise, "dw", { timestamps: [100, 150] });
     const hinted = {
       ...attempt,
@@ -104,7 +104,7 @@ describe("metrics v1", () => {
     };
     const { metrics } = evaluateAttempt(exercise, hinted);
     expect(metrics.hintsUsed).toBe(2);
-    expect(metrics.recoveryScore).toBe(100 - 2 * DEFAULT_METRICS_CONFIG.hintPenalty);
+    expect(metrics.independenceScore).toBe(100 - 2 * DEFAULT_METRICS_CONFIG.hintPenalty);
     expect(metrics.performanceScore).toBeLessThan(100);
   });
 
@@ -117,14 +117,14 @@ describe("metrics v1", () => {
       metrics.strategyScore * w.strategy +
       metrics.efficiencyScore * w.efficiency +
       metrics.fluencyScore * w.fluency +
-      metrics.recoveryScore * w.recovery;
+      metrics.independenceScore * w.independence;
     expect(metrics.performanceScore).toBeCloseTo(expected, 10);
 
     const accuracyOnly = {
       ...DEFAULT_EVALUATION_CONFIG,
       metrics: {
         ...DEFAULT_METRICS_CONFIG,
-        weights: { accuracy: 1, strategy: 0, efficiency: 0, fluency: 0, recovery: 0 },
+        weights: { accuracy: 1, strategy: 0, efficiency: 0, fluency: 0, independence: 0 },
       },
     };
     expect(evaluateAttempt(exercise, attempt, accuracyOnly).metrics.performanceScore).toBe(

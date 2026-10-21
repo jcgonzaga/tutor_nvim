@@ -81,21 +81,24 @@ list it.
 All scores are 0–100 and a failed attempt scores 0 everywhere ("never reward fast incorrect
 behavior").
 
-| Metric             | Definition                                                                                            |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| `accuracyScore`    | share of inputs the engine accepted                                                                   |
-| `strategyScore`    | table per classification (optimal 100 … anti-pattern 20)                                              |
-| `efficiencyScore`  | shortest optimal solution ÷ keystrokes                                                                |
-| `fluencyScore`     | weighted mean of first-input, median and maximum inter-key latency bands, **scaled by accuracy**      |
-| `recoveryScore`    | 100 minus a penalty per hint used                                                                     |
-| `performanceScore` | 0.35 accuracy + 0.25 strategy + 0.15 efficiency + 0.15 fluency + 0.10 recovery (weights configurable) |
+| Metric              | Definition                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `accuracyScore`     | share of inputs the engine accepted                                                                       |
+| `strategyScore`     | table per classification (optimal 100 … anti-pattern 20)                                                  |
+| `efficiencyScore`   | shortest optimal solution ÷ keystrokes                                                                    |
+| `fluencyScore`      | weighted mean of first-input, median and maximum inter-key latency bands, **scaled by accuracy**          |
+| `independenceScore` | 100 minus a penalty per hint used                                                                         |
+| `performanceScore`  | 0.35 accuracy + 0.25 strategy + 0.15 efficiency + 0.15 fluency + 0.10 independence (weights configurable) |
 
 Also reported: `firstInputLatencyMs`, `medianInterKeyLatencyMs`, `maxInterKeyLatencyMs`,
 `totalDurationMs`, `keystrokes`, `unnecessaryKeystrokes`, `errors` (rejected inputs), `hintsUsed`.
 
-**Interpretation to confirm:** the PRD lists a `recovery` weight without defining it. It is
-implemented as "finishing without leaning on hints", which is also how hints reach the metrics.
-Because the weight is configuration, changing the definition later is cheap.
+**Decision (confirmed): `recovery` is `independence`.** PRD 25 lists a `recovery` weight (0.10)
+without defining it, and PRD 24 omits it from `AttemptMetrics`. What is implemented is "finishing
+without leaning on hints", so it is named for what it measures: `independenceScore` and
+`weights.independence`. The weight keeps its PRD value. A true "recovery after an error" metric
+was considered and deliberately not built; if the PRD later defines it, it can be added as a
+separate component without touching this one. This is an intentional deviation in naming only.
 
 ### Hints
 

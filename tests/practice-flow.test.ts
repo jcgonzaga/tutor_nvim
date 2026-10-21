@@ -47,7 +47,7 @@ describe("M1 vertical slice (YAML -> engine -> telemetry -> evaluation)", () => 
         efficiencyScore: 100,
         // 320 ms to start and 80 ms between keys: well inside the ideal fluency bands.
         fluencyScore: 100,
-        recoveryScore: 100,
+        independenceScore: 100,
         performanceScore: 100,
         firstInputLatencyMs: 320,
         medianInterKeyLatencyMs: 80,
@@ -141,7 +141,7 @@ describe("M3 flows over the real content (exercise -> attempt -> evaluation)", (
     }
   });
 
-  it("hints are revealed progressively and lower the recovery score", () => {
+  it("hints are revealed progressively and lower the independence score", () => {
     const target = bundleExercise("vim.change.word-001");
     let attempt = startAttempt(target, 0);
     expect(canRevealHint(target, attempt, 3999)).toBe(false);
@@ -157,6 +157,6 @@ describe("M3 flows over the real content (exercise -> attempt -> evaluation)", (
     );
     const { metrics } = evaluateAttempt(target, solved);
     expect(metrics.hintsUsed).toBe(2);
-    expect(metrics.recoveryScore).toBe(50);
+    expect(metrics.independenceScore).toBe(50);
   });
 });

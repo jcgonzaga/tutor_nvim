@@ -230,7 +230,7 @@ describe("metrics", () => {
       strategyScore: 100,
       efficiencyScore: 100,
       fluencyScore: 100,
-      recoveryScore: 100,
+      independenceScore: 100,
       performanceScore: 100,
       firstInputLatencyMs: 250,
       medianInterKeyLatencyMs: 50,
