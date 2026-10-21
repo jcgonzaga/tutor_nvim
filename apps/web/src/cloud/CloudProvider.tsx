@@ -11,6 +11,7 @@ import {
 import type { Attempt } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import type { ActiveSession, Profile } from "@tutor-nvim/pedagogy";
+import { localDateKey } from "../clock";
 import { useProfile } from "../profile/ProfileProvider";
 import type { KeyValueStorage } from "../storage/profileStore";
 import { createCloudApi } from "./api";
@@ -238,6 +239,7 @@ function ActiveCloud({
               id: crypto.randomUUID(),
               finishedAt: at,
               solved: finished.success,
+              localDay: localDateKey(at),
               sessionId: session ? sessionIdOf(profile, session) : null,
             }),
           ),

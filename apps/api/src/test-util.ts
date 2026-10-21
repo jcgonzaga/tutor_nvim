@@ -77,7 +77,13 @@ export const newId = (): string => `00000000-0000-4000-8000-${String(++counter).
 export function submissionFromAttempt(
   exercise: Exercise,
   attempt: Attempt,
-  options: { id?: string; finishedAt: number; gaveUp?: boolean; sessionId?: string },
+  options: {
+    id?: string;
+    finishedAt: number;
+    gaveUp?: boolean;
+    sessionId?: string;
+    localDay?: string;
+  },
 ): AttemptSubmissionInput {
   return {
     id: options.id ?? newId(),
@@ -87,6 +93,7 @@ export function submissionFromAttempt(
     gaveUp: options.gaveUp ?? false,
     finishedAt: options.finishedAt,
     ...(options.sessionId ? { sessionId: options.sessionId } : {}),
+    ...(options.localDay ? { localDay: options.localDay } : {}),
     events: attempt.events.map((event) => ({
       key: event.key,
       code: event.code,
@@ -103,7 +110,7 @@ export function submissionFromAttempt(
 /** A learner who solves the exercise with its optimal solution. */
 export function solved(
   exercise: Exercise,
-  options: { id?: string; finishedAt: number; sessionId?: string },
+  options: { id?: string; finishedAt: number; sessionId?: string; localDay?: string },
 ): AttemptSubmissionInput {
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   if (!optimal) throw new Error(`${exercise.slug} has no optimal solution`);
@@ -114,7 +121,7 @@ export function solved(
 /** A learner who gives up without typing anything. */
 export function gaveUp(
   exercise: Exercise,
-  options: { id?: string; finishedAt: number; sessionId?: string },
+  options: { id?: string; finishedAt: number; sessionId?: string; localDay?: string },
 ): AttemptSubmissionInput {
   const attempt = { ...startAttempt(exercise, 0), completedAt: 5000 };
   return submissionFromAttempt(exercise, attempt, { ...options, gaveUp: true });

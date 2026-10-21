@@ -37,6 +37,7 @@ export function applySnapshot(profile: Profile, snapshot: ProgressSnapshot): Pro
       : profile.onboarding,
     learner: snapshot.learner,
     history: mergeHistory(profile, snapshot),
+    gamification: mergeGamification(profile, snapshot),
     personalBests: snapshot.personalBests,
     sessions: snapshot.sessions,
   };
@@ -51,4 +52,19 @@ function mergeHistory(profile: Profile, snapshot: ProgressSnapshot): Profile["hi
   const first = snapshot.history[0]?.at ?? Number.POSITIVE_INFINITY;
   const earlier = profile.history.filter((entry) => entry.at < first);
   return [...earlier, ...snapshot.history].slice(-DEFAULT_PEDAGOGY_CONFIG.profile.maxHistory);
+}
+
+/**
+ * The server recomputed XP, combo, streak and records from the uploaded attempts, so its numbers
+ * win. One thing only this device may still hold: best runs of exercises played before attempts
+ * could be uploaded. They are kept where the server has no better one, so "your best" does not
+ * disappear on the first sync.
+ */
+function mergeGamification(profile: Profile, snapshot: ProgressSnapshot): Profile["gamification"] {
+  const bestRuns = { ...snapshot.gamification.bestRuns };
+  for (const [exerciseId, local] of Object.entries(profile.gamification.bestRuns)) {
+    const server = bestRuns[exerciseId];
+    if (!server || local.performance > server.performance) bestRuns[exerciseId] = local;
+  }
+  return { ...snapshot.gamification, bestRuns };
 }

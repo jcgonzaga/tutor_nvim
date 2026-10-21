@@ -323,24 +323,27 @@ describe("cloud sync (T-608)", () => {
     expect(second.profile.learner.skills["vim.mode.normal"]?.attemptCount).toBe(1);
   });
 
-  it("leaves the device's game layer (XP, streak, records) alone when progress is synced", async () => {
-    const device = new Device("mia");
-    device.play(exerciseNamed(NORMAL), { at: T0 + 1000 });
+  it("adopts the XP, streak and best combo earned before sync, once, and adds the server's own to them", async () => {
+    const before = new Device("mia");
+    before.play(exerciseNamed(NORMAL), { at: T0 + 1000 });
+    before.outbox = EMPTY_OUTBOX; // earned in the local-only product
     const game = {
       ...EMPTY_GAMIFICATION,
       xp: 123,
       bestCombo: 7,
       streak: { current: 4, longest: 9, lastDay: "2026-10-21" },
     };
-    device.profile = { ...device.profile, gamification: game };
+    before.profile = { ...before.profile, gamification: game };
 
-    await device.sync();
+    await before.sync();
+    expect(before.profile.gamification).toMatchObject({ xp: 123, bestCombo: 7 });
+    expect(before.profile.gamification.streak).toEqual(game.streak);
 
-    expect(device.profile.gamification).toEqual(game);
-    // ...and a second device does not receive it: the game layer is local for now (m8 docs).
+    // A second device receives it: the game layer belongs to the account now.
     const other = new Device("mia");
     await other.sync();
-    expect(other.profile.gamification).toEqual(EMPTY_GAMIFICATION);
+    expect(other.profile.gamification).toMatchObject({ xp: 123, bestCombo: 7 });
+    expect(other.profile.gamification.streak.longest).toBe(9);
   });
 
   it("records a finished session with its attempts", async () => {

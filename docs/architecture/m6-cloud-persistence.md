@@ -52,7 +52,7 @@ All under `Authorization: Bearer <JWT>` except health. Global rate limit, strict
 | `GET /api/health`                        |        | open                                                                   |
 | `GET /api/me`, `PUT /api/me/settings`    | T-603  | provisions the user; settings derive the placement server-side         |
 | `GET /api/skills`, `GET /api/skills/:id` | T-604  | `:id` is the skill id or slug                                          |
-| `GET /api/progress`                      | T-607  | the authoritative snapshot                                             |
+| `GET /api/progress`                      | T-607  | the authoritative snapshot (learner, history, game layer since M8)     |
 | `POST /api/progress/import`              | T-608  | one-time legacy adoption (ADR-0003 §8)                                 |
 | `GET /api/session/daily?date=`           | T-605  | built with the shared deterministic builder, stored, same answer twice |
 | `POST /api/sessions`                     | T-605  | idempotent on the client's session id                                  |
@@ -109,6 +109,13 @@ online, and every 5 minutes. Practice never waits for it.
    see ADR-0001 "Consequences".
 
 Hosting of the API (Fly/Railway/Render) is deliberately not decided here (PRD 44: not blocking).
+
+## Since M8
+
+The snapshot also carries the game layer (XP, streak, combo, records), recomputed by the server from
+the uploaded attempts and sessions; attempts now carry the learner's local day. See
+[ADR-0003 section 9](adr/0003-sync-model.md) and [m8-gamification](m8-gamification.md). Migration
+`0001` adds the columns and the `user_gamification` baseline table.
 
 ## Known limitations
 

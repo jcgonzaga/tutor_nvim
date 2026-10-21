@@ -1,6 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   advanceAttempt,
+  describeFeedback,
   evaluateAttempt,
   giveUpAttempt,
   startAttempt,
@@ -10,6 +11,7 @@ import {
 import type { ContentBundle, Exercise } from "@tutor-nvim/exercise-schema";
 import {
   NO_BEST,
+  computeAttemptReward,
   recordAttempt,
   updatePersonalBest,
   type PersonalBest,
@@ -26,6 +28,7 @@ import {
   users,
 } from "../db/schema";
 import { HttpError } from "../errors";
+import { comboBefore, dayOfAttempt, dayTotals } from "./gamification";
 import { loadLearner, saveLearner } from "./learner";
 
 /** An attempt may not claim to have finished further in the future than clock skew explains. */
@@ -72,6 +75,7 @@ function resultFromRow(row: AttemptRow, duplicate: boolean): AttemptResult {
     strategy: row.strategy,
     performanceScore: row.performanceScore,
     improved: [],
+    xp: row.xp,
     duplicate,
   };
 }
@@ -146,6 +150,31 @@ export async function recordSubmission(
           .where(and(eq(sessions.id, submission.sessionId), eq(sessions.userId, userId)))
       : [];
 
+    // The game layer, recomputed here from the same pure functions the device uses. Only attempts
+    // of a daily session earn XP and combo; the client's own figures are never read.
+    const day = dayOfAttempt(submission.localDay, at);
+    let xp = 0;
+    let comboAfter: number | null = null;
+    if (submission.sessionId) {
+      const totals = await dayTotals(tx, userId, exercise.id, day);
+      const reward = computeAttemptReward({
+        success: evaluation.success,
+        feedback: describeFeedback(exercise, attempt, evaluation).kind,
+        strategy: evaluation.strategy,
+        maxHintLevel: attempt.hints.reduce((highest, hint) => Math.max(highest, hint.level), 0),
+        hintsUsed: metrics.hintsUsed,
+        antiPatterns: evaluation.antiPatterns.length,
+        scheduledReview: recorded.updates.some((update) => update.scheduledReview),
+        transferEvidence: recorded.updates.some((update) => update.transferEvidence),
+        personalBests: improved.length,
+        priorCompletionsToday: totals.priorCompletions,
+        xpToday: totals.xpToday,
+        comboBefore: await comboBefore(tx, userId, submission.sessionId),
+      });
+      xp = reward.award.total;
+      comboAfter = reward.combo.state.current;
+    }
+
     await tx.insert(attempts).values({
       id: submission.id,
       userId,
@@ -159,6 +188,11 @@ export async function recordSubmission(
       metrics,
       hintsUsed: metrics.hintsUsed,
       scheduledReview: recorded.updates.some((update) => update.scheduledReview),
+      startedMs: submission.startedAt,
+      localDay: day,
+      xp,
+      comboAfter,
+      improved: [...improved],
     });
 
     if (attempt.events.length > 0) {
@@ -195,6 +229,7 @@ export async function recordSubmission(
       strategy: evaluation.strategy,
       performanceScore: metrics.performanceScore,
       improved: improved as PersonalBestMetric[],
+      xp,
       duplicate: false,
     };
   });

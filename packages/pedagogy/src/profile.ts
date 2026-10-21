@@ -5,11 +5,10 @@ import {
   EMPTY_COMBO,
   EMPTY_GAMIFICATION,
   addXp,
-  awardAttemptXp,
+  computeAttemptReward,
   recordCompletedDay,
   rememberBestRun,
   rememberRecentBest,
-  updateCombo,
   xpOn,
   type ComboFacts,
   type ComboResult,
@@ -268,27 +267,20 @@ export function finishAttempt(
   const applied = applyAttempt(profile, skills, attempt, config);
 
   const active = reward.inSession ? profile.activeSession : null;
-  const combo = updateCombo(
-    active?.combo ?? EMPTY_COMBO,
-    {
-      success: metrics.success,
-      strategy: reward.strategy,
-      maxHintLevel: reward.maxHintLevel,
-      antiPatterns: reward.antiPatterns,
-    },
-    game,
-  );
-  const award = awardAttemptXp(
+  const { award, combo } = computeAttemptReward(
     {
       success: metrics.success,
       feedback: reward.feedback,
+      strategy: reward.strategy,
+      maxHintLevel: reward.maxHintLevel,
       hintsUsed: metrics.hintsUsed,
+      antiPatterns: reward.antiPatterns,
       scheduledReview: applied.updates.some((update) => update.scheduledReview),
       transferEvidence: applied.updates.some((update) => update.transferEvidence),
       personalBests: applied.improved.length,
       priorCompletionsToday: prior,
       xpToday: xpOn(profile.gamification, reward.day),
-      combo: Math.max(1, combo.state.current),
+      comboBefore: active?.combo ?? EMPTY_COMBO,
     },
     game,
   );

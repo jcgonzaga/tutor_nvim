@@ -94,6 +94,7 @@ describe("recording sessions (T-605)", () => {
         successes: 1,
         reviewsCompleted: 0,
         abandoned: false,
+        xp: 20,
       },
     ]);
   });

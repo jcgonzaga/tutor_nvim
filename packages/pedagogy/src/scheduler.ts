@@ -109,7 +109,8 @@ export function scheduleReview(
     review: {
       stability: days,
       difficulty,
-      dueAt: attempt.at + days * DAY_MS,
+      // Whole milliseconds: the date is stored as an integer (database column, JSON round trip).
+      dueAt: Math.round(attempt.at + days * DAY_MS),
       lastPerformance: performance,
       streak,
     },

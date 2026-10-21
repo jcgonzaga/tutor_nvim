@@ -99,17 +99,28 @@ migrates v1 → v2 explicitly (`migrateProfile`): nothing is back-dated, XP and 
 a session already in play starts its combo at 0. Tests cover the migration, a damaged v1 profile
 being refused, and a full round trip of the new fields. The Zod schemas live in `@tutor-nvim/shared`.
 
-## Cloud (decision to confirm)
+## Cloud (ADR-0003 section 9)
 
-**The game layer is local to the device for now.** Skills, reviews and mastery sync (M6); XP,
-streak, combo records and best runs do not, and signing in on a new device starts them from that
-device's own history. Sync leaves local game state untouched (a test checks it), and the account
-screen says so. Why not sync it in M8: XP depends on the learner's _local_ calendar day (repeat
-decay, daily cap) and the streak on local days, which the server cannot recompute from attempts
-without also receiving the time zone, and taking client-claimed XP verbatim would contradict the
-"server recomputes" rule of ADR-0003. Options when it is wanted: send the local day with each
-attempt/session and recompute XP and streak on the server with the same pure functions (preferred),
-or accept self-reported, bounded XP. Neither is built.
+The game layer **follows the account**. It is not synced as numbers: the server recomputes it from
+the uploaded attempts and sessions with the same pure functions (`computeAttemptReward` is the one
+definition of what an attempt earns, called by `finishAttempt` on the device and by the API).
+
+- Each attempt submission carries the learner's local day (`localDay`); XP decay, the daily cap and
+  the streak are per local day, which the server cannot infer.
+- Server side, `attempts` gained `local_day`, `xp`, `combo_after`, `improved` and `started_ms`,
+  `sessions` gained `bonus_xp`, and `user_gamification` holds a legacy baseline (migration `0001`).
+- Only attempts of a daily session earn XP and combo; the daily bonus is paid when a session is
+  submitted finished and not abandoned, once per local day; the streak is replayed over completed
+  days; best runs are the best solved attempt per exercise with its stored events.
+- `GET /api/progress` returns `gamification`; the device replaces its own with it after syncing
+  (best runs it earned before sync are kept where the server has none).
+- Practice stays instant: the device computes the same reward immediately for the feedback.
+- Progress earned before sync is adopted once, with its XP, best combo and streak as a baseline.
+
+A found bug worth recording: the first time the server stored a review date the database column
+(`bigint`) rejected a **fractional** epoch time, because the scheduler produced `dueAt` as
+`at + days × 86 400 000` with float factors. It never showed in unit tests, which never stored the
+state. The scheduler now rounds to whole milliseconds and a test pins it.
 
 ## Tests
 
@@ -130,7 +141,7 @@ or accept self-reported, bounded XP. Neither is built.
 
 ## Known limitations
 
-- Game state is device-local (above).
+- Two devices that practice at once can disagree for a moment on the repeat decay; the server's number wins.
 - XP values, the grace period and the level curve are first values, not tuned with real learners.
 - No sound or animation for rewards (AGENTS 19: optional sounds, reduced motion); numbers and words only.
 - The keyboard heatmap (PRD 35) and Rush mode are not part of M8 in the plan and were not built.

@@ -85,9 +85,17 @@ const hasLocalEvidence = (profile: Profile): boolean =>
   Object.values(profile.learner.skills).some((skill) => skill.attemptCount > 0);
 
 async function adoptLocalProgress(deps: SyncDeps): Promise<void> {
-  const { learner, personalBests } = deps.getProfile();
+  const { learner, personalBests, gamification } = deps.getProfile();
   try {
-    await deps.api.importLegacy({ learner, personalBests });
+    await deps.api.importLegacy({
+      learner,
+      personalBests,
+      gamification: {
+        xp: gamification.xp,
+        bestCombo: gamification.bestCombo,
+        streak: gamification.streak,
+      },
+    });
   } catch (error) {
     // Another device got there first: the server's progress wins, as it always does.
     if (!(error instanceof ApiError && error.status === 409)) throw error;

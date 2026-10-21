@@ -3,7 +3,7 @@ import type { ContentBundle } from "@tutor-nvim/exercise-schema";
 import { refreshStages, type LearnerState, type UserSkill } from "@tutor-nvim/pedagogy";
 import type { LegacyImport } from "@tutor-nvim/shared";
 import type { Db } from "../db/client";
-import { attempts, personalBests, userSkills, users } from "../db/schema";
+import { attempts, personalBests, userGamification, userSkills, users } from "../db/schema";
 import { HttpError } from "../errors";
 import { loadLearner, saveLearner } from "./learner";
 
@@ -62,6 +62,17 @@ export async function importLegacyProgress(
           target: [personalBests.userId, personalBests.exerciseId],
           set: best,
         });
+    }
+    if (legacy.gamification) {
+      const baseline = {
+        baselineXp: legacy.gamification.xp,
+        baselineBestCombo: legacy.gamification.bestCombo,
+        baselineStreak: legacy.gamification.streak,
+      };
+      await tx
+        .insert(userGamification)
+        .values({ userId, ...baseline })
+        .onConflictDoUpdate({ target: userGamification.userId, set: baseline });
     }
     return { skills: Object.keys(incoming).length };
   });

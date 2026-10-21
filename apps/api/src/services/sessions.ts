@@ -12,6 +12,7 @@ import type { Db } from "../db/client";
 import { attempts, sessionExercises, sessions } from "../db/schema";
 import { HttpError } from "../errors";
 import { linkAttemptToSession } from "./attempts";
+import { dailyBonusFor } from "./gamification";
 import { loadLearner } from "./learner";
 import { loadHistory } from "./progress";
 
@@ -141,6 +142,9 @@ export async function submitSession(
     if (existing && existing.userId !== userId) {
       throw new HttpError(409, "session_conflict", "This session id belongs to someone else");
     }
+    // Finishing the day's first session pays the daily bonus; the server decides, not the client.
+    const completed = submission.finishedAt !== null && !submission.abandoned;
+    const bonusXp = completed ? await dailyBonusFor(tx, userId, submission.id, submission.date) : 0;
     const row = {
       userId,
       date: submission.date,
@@ -148,6 +152,7 @@ export async function submitSession(
       startedAt: submission.startedAt,
       finishedAt: submission.finishedAt,
       abandoned: submission.abandoned,
+      bonusXp,
     };
     await tx
       .insert(sessions)

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { solveCurrent } from "./helpers";
+import { playWholeSession, solveCurrent } from "./helpers";
 
 /** Each test uses its own account: the API process lives for the whole run. */
 const emailFor = (label: string) =>
@@ -59,6 +59,33 @@ test.describe("M6 cloud persistence", () => {
     await phone.goto("/#/progress");
     await expect(phone.getByTestId("progress-attempts")).toHaveText("1");
     await expect(phone.getByTestId("progress-due")).toHaveText(/^\d+$/);
+  });
+
+  test("XP, streak and level follow the account to another device", async ({ browser }) => {
+    const email = emailFor("game-sync");
+    const laptop = await (await browser.newContext()).newPage();
+    await skipOnboarding(laptop);
+    await signIn(laptop, email);
+    await expectSynced(laptop);
+
+    await laptop.getByRole("button", { name: "Continue Training" }).click();
+    await playWholeSession(laptop);
+    await expect(laptop.getByTestId("summary-streak")).toHaveText("1-day streak");
+    await laptop.getByRole("button", { name: "Done" }).click();
+    await expectSynced(laptop);
+    const xp = await laptop.getByTestId("stats-xp").innerText();
+    expect(xp).toMatch(/^[1-9]\d* XP/);
+
+    // A brand-new browser signs in: the server recomputed the same numbers from the attempts.
+    const phone = await (await browser.newContext()).newPage();
+    await phone.goto("/");
+    await phone.getByRole("link", { name: "I already have an account" }).click();
+    await phone.getByLabel("Email").fill(email);
+    await phone.getByLabel("Password").fill("correct horse battery");
+    await phone.getByRole("button", { name: "Sign in" }).click();
+    await expectSynced(phone);
+    await expect(phone.getByTestId("stats-xp")).toHaveText(xp);
+    await expect(phone.getByTestId("stats-streak")).toHaveAttribute("data-streak", "1");
   });
 
   test("practice keeps working offline and uploads when the connection returns", async ({

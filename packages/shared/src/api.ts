@@ -4,6 +4,8 @@ import type {
   CalibrationResult,
   DailySession,
   ExperienceLevel,
+  GamificationState,
+  StreakState,
   KeyboardLayout,
   LearnerState,
   PersonalBest,
@@ -16,6 +18,7 @@ import {
   dailySessionSchema,
   epochMs,
   experienceSchema,
+  gamificationStateSchema,
   id,
   isoDay,
   keyboardLayoutSchema,
@@ -24,6 +27,7 @@ import {
   personalBestSchema,
   sessionHistoryEntrySchema,
   sessionItemSchema,
+  streakStateSchema,
   uuid,
 } from "./schemas";
 
@@ -62,6 +66,11 @@ export const attemptSubmissionSchema = z.object({
   gaveUp: z.boolean().default(false),
   /** Wall-clock time (epoch ms) at which the attempt finished; drives review scheduling. */
   finishedAt: epochMs,
+  /**
+   * The learner's local calendar day, `YYYY-MM-DD`. XP decay, the daily XP cap and the streak
+   * are per local day, which the server cannot know; without it the UTC day is used.
+   */
+  localDay: isoDay.nullish(),
   sessionId: uuid.nullish(),
   events: z.array(attemptEventSchema).max(MAX_ATTEMPT_EVENTS),
   hints: z
@@ -83,6 +92,8 @@ export const attemptResultSchema = z.object({
   strategy: z.string(),
   performanceScore: z.number(),
   improved: z.array(personalBestMetricSchema),
+  /** XP the server awarded (it recomputes it; the client's own figure is never read). */
+  xp: z.number().int().nonnegative().default(0),
   /** True when this id had already been recorded; nothing was applied a second time. */
   duplicate: z.boolean(),
 });
@@ -145,6 +156,7 @@ export const progressSnapshotSchema: z.ZodType<ProgressSnapshot> = z.object({
   history: z.array(attemptRecordSchema),
   personalBests: z.record(z.string(), personalBestSchema),
   sessions: z.array(sessionHistoryEntrySchema),
+  gamification: gamificationStateSchema,
   generatedAt: epochMs,
 });
 /** Declared by hand (readonly, like the domain types it carries); the schema must satisfy it. */
@@ -155,6 +167,8 @@ export interface ProgressSnapshot {
   readonly history: readonly AttemptRecord[];
   readonly personalBests: Readonly<Record<string, PersonalBest>>;
   readonly sessions: readonly SessionHistoryEntry[];
+  /** XP, combo, streak and records, recomputed by the server from the uploaded attempts. */
+  readonly gamification: GamificationState;
   readonly generatedAt: number;
 }
 
@@ -203,8 +217,21 @@ export const dailySessionResponseSchema: z.ZodType<DailySessionResponse> = z.obj
 export interface LegacyImport {
   readonly learner: LearnerState;
   readonly personalBests: Readonly<Record<string, PersonalBest>>;
+  /** The game layer earned before sync: a baseline the server adds its own to. */
+  readonly gamification?: {
+    readonly xp: number;
+    readonly bestCombo: number;
+    readonly streak: StreakState;
+  };
 }
 export const legacyImportSchema: z.ZodType<LegacyImport> = z.object({
   learner: learnerStateSchema,
   personalBests: z.record(z.string(), personalBestSchema),
+  gamification: z
+    .object({
+      xp: count.max(10_000_000),
+      bestCombo: count.max(100_000),
+      streak: streakStateSchema,
+    })
+    .optional(),
 });

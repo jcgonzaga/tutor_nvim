@@ -37,6 +37,20 @@ also follow a learner across devices. Scores calculated by a client are untruste
    This is the one place the server takes client-stated values; they are range-checked, unknown
    skills/exercises are dropped, and stages are recomputed.
 
+9. **The game layer is recomputed by the server too (M8).** XP, combo, daily bonus, streak, best
+   runs and recent personal bests are not synced as numbers; they are derived from the uploaded
+   attempts and sessions by the same pure functions the device uses (`computeAttemptReward`,
+   `recordCompletedDay`). Each attempt carries the learner's **local day** (`localDay`), which the
+   server cannot know and which XP decay, the daily cap and the streak depend on (without it the
+   UTC day is used). Only attempts that belong to a daily session earn XP and combo; the combo of a
+   session is rebuilt from the attempts already recorded in it; the daily bonus is paid when a
+   session is submitted finished and not abandoned, once per local day; the streak is replayed over
+   the days with a completed session. A client-stated XP figure is never read (the field, if sent,
+   is dropped). The one exception is the one-time legacy adoption (section 8), which now also carries
+   the old XP, best combo and streak as a **baseline** the server adds its own totals to. An
+   integration test plays several days (failures, a strong hint, a forgiven gap, a long gap) on a
+   device and checks that the server's recomputation equals what the device had shown.
+
 ## Consequences
 
 - A learner can forge a perfect key sequence. That is acceptable for private learning progress and
@@ -45,5 +59,8 @@ also follow a learner across devices. Scores calculated by a client are untruste
   signing into an account that already has its own) is replaced by the server's. This is the
   "server wins" rule and is covered by a test; no UI warns about it yet.
 - Settings other than onboarding (keyboard layout) are only synced as part of onboarding.
+- XP depends on the order attempts are applied in. Two devices practicing the same exercise on the
+  same day, uploaded in a different order than they happened, can split the repeat decay slightly
+  differently than either device showed; the server's figure then wins on the next sync.
 - Reviews are due by server data: the learner state a device builds sessions from is the
   server's after each sync, so two devices build the same daily session.

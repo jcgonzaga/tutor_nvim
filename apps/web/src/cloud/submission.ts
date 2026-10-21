@@ -10,7 +10,14 @@ import type { AttemptSubmission, SessionSubmission } from "@tutor-nvim/shared";
 export function toAttemptSubmission(
   exercise: Pick<Exercise, "id">,
   attempt: Attempt,
-  options: { id: string; finishedAt: number; solved: boolean; sessionId?: string | null },
+  options: {
+    id: string;
+    finishedAt: number;
+    solved: boolean;
+    sessionId?: string | null;
+    /** The learner's local calendar day, `YYYY-MM-DD`. */
+    localDay?: string;
+  },
 ): AttemptSubmission {
   return {
     id: options.id,
@@ -20,6 +27,7 @@ export function toAttemptSubmission(
     // An attempt that ended without meeting the goal can only have ended by giving up.
     gaveUp: !options.solved,
     finishedAt: options.finishedAt,
+    localDay: options.localDay ?? null,
     sessionId: options.sessionId ?? null,
     events: attempt.events.map((event) => ({
       key: event.key,

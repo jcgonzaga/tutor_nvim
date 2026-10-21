@@ -141,6 +141,8 @@ export const sessions = pgTable(
     startedAt: epoch("started_at").notNull(),
     finishedAt: epoch("finished_at"),
     abandoned: boolean("abandoned").notNull().default(false),
+    /** XP for finishing the day's first completed session; 0 for any other. */
+    bonusXp: integer("bonus_xp").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("sessions_user_date_idx").on(table.userId, table.date)],
@@ -172,6 +174,19 @@ export const attempts = pgTable(
     hintsUsed: integer("hints_used").notNull().default(0),
     /** The attempt was the scheduled review of one of its skills (computed server-side). */
     scheduledReview: boolean("scheduled_review").notNull().default(false),
+    /** `performance.now()` of the client when the attempt started; event times are relative to it. */
+    startedMs: doublePrecision("started_ms"),
+    /** The learner's local calendar day, for XP decay, the daily cap and the streak. */
+    localDay: text("local_day"),
+    /** XP the server awarded (daily sessions only; 0 elsewhere). */
+    xp: integer("xp").notNull().default(0),
+    /** The session's combo after this attempt; null outside a session. */
+    comboAfter: integer("combo_after"),
+    /** Personal-best metrics this attempt improved. */
+    improved: jsonb("improved")
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
@@ -263,3 +278,16 @@ export const personalBests = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.exerciseId] })],
 );
+
+/**
+ * What the game layer had earned on a device before it could be recomputed from uploaded attempts
+ * (the one-time adoption of ADR-0003 section 8). The server adds its own totals to this baseline.
+ */
+export const userGamification = pgTable("user_gamification", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  baselineXp: integer("baseline_xp").notNull().default(0),
+  baselineBestCombo: integer("baseline_best_combo").notNull().default(0),
+  baselineStreak: jsonb("baseline_streak"),
+});

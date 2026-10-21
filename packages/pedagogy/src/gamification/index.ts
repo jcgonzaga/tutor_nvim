@@ -34,3 +34,4 @@ export {
   type RecentBest,
   type RunRecord,
 } from "./state";
+export { computeAttemptReward, type AttemptReward, type AttemptRewardInput } from "./reward";

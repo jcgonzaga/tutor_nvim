@@ -10,6 +10,7 @@ import {
 import type { ProgressSnapshot } from "@tutor-nvim/shared";
 import type { Db } from "../db/client";
 import { attempts, personalBests, sessionExercises, sessions } from "../db/schema";
+import { loadGamification } from "./gamification";
 import { loadLearner } from "./learner";
 import { getSettings } from "./users";
 
@@ -59,6 +60,7 @@ async function loadSessionHistory(
       sessionId: sessionExercises.sessionId,
       success: attempts.success,
       scheduledReview: attempts.scheduledReview,
+      xp: attempts.xp,
     })
     .from(sessionExercises)
     .innerJoin(attempts, eq(attempts.id, sessionExercises.attemptId))
@@ -81,6 +83,7 @@ async function loadSessionHistory(
         successes: mine.filter((entry) => entry.success).length,
         reviewsCompleted: mine.filter((entry) => entry.scheduledReview).length,
         abandoned: row.abandoned,
+        xp: mine.reduce((sum, entry) => sum + entry.xp, 0) + row.bonusXp,
       };
     })
     .filter((entry) => !(entry.abandoned && entry.exercises === 0));
@@ -94,12 +97,13 @@ export async function buildSnapshot(
   now: number,
   config: PedagogyConfig = DEFAULT_PEDAGOGY_CONFIG,
 ): Promise<ProgressSnapshot> {
-  const [settings, learner, history, bests, sessionEntries] = await Promise.all([
+  const [settings, learner, history, bests, sessionEntries, gamification] = await Promise.all([
     getSettings(db, userId),
     loadLearner(db, userId),
     loadHistory(db, bundle, userId, config),
     db.select().from(personalBests).where(eq(personalBests.userId, userId)),
     loadSessionHistory(db, userId, config),
+    loadGamification(db, bundle, userId),
   ]);
   const personal: Record<string, PersonalBest> = Object.fromEntries(
     bests.map((row) => [
@@ -119,6 +123,7 @@ export async function buildSnapshot(
     history,
     personalBests: personal,
     sessions: sessionEntries,
+    gamification,
     generatedAt: now,
   };
 }

@@ -158,6 +158,30 @@ describe("review scheduler v1 (T-406)", () => {
   });
 });
 
+describe("due dates are whole milliseconds", () => {
+  // A fractional epoch time breaks anything that stores it as an integer (the database column
+  // rejected one in production-shaped data). Whatever the performance, difficulty and clock say.
+  it("never produces a fractional due date", () => {
+    for (const performance of [61, 64.7, 73.3, 88.88, 95.123, 100]) {
+      for (const at of [T0, T0 + 12_345, T0 + 3_600_001]) {
+        let state = scheduleReview(null, attempt({ at, performance }), CONFIG).review;
+        for (let step = 0; step < 6; step += 1) {
+          expect(Number.isInteger(state.dueAt), `${performance} @ ${at} step ${step}`).toBe(true);
+          state = scheduleReview(
+            state,
+            attempt({
+              at: state.dueAt + step * 777,
+              performance: performance - step * 3.1,
+              delayed: true,
+            }),
+            CONFIG,
+          ).review;
+        }
+      }
+    }
+  });
+});
+
 describe("retrievability and due dates", () => {
   const skill = {
     ...createUserSkill("vim.test"),
