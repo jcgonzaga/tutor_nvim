@@ -11,6 +11,7 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json apps/api/
 COPY packages/vim-engine/package.json packages/vim-engine/
+COPY packages/shell-engine/package.json packages/shell-engine/
 COPY packages/exercise-schema/package.json packages/exercise-schema/
 COPY packages/evaluation/package.json packages/evaluation/
 COPY packages/pedagogy/package.json packages/pedagogy/
