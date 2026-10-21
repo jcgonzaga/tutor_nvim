@@ -1,4 +1,9 @@
-import { summarizeRun, type Profile, type SessionRun } from "@tutor-nvim/pedagogy";
+import {
+  summarizeRun,
+  type Profile,
+  type SessionRewards,
+  type SessionRun,
+} from "@tutor-nvim/pedagogy";
 import { describeRecommendation } from "../format";
 import { findExercise, skills, skillTitle } from "../exercises";
 import { Page } from "../ui/Page";
@@ -7,12 +12,22 @@ import { cardClass, primaryButton } from "../ui/styles";
 interface SessionSummaryViewProps {
   readonly run: SessionRun;
   readonly profile: Profile;
+  /** What finishing the session paid; `null` for a session closed another way. */
+  readonly rewards: SessionRewards | null;
+  readonly bestCombo: number;
   readonly now: number;
   readonly onDone: () => void;
 }
 
 /** End-of-session summary (T-515): skills trained, reviews completed, personal bests, what is next. */
-export function SessionSummaryView({ run, profile, now, onDone }: SessionSummaryViewProps) {
+export function SessionSummaryView({
+  run,
+  profile,
+  rewards,
+  bestCombo,
+  now,
+  onDone,
+}: SessionSummaryViewProps) {
   const summary = summarizeRun(run, skills, profile.learner, now);
   return (
     <Page title="Session complete" eyebrow="Summary">
@@ -25,6 +40,21 @@ export function SessionSummaryView({ run, profile, now, onDone }: SessionSummary
         <dd data-testid="summary-score">{Math.round(summary.averagePerformance)}</dd>
         <dt className="text-zinc-400">Reviews completed</dt>
         <dd data-testid="summary-reviews">{summary.reviewsCompleted}</dd>
+        <dt className="text-zinc-400">XP</dt>
+        <dd data-testid="summary-xp">
+          +{summary.xp + (rewards?.dailyBonusXp ?? 0)} XP
+          {rewards && rewards.dailyBonusXp > 0
+            ? ` (including ${rewards.dailyBonusXp} for finishing today's session)`
+            : ""}
+        </dd>
+        <dt className="text-zinc-400">Best combo</dt>
+        <dd data-testid="summary-combo">×{bestCombo}</dd>
+        <dt className="text-zinc-400">Streak</dt>
+        <dd data-testid="summary-streak">
+          {rewards
+            ? `${rewards.streak}-day streak${rewards.firstOfDay ? "" : " (today already counted)"}`
+            : "-"}
+        </dd>
       </dl>
 
       <section aria-labelledby="trained-heading" className="space-y-2">

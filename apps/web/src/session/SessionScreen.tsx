@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react";
 import {
   activeSessionFor,
-  applyAttempt,
   buildDailySession,
   completeSessionItem,
   currentItem,
   endSession,
+  finishAttempt,
   isRunFinished,
   runProgress,
   startSession,
+  type ComboResult,
   type PersonalBestMetric,
   type Profile,
+  type RunRecord,
+  type XpAward,
 } from "@tutor-nvim/pedagogy";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import { useCloud } from "../cloud/CloudProvider";
 import { localDateKey } from "../clock";
 import { exerciseIdsForSkill, exercises, findExercise, skills } from "../exercises";
 import { FeedbackPanel } from "../practice/FeedbackPanel";
+import { FeedbackExtras } from "../gamification/FeedbackExtras";
+import { rewardInputFor } from "../gamification/rewards";
 import { PracticeScreen, type FinishedPractice } from "../practice/PracticeScreen";
 import { useProfile } from "../profile/ProfileProvider";
 import type { Route } from "../router";
@@ -44,6 +49,10 @@ interface Held {
   readonly exercise: Exercise;
   readonly index: number;
   readonly improved: readonly PersonalBestMetric[];
+  readonly award: XpAward;
+  readonly combo: ComboResult;
+  /** The exercise's best run before this attempt, for the ghost comparison. */
+  readonly previousBest: RunRecord | null;
 }
 
 const completeOptions = {
@@ -104,28 +113,36 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       at,
       getProfile().activeSession,
     );
-    let improved: readonly PersonalBestMetric[] = [];
+    const reward = rewardInputFor(finished, at, true);
+    const previousBest = getProfile().gamification.bestRuns[exercise.id] ?? null;
+    const captured: {
+      value?: { improved: readonly PersonalBestMetric[]; award: XpAward; combo: ComboResult };
+    } = {};
     update((current: Profile) => {
-      const applied = applyAttempt(current, skills, {
-        exercise,
-        metrics: finished.evaluation.metrics,
-        at,
-      });
-      improved = applied.improved;
+      // Learning first, then the game: `finishAttempt` keeps them apart (XP never feeds mastery).
+      const result = finishAttempt(
+        current,
+        skills,
+        { exercise, metrics: finished.evaluation.metrics, at },
+        reward,
+      );
+      captured.value = { improved: result.improved, award: result.award, combo: result.combo };
       return completeSessionItem(
-        applied.profile,
+        result.profile,
         {
           success: finished.evaluation.success,
           performance: finished.evaluation.metrics.performanceScore,
           at,
-          scheduledReview: applied.updates.some((update) => update.scheduledReview),
-          improved: applied.improved,
-          skillUpdates: applied.updates,
+          scheduledReview: result.updates.some((update) => update.scheduledReview),
+          improved: result.improved,
+          xp: result.award.total,
+          skillUpdates: result.updates,
         },
         completeOptions,
       );
     });
-    setHeld({ exercise, index: run.completed.length, improved });
+    if (!captured.value) return;
+    setHeld({ exercise, index: run.completed.length, previousBest, ...captured.value });
   }
 
   if (held === null && isRunFinished(run)) {
@@ -133,6 +150,8 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       <SessionSummaryView
         run={run}
         profile={profile}
+        rewards={active.rewards}
+        bestCombo={active.combo.best}
         now={clock.now()}
         onDone={() => {
           const closing = getProfile().activeSession;
@@ -181,9 +200,23 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       eyebrow={`${block ? BLOCK_LABELS[block] : "Session"}${repeat ? " · again" : ""}`}
       progress={`${Math.min(shownIndex + 1, total)} of ${total}`}
       giveUpLabel="I don't know this"
+      combo={active.combo.current}
       onFinish={(finished) => handleFinish(exercise, finished)}
       renderResult={(finished) => (
-        <FeedbackPanel finished={finished}>
+        <FeedbackPanel
+          finished={finished}
+          extras={
+            held ? (
+              <FeedbackExtras
+                exercise={held.exercise}
+                finished={finished}
+                award={held.award}
+                combo={held.combo}
+                previousBest={held.previousBest}
+              />
+            ) : null
+          }
+        >
           {held && held.improved.length > 0 ? (
             <p data-testid="personal-best" className="mr-auto self-center text-sm">
               <span aria-hidden>🏆 </span>

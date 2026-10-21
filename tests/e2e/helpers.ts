@@ -57,3 +57,28 @@ export async function onboardUntilCalibration(
   await page.getByLabel(experience).check();
   await page.getByRole("button", { name: "Start the check" }).click();
 }
+
+/** Plays every item of the daily session, solving each with its optimal solution. */
+export async function playWholeSession(page: Page): Promise<number> {
+  const summary = page.getByRole("heading", { name: "Session complete" });
+  let played = 0;
+  for (let guard = 0; guard < 60; guard++) {
+    if (await summary.isVisible()) break;
+    await solveCurrent(page);
+    await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
+    played += 1;
+    await expect(summary.or(page.locator("#instruction"))).toBeVisible();
+  }
+  await expect(summary).toBeVisible();
+  return played;
+}
+
+/** Onboarding without the calibration check, ending on the home screen. */
+export async function onboardSkippingCheck(page: Page): Promise<void> {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Get started" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: /Skip the check/ }).click();
+  await page.getByRole("button", { name: "Start training" }).click();
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
+}

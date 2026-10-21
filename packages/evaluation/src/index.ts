@@ -46,3 +46,12 @@ export {
 export { simulateSolution } from "./simulate";
 export { checkContent, checkExercise } from "./content-check";
 export { describeFeedback, type Feedback, type FeedbackKind } from "./feedback";
+export {
+  buildReplay,
+  ghostComparison,
+  masterRun,
+  runOf,
+  type ReplayFrame,
+  type Run,
+  type RunSummary,
+} from "./replay";

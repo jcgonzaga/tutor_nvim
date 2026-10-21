@@ -31,6 +31,8 @@ interface PracticeScreenProps {
   readonly giveUpLabel?: string;
   /** Replaces the default result panel; `retry` starts the same exercise again. */
   readonly renderResult?: (finished: FinishedPractice, retry: () => void) => ReactNode;
+  /** Combo of the session in play; shown next to the mode when it is above zero. */
+  readonly combo?: number;
   /** Free practice only: where "Next exercise" leads. */
   readonly nextSlug?: string | null;
 }
@@ -50,6 +52,7 @@ export function PracticeScreen({
   onFinish,
   giveUpLabel,
   renderResult,
+  combo = 0,
   nextSlug = null,
 }: PracticeScreenProps) {
   const { attempt, evaluation, hints, sendInput, requestHint, giveUp, reset } =
@@ -161,6 +164,11 @@ export function PracticeScreen({
           <div className="flex items-center gap-4 text-zinc-400">
             {lastEvent && !lastEvent.accepted ? (
               <span role="status">{`✕ ${lastEvent.logicalKey} not accepted`}</span>
+            ) : null}
+            {combo > 0 ? (
+              <span data-testid="combo">
+                <span aria-hidden>⚡ </span>Combo ×{combo}
+              </span>
             ) : null}
             <span data-testid="keystroke-count">{events.length} keys</span>
           </div>

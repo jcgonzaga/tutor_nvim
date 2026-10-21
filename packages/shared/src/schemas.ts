@@ -7,6 +7,12 @@ import {
   SESSION_BLOCKS,
   type AttemptRecord,
   type CalibrationResult,
+  type ComboState,
+  type GamificationState,
+  type RecentBest,
+  type RunRecord,
+  type SessionRewards,
+  type StreakState,
   type DailySession,
   type LearnerState,
   type PersonalBest,
@@ -83,6 +89,7 @@ export const sessionHistoryEntrySchema = z.object({
   successes: count,
   reviewsCompleted: count,
   abandoned: z.boolean(),
+  xp: count.optional(),
 }) satisfies z.ZodType<SessionHistoryEntry>;
 
 export const sessionItemSchema = z.object({
@@ -118,3 +125,44 @@ export const calibrationResultSchema = z.object({
 
 export const keyboardLayoutSchema = z.enum(KEYBOARD_LAYOUTS);
 export const experienceSchema = z.enum(EXPERIENCE_LEVELS);
+
+export const comboStateSchema = z.object({
+  current: count,
+  best: count,
+}) satisfies z.ZodType<ComboState>;
+
+export const sessionRewardsSchema = z.object({
+  dailyBonusXp: count,
+  streak: count,
+  longestStreak: count,
+  firstOfDay: z.boolean(),
+}) satisfies z.ZodType<SessionRewards>;
+
+export const streakStateSchema = z.object({
+  current: count,
+  longest: count,
+  lastDay: isoDay.nullable(),
+}) satisfies z.ZodType<StreakState>;
+
+export const runRecordSchema = z.object({
+  keys: z.array(z.string().max(32)).max(2000),
+  times: z.array(z.number().finite()).max(2000),
+  durationMs: z.number().finite().nonnegative(),
+  performance: z.number().min(0).max(100),
+  at: epochMs,
+}) satisfies z.ZodType<RunRecord>;
+
+export const recentBestSchema = z.object({
+  exerciseId: id,
+  metrics: z.array(personalBestMetricSchema),
+  at: epochMs,
+}) satisfies z.ZodType<RecentBest>;
+
+export const gamificationStateSchema = z.object({
+  xp: count,
+  xpByDay: z.record(isoDay, count),
+  streak: streakStateSchema,
+  bestCombo: count,
+  recentBests: z.array(recentBestSchema),
+  bestRuns: z.record(z.string(), runRecordSchema),
+}) satisfies z.ZodType<GamificationState>;

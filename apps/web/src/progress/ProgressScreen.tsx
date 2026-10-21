@@ -1,4 +1,5 @@
-import { MASTERY_STAGES } from "@tutor-nvim/pedagogy";
+import { MASTERY_STAGES, currentStreak, levelFor } from "@tutor-nvim/pedagogy";
+import { localDateKey } from "../clock";
 import { skills } from "../exercises";
 import { formatWhen } from "../format";
 import { STAGE_DISPLAY } from "../map/stages";
@@ -23,6 +24,17 @@ export function ProgressScreen() {
         <dd data-testid="progress-success">
           {summary.successRate === null ? "-" : `${summary.successRate}%`}
         </dd>
+        <dt className="text-zinc-400">XP</dt>
+        <dd data-testid="progress-xp">
+          {profile.gamification.xp} XP · level {levelFor(profile.gamification.xp).level}
+        </dd>
+        <dt className="text-zinc-400">Streak</dt>
+        <dd data-testid="progress-streak">
+          {currentStreak(profile.gamification.streak, localDateKey(now))} days (longest{" "}
+          {profile.gamification.streak.longest})
+        </dd>
+        <dt className="text-zinc-400">Best combo</dt>
+        <dd data-testid="progress-combo">×{profile.gamification.bestCombo}</dd>
         <dt className="text-zinc-400">Reviews due now</dt>
         <dd data-testid="progress-due">{summary.reviewsDue}</dd>
         <dt className="text-zinc-400">Next review</dt>

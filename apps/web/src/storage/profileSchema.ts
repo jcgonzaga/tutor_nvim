@@ -3,10 +3,12 @@ import { PROFILE_VERSION, SESSION_BLOCKS, type Profile } from "@tutor-nvim/pedag
 import {
   attemptRecordSchema,
   calibrationResultSchema,
+  comboStateSchema,
   count,
   dailySessionSchema,
   epochMs,
   experienceSchema,
+  gamificationStateSchema,
   id,
   keyboardLayoutSchema,
   learnerStateSchema,
@@ -14,6 +16,7 @@ import {
   personalBestSchema,
   sessionHistoryEntrySchema,
   sessionItemSchema,
+  sessionRewardsSchema,
 } from "@tutor-nvim/shared";
 
 /**
@@ -38,6 +41,7 @@ const sessionRun = z.object({
       scheduledReview: z.boolean(),
       improved: z.array(personalBestMetricSchema),
       at: epochMs,
+      xp: count.optional(),
     }),
   ),
   inSession: z.array(z.object({ skillId: id, dueAtIndex: count })),
@@ -58,6 +62,14 @@ export const profileSchema = z.object({
   learner: learnerStateSchema,
   history: z.array(attemptRecordSchema),
   personalBests: z.record(z.string(), personalBestSchema),
-  activeSession: z.object({ run: sessionRun, startedAt: epochMs }).nullable(),
+  activeSession: z
+    .object({
+      run: sessionRun,
+      startedAt: epochMs,
+      combo: comboStateSchema,
+      rewards: sessionRewardsSchema.nullable(),
+    })
+    .nullable(),
   sessions: z.array(sessionHistoryEntrySchema),
+  gamification: gamificationStateSchema,
 }) satisfies z.ZodType<Profile>;

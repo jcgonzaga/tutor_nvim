@@ -24,6 +24,8 @@ export interface CompletedItem {
   readonly scheduledReview: boolean;
   readonly improved: readonly PersonalBestMetric[];
   readonly at: number;
+  /** XP the attempt earned (cosmetic: it never feeds mastery). */
+  readonly xp?: number;
 }
 
 /**
@@ -68,6 +70,7 @@ export interface ItemResult {
   readonly at: number;
   readonly scheduledReview: boolean;
   readonly improved: readonly PersonalBestMetric[];
+  readonly xp?: number;
   /** Per skill, `SkillUpdate.inSessionAfter` from `recordAttempt`. */
   readonly skillUpdates: readonly {
     readonly skillId: string;
@@ -108,6 +111,7 @@ export function completeItem(
       scheduledReview: result.scheduledReview,
       improved: result.improved,
       at: result.at,
+      ...(result.xp !== undefined ? { xp: result.xp } : {}),
     },
   ];
 
@@ -160,6 +164,8 @@ export interface SessionSummary {
     readonly metrics: readonly PersonalBestMetric[];
   }[];
   readonly averagePerformance: number;
+  /** XP earned by the exercises of the session (the daily bonus is separate). */
+  readonly xp: number;
   readonly next: Recommendation;
 }
 
@@ -187,6 +193,7 @@ export function summarizeRun(
       .filter((entry) => entry.improved.length > 0)
       .map((entry) => ({ exerciseId: entry.exerciseId, metrics: entry.improved })),
     averagePerformance: completed.length === 0 ? 0 : total / completed.length,
+    xp: completed.reduce((sum, entry) => sum + (entry.xp ?? 0), 0),
     next: recommendNext(skills, learner, now, config),
   };
 }

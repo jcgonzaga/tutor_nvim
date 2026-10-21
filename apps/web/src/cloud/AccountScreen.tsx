@@ -76,6 +76,10 @@ export function AccountScreen() {
               {cloud.message}
             </p>
           ) : null}
+          <p className="text-sm text-zinc-400">
+            Your skills, reviews and mastery follow your account. XP, streak and records stay on
+            this device for now.
+          </p>
           <div className="flex gap-3">
             <button type="button" className={secondaryButton} onClick={cloud.syncNow}>
               Sync now

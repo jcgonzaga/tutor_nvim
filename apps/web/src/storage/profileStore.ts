@@ -1,4 +1,9 @@
-import { PROFILE_VERSION, type Profile } from "@tutor-nvim/pedagogy";
+import {
+  EMPTY_COMBO,
+  EMPTY_GAMIFICATION,
+  PROFILE_VERSION,
+  type Profile,
+} from "@tutor-nvim/pedagogy";
 import { profileSchema } from "./profileSchema";
 
 /** The slice of `Storage` the app uses, so tests can pass a plain in-memory object. */
@@ -19,15 +24,30 @@ export type LoadResult =
   | { readonly status: "unreadable"; readonly reason: string };
 
 /**
- * Brings a stored profile up to `PROFILE_VERSION`. There is only one version so far; every future
- * format change adds an explicit step here (AGENTS.md 10: migrations are explicit).
- * Returns `null` for a version this build does not know how to read.
+ * Brings a stored profile up to `PROFILE_VERSION`, one explicit step per version (AGENTS 10).
+ * Returns `null` for a version this build cannot read (corrupt, or written by a newer build).
+ *
+ * - v1 → v2 (M8): adds the game layer. Nothing is back-dated: XP, streak and records start at
+ *   zero, and a session already in play starts its combo at 0.
  */
 export function migrateProfile(raw: unknown): unknown | null {
   if (typeof raw !== "object" || raw === null) return null;
-  const version = (raw as { version?: unknown }).version;
-  if (version === PROFILE_VERSION) return raw;
-  return null;
+  let current = raw as Record<string, unknown>;
+  if (current.version === 1) current = migrateV1(current);
+  return current.version === PROFILE_VERSION ? current : null;
+}
+
+function migrateV1(profile: Record<string, unknown>): Record<string, unknown> {
+  const active = profile.activeSession;
+  return {
+    ...profile,
+    version: 2,
+    gamification: EMPTY_GAMIFICATION,
+    activeSession:
+      typeof active === "object" && active !== null
+        ? { ...active, combo: EMPTY_COMBO, rewards: null }
+        : null,
+  };
 }
 
 export function loadProfile(storage: KeyValueStorage): LoadResult {

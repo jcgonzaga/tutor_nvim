@@ -24,12 +24,14 @@ const HEADLINES: Readonly<Record<FeedbackKind, { icon: string; text: string; det
 
 interface FeedbackPanelProps {
   readonly finished: FinishedPractice;
+  /** XP, comparison and replay (sessions only). */
+  readonly extras?: ReactNode;
   /** Next-step controls (Continue, Try again...). */
   readonly children: ReactNode;
 }
 
 /** Per-exercise feedback (T-514): perfect / completed / failed, plus what to try next time. */
-export function FeedbackPanel({ finished, children }: FeedbackPanelProps) {
+export function FeedbackPanel({ finished, extras, children }: FeedbackPanelProps) {
   const { feedback, evaluation } = finished;
   const headline = HEADLINES[feedback.kind];
   return (
@@ -68,6 +70,7 @@ export function FeedbackPanel({ finished, children }: FeedbackPanelProps) {
           less toward mastery.
         </p>
       ) : null}
+      {extras}
       <div className="flex gap-3">{children}</div>
     </section>
   );

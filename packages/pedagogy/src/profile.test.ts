@@ -14,6 +14,7 @@ import {
   type FinishedAttempt,
 } from "./profile";
 import type { DailySession } from "./session";
+import { EMPTY_GAMIFICATION } from "./gamification";
 import { EMPTY_LEARNER } from "./types";
 import { DAY_MS, T0, exerciseFor, skillOf } from "./test-util";
 
@@ -54,7 +55,7 @@ const plan: DailySession = {
 describe("profile basics", () => {
   it("starts empty, not onboarded, on the US layout", () => {
     expect(createProfile("u", T0)).toEqual({
-      version: 1,
+      version: 2,
       userId: "u",
       createdAt: T0,
       settings: { keyboardLayout: "us-ansi" },
@@ -64,6 +65,7 @@ describe("profile basics", () => {
       personalBests: {},
       activeSession: null,
       sessions: [],
+      gamification: EMPTY_GAMIFICATION,
     });
   });
 
@@ -199,6 +201,7 @@ describe("daily session lifecycle", () => {
         successes: 1,
         reviewsCompleted: 0,
         abandoned: false,
+        xp: expect.any(Number),
       },
     ]);
   });

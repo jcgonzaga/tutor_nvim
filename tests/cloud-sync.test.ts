@@ -10,6 +10,7 @@ import {
   applyAttempt,
   calibrationResult,
   completeOnboarding,
+  EMPTY_GAMIFICATION,
   createProfile,
   recordRung,
   setExperience,
@@ -320,6 +321,26 @@ describe("cloud sync (T-608)", () => {
     // The server's progress won: the second device's un-uploadable progress is not mixed in.
     expect(second.profile.learner.skills["vim.navigation.atomic"]?.attemptCount ?? 0).toBe(0);
     expect(second.profile.learner.skills["vim.mode.normal"]?.attemptCount).toBe(1);
+  });
+
+  it("leaves the device's game layer (XP, streak, records) alone when progress is synced", async () => {
+    const device = new Device("mia");
+    device.play(exerciseNamed(NORMAL), { at: T0 + 1000 });
+    const game = {
+      ...EMPTY_GAMIFICATION,
+      xp: 123,
+      bestCombo: 7,
+      streak: { current: 4, longest: 9, lastDay: "2026-10-21" },
+    };
+    device.profile = { ...device.profile, gamification: game };
+
+    await device.sync();
+
+    expect(device.profile.gamification).toEqual(game);
+    // ...and a second device does not receive it: the game layer is local for now (m8 docs).
+    const other = new Device("mia");
+    await other.sync();
+    expect(other.profile.gamification).toEqual(EMPTY_GAMIFICATION);
   });
 
   it("records a finished session with its attempts", async () => {

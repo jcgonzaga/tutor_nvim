@@ -1,5 +1,6 @@
 import { activeSessionFor, recommendNext, runProgress } from "@tutor-nvim/pedagogy";
 import { SyncStatusLine } from "../cloud/AccountScreen";
+import { StatsCard } from "../gamification/StatsCard";
 import { useCloud } from "../cloud/CloudProvider";
 import { localDateKey } from "../clock";
 import { skills, skillTitle } from "../exercises";
@@ -47,6 +48,8 @@ export function HomeScreen({ navigate }: { readonly navigate: (route: Route) => 
           {label}
         </button>
       </section>
+
+      <StatsCard game={profile.gamification} today={today} />
 
       <nav aria-label="Main" className="flex gap-6 text-sm">
         <a href="#/map" className={linkClass}>
