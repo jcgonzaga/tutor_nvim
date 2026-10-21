@@ -117,6 +117,31 @@ test.describe("T-901 accessibility", () => {
   });
 });
 
+test.describe("T-901 accessibility of the shell exercises", () => {
+  test("the terminal, its output and its result have no violations", async ({ page }) => {
+    await page.goto("/?exercise=shell.create.mkdir-001");
+    await expect(editor(page)).toBeFocused();
+    await expectNoViolations(page, "terminal");
+
+    await page.keyboard.type("mkdri backup");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("terminal-output")).toBeVisible();
+    await expectNoViolations(page, "terminal with an error");
+
+    await page.keyboard.type("mkdir backup");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("result")).toBeVisible();
+    await expectNoViolations(page, "terminal result");
+  });
+
+  test("the terminal announces its output as a live log and shows focus", async ({ page }) => {
+    await page.goto("/?exercise=shell.navigation.pwd-001");
+    await expect(page.getByRole("log", { name: "Terminal output" })).toBeAttached();
+    const outline = await editor(page).evaluate((el) => getComputedStyle(el).outlineStyle);
+    expect(outline).not.toBe("none");
+  });
+});
+
 test.describe("T-901 keyboard, focus and motion", () => {
   test("the whole onboarding is reachable and operable by keyboard alone", async ({ page }) => {
     await page.goto("/");

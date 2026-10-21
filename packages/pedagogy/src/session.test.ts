@@ -283,3 +283,81 @@ describe("placement (calibration)", () => {
     expect(learn.every((skillId) => skillId === "vim.a")).toBe(true);
   });
 });
+
+describe("two domains side by side (Vim and the shell)", () => {
+  const mixedSkills = [
+    skillOf("vim.root"),
+    skillOf("linux.shell.root", [], 1, "linux"),
+    skillOf("linux.shell.second", ["linux.shell.root"], 2, "linux"),
+  ];
+  const mixedExercises = [
+    exerciseFor("vim-root-recall", ["vim.root"], { language: "js", mode: "recall", difficulty: 1 }),
+    exerciseFor("vim-root-learn", ["vim.root"], { language: "js", mode: "learn", difficulty: 2 }),
+    exerciseFor("vim-root-imitate", ["vim.root"], {
+      language: "js",
+      mode: "imitate",
+      difficulty: 1,
+    }),
+    exerciseFor("sh-root-recall", ["linux.shell.root"], {
+      language: "bash",
+      mode: "recall",
+      difficulty: 1,
+    }),
+    exerciseFor("sh-root-learn", ["linux.shell.root"], {
+      language: "bash",
+      mode: "learn",
+      difficulty: 1,
+    }),
+    exerciseFor("sh-root-imitate", ["linux.shell.root"], {
+      language: "bash",
+      mode: "imitate",
+      difficulty: 1,
+    }),
+    exerciseFor("sh-second-learn", ["linux.shell.second"], { language: "bash", mode: "learn" }),
+  ];
+  const mixedRequest = (learner: LearnerState): SessionRequest => ({
+    userId: "u1",
+    date: "2026-01-02",
+    now: T0,
+    skills: mixedSkills,
+    exercises: mixedExercises,
+    learner: refreshStages(mixedSkills, learner, CONFIG),
+    history: [],
+  });
+  const domainOf = (skillId: string) => (skillId.startsWith("linux.") ? "linux" : "vim");
+
+  it("opens a skill in each domain on day one and alternates between them", () => {
+    const { learn } = buildDailySession(mixedRequest(EMPTY_LEARNER), CONFIG);
+    expect(learn).toHaveLength(CONFIG.session.counts.learn);
+    expect(learn.map((item) => domainOf(item.skillId))).toEqual(["vim", "linux", "vim"]);
+  });
+
+  it("starts with the domain the learner has practiced least", () => {
+    // Plenty of Vim practice already, none in the shell: the shell goes first.
+    const vimExercise = mixedExercises[0] as (typeof mixedExercises)[number];
+    const vimHeavy = replay(mixedSkills, [
+      [vimExercise, PERFECT, T0],
+      [vimExercise, PERFECT, T0 + 1000],
+    ]);
+    const { learn } = buildDailySession(mixedRequest(vimHeavy), CONFIG);
+    expect(domainOf(learn[0]?.skillId ?? "")).toBe("linux");
+  });
+
+  it("teaches a skill in the order of its stages: learn, then imitate, then recall", () => {
+    const { learn } = buildDailySession(mixedRequest(EMPTY_LEARNER), CONFIG);
+    const vimModes = learn
+      .filter((item) => domainOf(item.skillId) === "vim")
+      .map((item) => mixedExercises.find((e) => e.id === item.exerciseId)?.mode);
+    expect(vimModes).toEqual(["learn", "imitate"]);
+  });
+
+  it("gives all of the block to one domain when only that one has something new to learn", () => {
+    const onlyShell = mixedRequest(EMPTY_LEARNER);
+    const { learn } = buildDailySession(
+      { ...onlyShell, skills: mixedSkills.slice(1), exercises: mixedExercises.slice(3) },
+      CONFIG,
+    );
+    expect(new Set(learn.map((item) => domainOf(item.skillId)))).toEqual(new Set(["linux"]));
+    expect(learn).toHaveLength(CONFIG.session.counts.learn);
+  });
+});

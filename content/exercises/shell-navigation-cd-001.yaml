@@ -1,0 +1,53 @@
+schemaVersion: 1
+kind: shell
+id: shell-navigation-cd-001
+slug: shell.navigation.cd-001
+title: Go into a folder
+instruction: Go into the src folder of the project.
+skillIds:
+  - linux.shell.navigation
+mode: recall
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+objective:
+  type: cwd_equals
+  path: project/src
+solutions:
+  - commands:
+      - cd project/src
+    classification: optimal
+  - commands:
+      - cd project
+      - cd src
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: cd changes directory.
+  - afterMs: 8000
+    level: 2
+    text: "A path can have several folders: project/src."
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 15
+  transferTags: []

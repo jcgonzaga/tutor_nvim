@@ -1,0 +1,43 @@
+schemaVersion: 1
+kind: shell
+id: shell-permissions-chmod-x-003
+slug: shell.permissions.chmod-x-003
+title: Take the execute bit away
+instruction: Remove the execute permission from run.sh.
+skillIds:
+  - linux.shell.permissions
+mode: discriminate
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    run.sh: |
+      echo hello
+  modes:
+    run.sh: "755"
+objective:
+  type: fs_matches
+  modes:
+    run.sh: "644"
+solutions:
+  - commands:
+      - chmod -x run.sh
+    classification: optimal
+  - commands:
+      - chmod 644 run.sh
+    classification: efficient
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: + adds, - takes away.
+  - afterMs: 8000
+    level: 2
+    text: chmod -x run.sh
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 20
+  transferTags: []

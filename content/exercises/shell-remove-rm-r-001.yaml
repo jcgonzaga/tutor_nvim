@@ -1,0 +1,53 @@
+schemaVersion: 1
+kind: shell
+id: shell-remove-rm-r-001
+slug: shell.remove.rm-r-001
+title: Delete a folder
+instruction: Type rm -r old to delete a folder and everything in it.
+skillIds:
+  - linux.shell.remove
+mode: imitate
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+  cwd: logs
+objective:
+  type: fs_matches
+  absent:
+    - logs/old
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+solutions:
+  - commands:
+      - rm -r old
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: rm alone refuses folders.
+  - afterMs: 8000
+    level: 2
+    text: -r means recursive.
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 15
+  transferTags: []

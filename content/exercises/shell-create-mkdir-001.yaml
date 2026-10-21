@@ -1,0 +1,46 @@
+schemaVersion: 1
+kind: shell
+id: shell-create-mkdir-001
+slug: shell.create.mkdir-001
+title: Make a folder
+instruction: Type mkdir backup to make a new folder called backup.
+skillIds:
+  - linux.shell.create
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+objective:
+  type: fs_matches
+  dirs:
+    - backup
+solutions:
+  - commands:
+      - mkdir backup
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: mkdir means make directory.
+  - afterMs: 8000
+    level: 2
+    text: mkdir backup
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 15
+  transferTags: []

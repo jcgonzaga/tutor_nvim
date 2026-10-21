@@ -4,7 +4,8 @@ Web-first, gamified trainer for Linux basics, Vim/Neovim and (later) LazyVim.
 Source of truth: [`docs/PRD.md`](docs/PRD.md), [`AGENTS.md`](AGENTS.md),
 [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
 
-Current state: **Milestone 9** (release hardening: CI gates, monitoring, accessibility, performance
+Current state: **Milestone 10** (a Linux shell simulator: 8 skills, 48 exercises, mixed with Vim) on top of
+**Milestone 9** (release hardening: CI gates, monitoring, accessibility, performance
 budgets, opt-in analytics, deployment) on top of **Milestone 8** (XP, combo, streak, ghost comparison, replay) on top of **Milestone 7** (MVP content: 21 skills, 120 exercises) on top of **Milestone 6** (optional cloud persistence: Fastify API, Neon Postgres via Drizzle,
 Neon Auth) on top of **Milestone 5** (local product MVP: onboarding, calibration, daily session, skill
 map, local progress) on top of the pedagogy engine (M4), the exercise platform (M3), the Vim core
@@ -18,7 +19,8 @@ map, local progress) on top of the pedagogy engine (M4), the exercise platform (
 [`m7-content`](docs/architecture/m7-content.md),
 [`m8-gamification`](docs/architecture/m8-gamification.md),
 [`m9-hardening`](docs/architecture/m9-hardening.md) (+ [deployment](docs/deployment.md)),
-[`m10-linux-simulator`](docs/architecture/m10-linux-simulator.md) (engine only so far).
+[`m10-linux-simulator`](docs/architecture/m10-linux-simulator.md) (shell exercises mixed into the daily session),
+[`visual-design`](docs/architecture/visual-design.md).
 
 ## Commands
 

@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: linux-shell-permissions
+slug: linux.shell.permissions
+
+title: "File permissions"
+description: "Read and change who may read, write or run a file with chmod."
+
+domain: linux
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - linux.shell.create
+concepts:
+  - permissions
+tags:
+  - permissions
+  - security

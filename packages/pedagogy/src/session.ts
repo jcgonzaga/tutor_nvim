@@ -47,6 +47,20 @@ export interface SessionRequest {
   readonly history: readonly AttemptRecord[];
 }
 
+/** Vim first: it is the product's subject; the shell is practiced alongside it. */
+const DOMAIN_ORDER: readonly string[] = ["vim", "linux", "neovim", "lazyvim"];
+const domainRank = (domain: string): number => {
+  const index = DOMAIN_ORDER.indexOf(domain);
+  return index === -1 ? DOMAIN_ORDER.length : index;
+};
+
+/** A new skill is taught in the order the stages are meant to be met: show, imitate, recall... */
+const STAGE_ORDER: readonly string[] = ["learn", "imitate", "recall", "discriminate", "transfer"];
+const stageOrder = (exercise: Exercise): number => {
+  const index = STAGE_ORDER.indexOf(exercise.mode);
+  return index === -1 ? STAGE_ORDER.length : index;
+};
+
 interface Candidate {
   readonly exercise: Exercise;
   readonly breakdown: PriorityScore;
@@ -59,7 +73,7 @@ interface Candidate {
  * the only randomness is a seeded jitter that breaks near-ties.
  *
  * Blocks (PRD 10): `warmup` (fluent skills, easy), `reviews` (skills whose review is due),
- * `learn` (one new skill, easiest first), `mixed` (interleaved practice across skills) and
+ * `learn` (a new skill, easiest first; one per domain, alternating, when several can start), `mixed` (interleaved practice across skills) and
  * `challenge` (transfer to a context the learner has not solved the skill in). Quotas a block
  * cannot fill (no reviews due yet, nothing fluent yet) go to `mixed` rather than being invented.
  * The same skill never runs more than `maxSameSkillRun` times in a row while an alternative exists.
@@ -189,35 +203,60 @@ export function buildDailySession(
     (_, b) => `review: due, ${Math.round(b.weakness * 100)}% weak`,
   );
 
-  // Learn: skills still in `learning`, earliest tier first; easiest exercise first.
-  // Skills calibration placed the learner past are only a quick check, so they go after the rest.
+  // Learn: skills still in `learning`, earliest tier first; easiest exercise first. When the learner
+  // can start new skills in more than one domain (Vim and the shell, say), the block alternates
+  // between the domains instead of spending all of it on one, starting with the one the learner has
+  // practiced least. Skills calibration placed the learner past are only a quick check, so they go
+  // after the rest.
   const placed = new Set(learner.placed ?? []);
+  const domainOf = new Map(skills.map((skill) => [skill.slug, skill.domain]));
   const learnSkills = skills
     .filter((skill) => stages[skill.slug] === "learning" && !dueSkills.has(skill.slug))
     .sort(
       (a, b) =>
         Number(placed.has(a.slug)) - Number(placed.has(b.slug)) ||
         a.tier - b.tier ||
+        domainRank(a.domain) - domainRank(b.domain) ||
         a.slug.localeCompare(b.slug),
     )
     .map((skill) => skill.slug);
-  const learn: SessionItem[] = [];
+
+  const learnCtx = context();
+  // Easiest first; whatever the learner saw very recently goes last.
+  const seenRecently = (exercise: Exercise): number =>
+    scoreExercise(exercise, learnCtx, config).recentRepetition > 0.5 ? 1 : 0;
+  const queues = new Map<string, Exercise[]>();
   for (const slug of learnSkills) {
-    if (learn.length >= counts.learn) break;
-    const ctx = context();
-    // Easiest first; whatever the learner saw very recently goes last.
-    const seenRecently = (exercise: Exercise): number =>
-      scoreExercise(exercise, ctx, config).recentRepetition > 0.5 ? 1 : 0;
+    const domain = domainOf.get(slug) ?? "";
     const pool = available
-      .filter((exercise) => exercise.skillIds.includes(slug) && !used.has(exercise.id))
+      .filter((exercise) => exercise.skillIds.includes(slug))
       .sort(
         (a, b) =>
           seenRecently(a) - seenRecently(b) ||
+          stageOrder(a) - stageOrder(b) ||
           a.difficulty - b.difficulty ||
           a.id.localeCompare(b.id),
-      );
-    for (const exercise of pool) {
+      )
+      .map((exercise) => ({ exercise, slug }));
+    queues.set(domain, [...(queues.get(domain) ?? []), ...pool.map((entry) => entry.exercise)]);
+  }
+  const practiced = (domain: string): number =>
+    skills
+      .filter((skill) => skill.domain === domain)
+      .reduce((sum, skill) => sum + getUserSkill(learner, skill.slug).attemptCount, 0);
+  const domainsInOrder = [...queues.keys()].sort(
+    (a, b) => practiced(a) - practiced(b) || domainRank(a) - domainRank(b),
+  );
+  const learn: SessionItem[] = [];
+  for (let progressed = true; progressed && learn.length < counts.learn;) {
+    progressed = false;
+    for (const domain of domainsInOrder) {
       if (learn.length >= counts.learn) break;
+      const queue = queues.get(domain) ?? [];
+      const exercise = queue.find((candidate) => !used.has(candidate.id));
+      if (exercise === undefined) continue;
+      const slug =
+        exercise.skillIds.find((id) => stages[id] === "learning") ?? exercise.skillIds[0] ?? "";
       const item: SessionItem = {
         exerciseId: exercise.id,
         skillId: slug,
@@ -227,6 +266,7 @@ export function buildDailySession(
       learn.push(item);
       picked.push(item);
       used.add(exercise.id);
+      progressed = true;
     }
   }
 

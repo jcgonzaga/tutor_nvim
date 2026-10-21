@@ -1,0 +1,47 @@
+schemaVersion: 1
+kind: shell
+id: shell-view-cat-002
+slug: shell.view.cat-002
+title: Read from another folder
+instruction: Print the contents of readme.txt in the photos folder.
+skillIds:
+  - linux.shell.view
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    photos/2024/beach.jpg: ""
+    photos/2024/city.jpg: ""
+    photos/2023/lake.jpg: ""
+    photos/readme.txt: |
+      My photos
+objective:
+  type: last_output_equals
+  text: |
+    My photos
+solutions:
+  - commands:
+      - cat photos/readme.txt
+    classification: optimal
+  - commands:
+      - cd photos
+      - cat readme.txt
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: You do not have to move first.
+  - afterMs: 8000
+    level: 2
+    text: cat photos/readme.txt
+metadata:
+  language: bash
+  context: photos
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:photos

@@ -1,0 +1,47 @@
+schemaVersion: 1
+kind: shell
+id: shell-pipes-pipe-001
+slug: shell.pipes.pipe-001
+title: Count with a pipe
+instruction: Count the entries of this folder by sending ls into wc -l.
+skillIds:
+  - linux.shell.pipes
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: last_output_equals
+  text: |
+    3
+solutions:
+  - commands:
+      - ls | wc -l
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "| passes the output of one command to the next."
+  - afterMs: 8000
+    level: 2
+    text: ls | wc -l
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 20
+  transferTags: []

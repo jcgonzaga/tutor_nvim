@@ -1,0 +1,54 @@
+schemaVersion: 1
+kind: shell
+id: shell-navigation-home-001
+slug: shell.navigation.home-001
+title: Back home
+instruction: Go back to your home folder from where you are.
+skillIds:
+  - linux.shell.navigation
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+    logs/old/2023/jan.log: |
+      INFO old
+  cwd: logs/old/2023
+objective:
+  type: cwd_equals
+  path: ""
+solutions:
+  - commands:
+      - cd
+    classification: optimal
+  - commands:
+      - cd ~
+    classification: valid
+  - commands:
+      - cd /home/user
+    classification: valid
+antiPatterns:
+  - cd_up_chain
+hints:
+  - afterMs: 4000
+    level: 1
+    text: cd with nothing after it has a destination of its own.
+  - afterMs: 8000
+    level: 2
+    text: Just type cd.
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags: []

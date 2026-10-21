@@ -16,14 +16,19 @@ export const T0 = Date.UTC(2026, 0, 1, 9, 0, 0);
 export { DAY_MS };
 
 /** A skill validated like real content. */
-export function skillOf(slug: string, prerequisites: string[] = [], tier = 1): Skill {
+export function skillOf(
+  slug: string,
+  prerequisites: string[] = [],
+  tier = 1,
+  domain: Skill["domain"] = "vim",
+): Skill {
   return parseSkill({
     schemaVersion: 1,
     id: slug.replaceAll(".", "-"),
     slug,
     title: slug,
     description: slug,
-    domain: "vim",
+    domain,
     tier,
     prerequisites,
     difficulty: 1,
@@ -34,9 +39,15 @@ export function skillOf(slug: string, prerequisites: string[] = [], tier = 1): S
 export function exerciseFor(
   id: string,
   skillIds: string[],
-  options: { language?: string; context?: string; difficulty?: number; transfer?: boolean } = {},
+  options: {
+    language?: string;
+    context?: string;
+    difficulty?: number;
+    transfer?: boolean;
+    mode?: Exercise["mode"];
+  } = {},
 ): Exercise {
-  const { language, context, difficulty = 2, transfer = false } = options;
+  const { language, context, difficulty = 2, transfer = false, mode = "recall" } = options;
   const overrides: Partial<VimExerciseInput> = {
     metadata: {
       ...(language === undefined ? {} : { language }),
@@ -50,7 +61,7 @@ export function exerciseFor(
     slug: id.replaceAll("-", "."),
     title: id,
     skillIds,
-    mode: "recall",
+    mode,
     difficulty,
     initialState: { buffer: 'const mode = "development";\n', cursor: { line: 1, column: 18 } },
     objective: { type: "buffer_equals", target: 'const mode = "production";\n' },

@@ -1,0 +1,50 @@
+schemaVersion: 1
+kind: shell
+id: shell-navigation-pwd-001
+slug: shell.navigation.pwd-001
+title: Where am I?
+instruction: Type pwd to print the folder you are in.
+skillIds:
+  - linux.shell.navigation
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+objective:
+  type: last_output_equals
+  text: |
+    /home/user
+solutions:
+  - commands:
+      - pwd
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The command is three letters: print working directory."
+  - afterMs: 8000
+    level: 2
+    text: Type pwd and press Enter.
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 15
+  transferTags: []

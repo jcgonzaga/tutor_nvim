@@ -14,7 +14,7 @@ for (const exercise of exercises) {
 }
 
 export const editor = (page: Page): Locator =>
-  page.getByRole("application", { name: "Vim practice editor" });
+  page.getByRole("application", { name: /practice (editor|terminal)/ });
 
 /** Types key tokens (`c`, `"`, `<Esc>`, `<C-r>`) into the focused editor. */
 export async function pressTokens(page: Page, tokens: readonly string[]): Promise<void> {
@@ -45,6 +45,22 @@ export async function solveCurrent(page: Page): Promise<Exercise> {
   await pressTokens(page, optimal.keys);
   await expect(page.getByTestId("feedback")).toBeVisible();
   return exercise;
+}
+
+/**
+ * Plays the session's items with their optimal solutions until a Vim exercise is on screen, then
+ * solves that one and returns it. Sessions mix shell and Vim exercises, and some checks (the
+ * replay, for example) only exist for Vim.
+ */
+export async function solveNextVim(page: Page): Promise<Exercise> {
+  for (let guard = 0; guard < 12; guard++) {
+    const exercise = await currentExercise(page);
+    await solveCurrent(page);
+    if (exercise.kind === "vim") return exercise;
+    await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
+    await expect(page.locator("#instruction")).toBeVisible();
+  }
+  throw new Error("no Vim exercise turned up in the session");
 }
 
 /** Walks the onboarding up to (not including) the calibration, picking `experience`. */

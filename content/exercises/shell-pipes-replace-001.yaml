@@ -1,0 +1,40 @@
+schemaVersion: 1
+kind: shell
+id: shell-pipes-replace-001
+slug: shell.pipes.replace-001
+title: Replace, do not append
+instruction: Replace the whole content of draft.txt with the word reset.
+skillIds:
+  - linux.shell.pipes
+mode: discriminate
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    draft.txt: |
+      a
+      b
+objective:
+  type: fs_matches
+  files:
+    draft.txt: |
+      reset
+solutions:
+  - commands:
+      - echo reset > draft.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: One > overwrites; two >> append.
+  - afterMs: 8000
+    level: 2
+    text: echo reset > draft.txt
+metadata:
+  language: bash
+  context: config
+  estimatedSeconds: 20
+  transferTags: []

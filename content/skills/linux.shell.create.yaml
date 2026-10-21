@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: linux-shell-create
+slug: linux.shell.create
+
+title: "Create folders and files"
+description: "Make new folders (mkdir, mkdir -p) and empty files (touch)."
+
+domain: linux
+tier: 2
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - linux.shell.navigation
+concepts:
+  - creating
+tags:
+  - files
+  - folders

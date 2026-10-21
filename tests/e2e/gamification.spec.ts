@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { onboardSkippingCheck, playWholeSession, solveCurrent } from "./helpers";
+import { onboardSkippingCheck, playWholeSession, solveCurrent, solveNextVim } from "./helpers";
 
 const DAY_ONE = new Date("2026-10-21T09:00:00");
 const DAY_THREE = new Date("2026-10-23T09:00:00");
@@ -61,7 +61,7 @@ test.describe("M8 gamification and feedback", () => {
   }) => {
     await onboardSkippingCheck(page);
     await page.getByRole("button", { name: "Continue Training" }).click();
-    const exercise = await solveCurrent(page);
+    const exercise = await solveNextVim(page);
 
     const ghost = page.getByTestId("ghost");
     await expect(ghost.getByTestId("ghost-you")).toBeVisible();
@@ -89,7 +89,7 @@ test.describe("M8 gamification and feedback", () => {
   test("the replay can be played", async ({ page }) => {
     await onboardSkippingCheck(page);
     await page.getByRole("button", { name: "Continue Training" }).click();
-    await solveCurrent(page);
+    await solveNextVim(page);
     await page.getByRole("button", { name: "Replay" }).click();
     const replay = page.getByTestId("replay");
     await replay.getByRole("button", { name: "Play" }).click();
@@ -102,7 +102,7 @@ test.describe("M8 gamification and feedback", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await onboardSkippingCheck(page);
     await page.getByRole("button", { name: "Continue Training" }).click();
-    await solveCurrent(page);
+    await solveNextVim(page);
     await page.getByRole("button", { name: "Replay" }).click();
     const replay = page.getByTestId("replay");
     await expect(replay.getByRole("button", { name: "Step", exact: true })).toBeVisible();

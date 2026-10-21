@@ -1,0 +1,58 @@
+schemaVersion: 1
+kind: shell
+id: shell-copy-move-cp-r-001
+slug: shell.copy-move.cp-r-001
+title: Copy a whole folder
+instruction: Copy the src folder as src-backup, keeping the original.
+skillIds:
+  - linux.shell.copy-move
+mode: discriminate
+difficulty: 3
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+  cwd: project
+objective:
+  type: fs_matches
+  files:
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src-backup/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src-backup/util.js: |
+      export const add = (a, b) => a + b;
+solutions:
+  - commands:
+      - cp -r src src-backup
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: cp refuses folders unless you say so.
+  - afterMs: 8000
+    level: 2
+    text: The option is -r, for recursive.
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 25
+  transferTags: []

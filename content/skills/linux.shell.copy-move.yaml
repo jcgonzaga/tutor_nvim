@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: linux-shell-copy-move
+slug: linux.shell.copy-move
+
+title: "Copy, move and rename"
+description: "Copy with cp (and cp -r for folders) and move or rename with mv."
+
+domain: linux
+tier: 3
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - linux.shell.create
+concepts:
+  - copy
+  - move
+tags:
+  - files
+  - folders

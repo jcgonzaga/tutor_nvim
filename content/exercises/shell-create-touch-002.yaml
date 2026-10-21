@@ -1,0 +1,43 @@
+schemaVersion: 1
+kind: shell
+id: shell-create-touch-002
+slug: shell.create.touch-002
+title: Three files at once
+instruction: Create the empty files a.txt, b.txt and c.txt with a single command.
+skillIds:
+  - linux.shell.create
+mode: discriminate
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files: {}
+objective:
+  type: fs_matches
+  files:
+    a.txt: ""
+    b.txt: ""
+    c.txt: ""
+solutions:
+  - commands:
+      - touch a.txt b.txt c.txt
+    classification: optimal
+  - commands:
+      - touch a.txt
+      - touch b.txt
+      - touch c.txt
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Most commands take several names.
+  - afterMs: 8000
+    level: 2
+    text: touch a.txt b.txt c.txt
+metadata:
+  language: bash
+  context: config
+  estimatedSeconds: 20
+  transferTags: []

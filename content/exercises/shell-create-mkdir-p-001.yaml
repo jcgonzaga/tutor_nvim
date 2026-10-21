@@ -1,0 +1,50 @@
+schemaVersion: 1
+kind: shell
+id: shell-create-mkdir-p-001
+slug: shell.create.mkdir-p-001
+title: Folders in one go
+instruction: Create the folder year/2025 in one command (year does not exist yet).
+skillIds:
+  - linux.shell.create
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+objective:
+  type: fs_matches
+  dirs:
+    - year/2025
+solutions:
+  - commands:
+      - mkdir -p year/2025
+    classification: optimal
+  - commands:
+      - mkdir year
+      - mkdir year/2025
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Plain mkdir needs the parent to exist.
+  - afterMs: 8000
+    level: 2
+    text: The -p option creates the parents too.
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 20
+  transferTags: []

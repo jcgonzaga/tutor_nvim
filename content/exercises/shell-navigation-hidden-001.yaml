@@ -1,0 +1,47 @@
+schemaVersion: 1
+kind: shell
+id: shell-navigation-hidden-001
+slug: shell.navigation.hidden-001
+title: Show hidden files
+instruction: List everything in the photos folder, including hidden files.
+skillIds:
+  - linux.shell.navigation
+mode: discriminate
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    photos/2024/beach.jpg: ""
+    photos/2024/city.jpg: ""
+    photos/2023/lake.jpg: ""
+    photos/readme.txt: |
+      My photos
+    photos/.cache: ""
+objective:
+  type: last_output_contains
+  text: .cache
+solutions:
+  - commands:
+      - ls -a photos
+    classification: optimal
+  - commands:
+      - ls -A photos
+    classification: efficient
+  - commands:
+      - ls -la photos
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Hidden files start with a dot. ls has an option for all files.
+  - afterMs: 8000
+    level: 2
+    text: ls -a photos
+metadata:
+  language: bash
+  context: photos
+  estimatedSeconds: 20
+  transferTags: []

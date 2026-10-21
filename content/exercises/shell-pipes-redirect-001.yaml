@@ -1,0 +1,51 @@
+schemaVersion: 1
+kind: shell
+id: shell-pipes-redirect-001
+slug: shell.pipes.redirect-001
+title: Save the listing
+instruction: Type ls > files.txt to save the listing of this folder in a file.
+skillIds:
+  - linux.shell.pipes
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: fs_matches
+  files:
+    notes/files.txt: |
+      archive
+      files.txt
+      ideas.txt
+      todo.txt
+solutions:
+  - commands:
+      - ls > files.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "> sends the output to a file instead of the screen."
+  - afterMs: 8000
+    level: 2
+    text: ls > files.txt
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 15
+  transferTags: []

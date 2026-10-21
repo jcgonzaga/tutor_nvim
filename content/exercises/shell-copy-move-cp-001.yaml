@@ -1,0 +1,56 @@
+schemaVersion: 1
+kind: shell
+id: shell-copy-move-cp-001
+slug: shell.copy-move.cp-001
+title: Copy a file
+instruction: Type cp todo.txt backup.txt to copy the file.
+skillIds:
+  - linux.shell.copy-move
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: fs_matches
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/backup.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+solutions:
+  - commands:
+      - cp todo.txt backup.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: cp takes the source, then the copy's name.
+  - afterMs: 8000
+    level: 2
+    text: cp todo.txt backup.txt
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 15
+  transferTags: []

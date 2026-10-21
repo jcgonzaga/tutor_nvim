@@ -1,0 +1,56 @@
+schemaVersion: 1
+kind: shell
+id: shell-remove-rm-r-002
+slug: shell.remove.rm-r-002
+title: Delete the config folder
+instruction: Delete the whole config folder of the project.
+skillIds:
+  - linux.shell.remove
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+objective:
+  type: fs_matches
+  absent:
+    - project/config
+  dirs:
+    - project/src
+solutions:
+  - commands:
+      - rm -r project/config
+    classification: optimal
+  - commands:
+      - cd project
+      - rm -r config
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: A folder with files needs -r.
+  - afterMs: 8000
+    level: 2
+    text: rm -r project/config
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 20
+  transferTags: []

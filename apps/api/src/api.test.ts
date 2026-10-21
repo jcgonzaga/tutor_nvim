@@ -1,7 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { attemptEvents, attempts } from "./db/schema";
-import { T0, createTestApi, exerciseNamed, gaveUp, newId, solved, type TestApi } from "./test-util";
+import {
+  T0,
+  createTestApi,
+  exerciseNamed,
+  gaveUp,
+  newId,
+  simulateCommands,
+  solved,
+  submissionFromAttempt,
+  type TestApi,
+} from "./test-util";
 
 let api: TestApi;
 beforeAll(async () => {
@@ -282,6 +292,74 @@ describe("attempts (T-606)", () => {
   });
 });
 
+describe("shell attempts (M10)", () => {
+  const MKDIR = "shell.create.mkdir-001";
+
+  it("replays a shell attempt with the same engine and applies it to the shell skill", async () => {
+    const exercise = exerciseNamed(MKDIR);
+    const submission = solved(exercise, { finishedAt: T0 + 1000 });
+    const result = await api.request("POST", `/api/attempts/${submission.id}/complete`, {
+      user: "shelly",
+      body: submission,
+    });
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({
+      success: true,
+      strategy: "optimal",
+      exerciseId: exercise.id,
+    });
+
+    const { body } = await api.request("GET", "/api/progress", { user: "shelly" });
+    expect(body.learner.skills["linux.shell.create"].attemptCount).toBe(1);
+    expect(body.history).toHaveLength(1);
+  });
+
+  it("stores the keys of the terminal with their own mode and the caret as the cursor", async () => {
+    const exercise = exerciseNamed(MKDIR);
+    const submission = solved(exercise, { finishedAt: T0 + 2000 });
+    await api.request("POST", `/api/attempts/${submission.id}/complete`, {
+      user: "shane",
+      body: submission,
+    });
+    const rows = await api.handle.db
+      .select()
+      .from(attemptEvents)
+      .where(eq(attemptEvents.attemptId, submission.id));
+    expect(rows).toHaveLength(submission.events.length);
+    expect(rows[0]).toMatchObject({ logicalKey: "m", mode: "shell", accepted: true });
+    expect(rows[0]).toMatchObject({ cursorBeforeColumn: 0, cursorAfterColumn: 1 });
+    expect(rows[rows.length - 1]).toMatchObject({ logicalKey: "<CR>", cursorAfterColumn: 0 });
+  });
+
+  it("decides success itself, and a command that failed lowers the score", async () => {
+    const exercise = exerciseNamed(MKDIR);
+    const clean = solved(exercise, { finishedAt: T0 + 3000 });
+    const typo = submissionFromAttempt(
+      exercise,
+      simulateCommands(exercise, ["mkdri backup", "mkdir backup"]),
+      { finishedAt: T0 + 3500 },
+    );
+    const a = await api.request("POST", `/api/attempts/${clean.id}/complete`, {
+      user: "shaun",
+      body: clean,
+    });
+    const b = await api.request("POST", `/api/attempts/${typo.id}/complete`, {
+      user: "sheldon",
+      body: typo,
+    });
+    expect(b.body.success).toBe(true);
+    expect(b.body.performanceScore).toBeLessThan(a.body.performanceScore);
+
+    // A forged claim of success is not believed: nothing in the tree changed.
+    const forged = { ...clean, id: newId(), events: clean.events.slice(0, 3) };
+    const refused = await api.request("POST", `/api/attempts/${forged.id}/complete`, {
+      user: "sherry",
+      body: forged,
+    });
+    expect(refused.body.success).toBe(false);
+  });
+});
+
 describe("progress isolation (T-607)", () => {
   it("never shows one user's progress to another", async () => {
     await api.request("POST", "/api/attempts", {
@@ -396,7 +474,11 @@ describe("adopting progress from before uploads existed (ADR-0003)", () => {
       user: "vic",
       body: withJunk,
     });
-    expect(accepted.body).toEqual({ skills: 1 });
+    // Every real skill of the legacy profile is adopted (an applied attempt also records the other
+    // root skills); the made-up one is not.
+    expect(accepted.body).toEqual({ skills: Object.keys(legacy.learner.skills).length });
+    const adopted = await api.request("GET", "/api/progress", { user: "vic" });
+    expect(Object.keys(adopted.body.learner.skills)).not.toContain("vim.made-up");
 
     const absurd = {
       learner: { skills: { "vim.mode.normal": { ...skill, mastery: 9999 } } },

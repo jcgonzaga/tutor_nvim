@@ -1,0 +1,46 @@
+schemaVersion: 1
+kind: shell
+id: shell-navigation-ls-001
+slug: shell.navigation.ls-001
+title: List a folder
+instruction: Type ls to list the files in this folder.
+skillIds:
+  - linux.shell.navigation
+mode: imitate
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: last_output_contains
+  text: todo.txt
+solutions:
+  - commands:
+      - ls
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: ls is short for list.
+  - afterMs: 8000
+    level: 2
+    text: Type ls and press Enter.
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 15
+  transferTags: []

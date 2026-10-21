@@ -1,0 +1,38 @@
+schemaVersion: 1
+kind: shell
+id: shell-permissions-chmod-600-002
+slug: shell.permissions.chmod-600-002
+title: A private token
+instruction: "Make the file token private: you may read and write it, nobody else anything."
+skillIds:
+  - linux.shell.permissions
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    config/token: |
+      abc123
+objective:
+  type: fs_matches
+  modes:
+    config/token: "600"
+solutions:
+  - commands:
+      - chmod 600 config/token
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Owner read+write is 6, group and others get 0.
+  - afterMs: 8000
+    level: 2
+    text: chmod 600 config/token
+metadata:
+  language: bash
+  context: config
+  estimatedSeconds: 20
+  transferTags: []

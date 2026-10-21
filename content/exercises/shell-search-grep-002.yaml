@@ -1,0 +1,49 @@
+schemaVersion: 1
+kind: shell
+id: shell-search-grep-002
+slug: shell.search.grep-002
+title: A word in your notes
+instruction: Show the line of todo.txt that mentions milk.
+skillIds:
+  - linux.shell.search
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: last_output_equals
+  text: |
+    buy milk
+solutions:
+  - commands:
+      - grep milk todo.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: The same tool as for the logs.
+  - afterMs: 8000
+    level: 2
+    text: grep milk todo.txt
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:notes

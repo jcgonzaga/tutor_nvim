@@ -1,6 +1,8 @@
 # ADR-0004: Linux simulator (PRD phase 9)
 
-Status: engine accepted and implemented (M10-A); integration proposed, awaiting confirmation.
+Status: accepted and implemented (engine M10-A; integration M10-B). Decisions taken with the product
+owner: Linux exercises are mixed into the daily session with Vim, and the first Linux skill is open
+from the start.
 
 ## Context
 
@@ -47,18 +49,16 @@ Known, deliberate differences: `ls` always prints one entry per line (as bash do
 `find` order is sorted (GNU find uses directory order); dates are fixed; `ls -l` block totals use
 ext4 rules.
 
-## Proposed integration (not started)
+## Integration (as built; see m10-linux-simulator.md)
 
 1. **Exercise schema**: a discriminated `kind: "vim" | "shell"`. A shell exercise has an initial tree
    (`files`, `cwd`), and goals such as `fs_matches` (files that must exist/not exist, content, mode),
    `cwd_equals`, `last_output_contains`. Solutions are command lines, executed in CI like Vim ones
    (AGENTS.md section 10).
 2. **Evaluation**: attempts and telemetry generalise from keys to terminal keys (same event shape);
-   strategy by command count and flags; shell anti-patterns (for example `rm -rf` on a wide glob,
-   `cd` chains instead of paths, `ls` loops).
+   strategy by declared solutions and keystroke efficiency; shell anti-patterns: a command failing
+   again and again, `cd ..` chains instead of one path, `rm -r` with a wildcard.
 3. **Server**: the API replays shell attempts with the same engine, exactly as for Vim.
 4. **Web**: a terminal view on the existing practice screen, with the same keyboard capture.
-5. **Content**: a Linux tier (about 6 skills, 40+ exercises) with prerequisites in the same graph.
-
-Open product decisions for this step: whether Linux exercises appear in the same daily session as
-Vim ones or in their own track, and whether the Linux tier is gated behind the first Vim skills.
+5. **Content**: 8 Linux skills and 48 exercises with prerequisites in the same graph; the root skill
+   is open from the start and the daily session mixes Vim and the shell.

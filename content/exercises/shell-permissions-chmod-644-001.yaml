@@ -1,0 +1,45 @@
+schemaVersion: 1
+kind: shell
+id: shell-permissions-chmod-644-001
+slug: shell.permissions.chmod-644-001
+title: Readable by everyone
+instruction: Let everyone read app.log but only you write it.
+skillIds:
+  - linux.shell.permissions
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO ok
+  modes:
+    logs/app.log: "600"
+objective:
+  type: fs_matches
+  modes:
+    logs/app.log: "644"
+solutions:
+  - commands:
+      - chmod 644 logs/app.log
+    classification: optimal
+  - commands:
+      - chmod a+r logs/app.log
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Owner read+write (6), others read (4).
+  - afterMs: 8000
+    level: 2
+    text: chmod 644 logs/app.log
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:logs

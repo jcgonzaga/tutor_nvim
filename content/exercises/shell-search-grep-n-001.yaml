@@ -1,0 +1,50 @@
+schemaVersion: 1
+kind: shell
+id: shell-search-grep-n-001
+slug: shell.search.grep-n-001
+title: With line numbers
+instruction: Type grep -n API_URL app.js to find the lines with their numbers.
+skillIds:
+  - linux.shell.search
+mode: imitate
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+  cwd: project/src
+objective:
+  type: last_output_contains
+  text: 1:const API_URL
+solutions:
+  - commands:
+      - grep -n API_URL app.js
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: -n adds the line number.
+  - afterMs: 8000
+    level: 2
+    text: grep -n API_URL app.js
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 15
+  transferTags: []

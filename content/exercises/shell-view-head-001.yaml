@@ -1,0 +1,50 @@
+schemaVersion: 1
+kind: shell
+id: shell-view-head-001
+slug: shell.view.head-001
+title: The first lines
+instruction: Show the first 2 lines of app.log with head -n 2.
+skillIds:
+  - linux.shell.view
+mode: imitate
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+  cwd: logs
+objective:
+  type: last_output_equals
+  text: |
+    INFO server started
+    ERROR disk full
+solutions:
+  - commands:
+      - head -n 2 app.log
+    classification: optimal
+  - commands:
+      - head -2 app.log
+    classification: efficient
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: head shows the start of a file.
+  - afterMs: 8000
+    level: 2
+    text: -n 2 asks for two lines.
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 15
+  transferTags: []

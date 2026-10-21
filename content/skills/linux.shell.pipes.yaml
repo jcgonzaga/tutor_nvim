@@ -1,0 +1,22 @@
+schemaVersion: 1
+
+id: linux-shell-pipes
+slug: linux.shell.pipes
+
+title: "Pipes and redirection"
+description: "Chain commands with | and send output to files with > and >>."
+
+domain: linux
+tier: 5
+difficulty: 4
+enabled: true
+
+prerequisites:
+  - linux.shell.view
+  - linux.shell.search
+concepts:
+  - pipe
+  - redirection
+tags:
+  - pipes
+  - redirection

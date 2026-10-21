@@ -138,10 +138,13 @@ describe("M4 integration: exercise → attempt → evaluation → mastery → re
     expect(unreachable).toEqual([]);
   });
 
-  it("starts a new learner on the root skills only", () => {
+  it("starts a new learner on the root skills only: one in Vim and one in the shell, side by side", () => {
     const stages = resolveStages(bundle.skills, EMPTY_LEARNER, DEFAULT_PEDAGOGY_CONFIG);
     const unlocked = Object.entries(stages).filter(([, stage]) => stage !== "locked");
-    expect(unlocked.map(([slug]) => slug)).toEqual(["vim.mode.normal"]);
+    expect(unlocked.map(([slug]) => slug).sort()).toEqual([
+      "linux.shell.navigation",
+      "vim.mode.normal",
+    ]);
   });
 
   it("follows a learner over six weeks: reviews return, prerequisites open the map, no day-one mastery", () => {

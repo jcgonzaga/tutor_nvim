@@ -1,0 +1,43 @@
+schemaVersion: 1
+kind: shell
+id: shell-remove-rm-001
+slug: shell.remove.rm-001
+title: Delete a file
+instruction: Type rm draft.txt to delete the file.
+skillIds:
+  - linux.shell.remove
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    draft.txt: |
+      scratch
+    keep.txt: |
+      important
+objective:
+  type: fs_matches
+  absent:
+    - draft.txt
+  files:
+    keep.txt: |
+      important
+solutions:
+  - commands:
+      - rm draft.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: rm removes. There is no trash can.
+  - afterMs: 8000
+    level: 2
+    text: rm draft.txt
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 15
+  transferTags: []

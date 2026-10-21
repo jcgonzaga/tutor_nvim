@@ -1,0 +1,53 @@
+schemaVersion: 1
+kind: shell
+id: shell-search-grep-r-001
+slug: shell.search.grep-r-001
+title: Search every file
+instruction: Search every file under project for the word DEBUG.
+skillIds:
+  - linux.shell.search
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+objective:
+  type: all
+  goals:
+    - type: last_output_contains
+      text: project/config/dev.env:DEBUG=true
+    - type: last_output_contains
+      text: project/config/prod.env:DEBUG=false
+solutions:
+  - commands:
+      - grep -r DEBUG project
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: To search inside folders, grep needs an option.
+  - afterMs: 8000
+    level: 2
+    text: -r searches recursively.
+metadata:
+  language: bash
+  context: config
+  estimatedSeconds: 20
+  transferTags: []

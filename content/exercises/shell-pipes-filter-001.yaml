@@ -1,0 +1,48 @@
+schemaVersion: 1
+kind: shell
+id: shell-pipes-filter-001
+slug: shell.pipes.filter-001
+title: Save only the errors
+instruction: Save only the ERROR lines of app.log into errors.txt.
+skillIds:
+  - linux.shell.pipes
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+  cwd: logs
+objective:
+  type: fs_matches
+  files:
+    logs/errors.txt: |
+      ERROR disk full
+      ERROR timeout
+solutions:
+  - commands:
+      - grep ERROR app.log > errors.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Filter first, then redirect.
+  - afterMs: 8000
+    level: 2
+    text: grep ERROR app.log > errors.txt
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags: []

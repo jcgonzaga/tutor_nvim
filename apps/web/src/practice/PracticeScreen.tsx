@@ -191,7 +191,7 @@ export function PracticeScreen({
               ref={editorRef}
               role="application"
               aria-label={
-                attempt.kind === "shell" ? "Terminal practice area" : "Vim practice editor"
+                attempt.kind === "shell" ? "Shell practice terminal" : "Vim practice editor"
               }
               aria-describedby="instruction"
               tabIndex={0}

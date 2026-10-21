@@ -1,0 +1,46 @@
+schemaVersion: 1
+kind: shell
+id: shell-search-grep-c-001
+slug: shell.search.grep-c-001
+title: Count the errors
+instruction: Count how many ERROR lines app.log has.
+skillIds:
+  - linux.shell.search
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+  cwd: logs
+objective:
+  type: last_output_equals
+  text: |
+    2
+solutions:
+  - commands:
+      - grep -c ERROR app.log
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: grep can count instead of printing.
+  - afterMs: 8000
+    level: 2
+    text: grep -c ERROR app.log
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags: []

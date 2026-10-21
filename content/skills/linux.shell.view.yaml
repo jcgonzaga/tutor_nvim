@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: linux-shell-view
+slug: linux.shell.view
+
+title: "Read files"
+description: "Look inside files without opening an editor: cat, head, tail and wc."
+
+domain: linux
+tier: 2
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - linux.shell.navigation
+concepts:
+  - reading
+tags:
+  - files
+  - reading

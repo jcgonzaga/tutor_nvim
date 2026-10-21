@@ -1,0 +1,58 @@
+schemaVersion: 1
+kind: shell
+id: shell-copy-move-mv-003
+slug: shell.copy-move.mv-003
+title: Move into a folder
+instruction: Move app.log into the old folder.
+skillIds:
+  - linux.shell.copy-move
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+  cwd: logs
+objective:
+  type: fs_matches
+  files:
+    logs/old/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+  absent:
+    - logs/app.log
+solutions:
+  - commands:
+      - mv app.log old
+    classification: optimal
+  - commands:
+      - mv app.log old/app.log
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: If the destination is a folder, the file goes inside it.
+  - afterMs: 8000
+    level: 2
+    text: mv app.log old
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:logs

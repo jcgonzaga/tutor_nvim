@@ -1,0 +1,42 @@
+schemaVersion: 1
+kind: shell
+id: shell-permissions-chmod-x-002
+slug: shell.permissions.chmod-x-002
+title: Run the deploy script
+instruction: Make deploy.sh executable.
+skillIds:
+  - linux.shell.permissions
+mode: recall
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/deploy.sh: |
+      echo deploying
+  cwd: project
+objective:
+  type: fs_matches
+  modes:
+    project/deploy.sh: "755"
+solutions:
+  - commands:
+      - chmod +x deploy.sh
+    classification: optimal
+  - commands:
+      - chmod 755 deploy.sh
+    classification: efficient
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: A script must have the execute permission to run.
+  - afterMs: 8000
+    level: 2
+    text: chmod +x deploy.sh
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 15
+  transferTags: []

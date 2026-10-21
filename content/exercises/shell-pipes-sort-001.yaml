@@ -1,0 +1,52 @@
+schemaVersion: 1
+kind: shell
+id: shell-pipes-sort-001
+slug: shell.pipes.sort-001
+title: First in alphabetical order
+instruction: Print the first item of todo.txt in alphabetical order.
+skillIds:
+  - linux.shell.pipes
+mode: transfer
+difficulty: 3
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: last_output_equals
+  text: |
+    book dentist
+solutions:
+  - commands:
+      - sort todo.txt | head -n 1
+    classification: optimal
+  - commands:
+      - sort todo.txt | head -1
+    classification: efficient
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Sort, then keep only the first line.
+  - afterMs: 8000
+    level: 2
+    text: sort todo.txt | head -n 1
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 25
+  transferTags:
+    - context:bash
+    - context:notes

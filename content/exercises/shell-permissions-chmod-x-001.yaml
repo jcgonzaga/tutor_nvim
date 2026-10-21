@@ -1,0 +1,38 @@
+schemaVersion: 1
+kind: shell
+id: shell-permissions-chmod-x-001
+slug: shell.permissions.chmod-x-001
+title: Make it executable
+instruction: Type chmod +x run.sh to make the script executable.
+skillIds:
+  - linux.shell.permissions
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    run.sh: |
+      echo hello
+objective:
+  type: fs_matches
+  modes:
+    run.sh: "755"
+solutions:
+  - commands:
+      - chmod +x run.sh
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: chmod changes the mode of a file.
+  - afterMs: 8000
+    level: 2
+    text: +x adds the execute permission.
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 15
+  transferTags: []

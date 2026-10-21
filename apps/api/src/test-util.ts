@@ -1,6 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import { simulateSolution, startAttempt, type Attempt } from "@tutor-nvim/evaluation";
-import type { Exercise } from "@tutor-nvim/exercise-schema";
+import {
+  advanceAttempt,
+  simulateSolution,
+  startAttempt,
+  type Attempt,
+} from "@tutor-nvim/evaluation";
+import { keysForCommand, type Exercise } from "@tutor-nvim/exercise-schema";
+import { keyInputFromToken } from "@tutor-nvim/vim-engine";
 import type { AttemptSubmissionInput } from "@tutor-nvim/shared";
 import { buildApp, type AppDeps } from "./app";
 import { createFakeVerifier, fakeToken } from "./auth/fake";
@@ -156,4 +162,17 @@ export function gaveUp(
 ): AttemptSubmissionInput {
   const attempt = { ...startAttempt(exercise, 0), completedAt: 5000 };
   return submissionFromAttempt(exercise, attempt, { ...options, gaveUp: true });
+}
+
+/** Types commands as a learner would (every key, Enter after each), 150 ms apart. */
+export function simulateCommands(exercise: Exercise, commands: readonly string[]): Attempt {
+  const keys = commands.flatMap(keysForCommand);
+  return keys.reduce<Attempt>(
+    (attempt, token, index) =>
+      advanceAttempt(exercise, attempt, {
+        ...keyInputFromToken(token),
+        timestamp: (index + 1) * 150,
+      }),
+    startAttempt(exercise, 0),
+  );
 }

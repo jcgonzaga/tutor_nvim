@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: linux-shell-navigation
+slug: linux.shell.navigation
+
+title: "Find your way around"
+description: "Know where you are and move between folders with pwd, ls and cd."
+
+domain: linux
+tier: 1
+difficulty: 1
+enabled: true
+
+prerequisites: []
+
+concepts:
+  - navigation
+tags:
+  - navigation
+  - filesystem

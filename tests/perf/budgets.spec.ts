@@ -100,6 +100,43 @@ test.describe("T-902 performance budgets (production build)", () => {
     expect(Math.max(...(await longTasks(page)), 0)).toBeLessThan(LONG_TASK_BUDGET_MS);
   });
 
+  test("a key typed in the terminal is on screen in under 50 ms, even after a long transcript", async ({
+    page,
+  }) => {
+    await page.goto("/?exercise=shell.create.mkdir-001");
+    await expect(editor(page)).toBeFocused();
+    // Fill the transcript first: rendering must not slow down as the terminal fills up.
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.type("ls");
+      await page.keyboard.press("Enter");
+    }
+    await expect(page.getByTestId("terminal-output")).toHaveCount(40);
+
+    const samples = await page.evaluate(async () => {
+      const target = document.querySelector<HTMLElement>('[role="application"]');
+      if (!target) throw new Error("no terminal");
+      const line = () => document.querySelector('[data-testid="terminal-line"]')?.textContent;
+      const nextFrame = () =>
+        new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const times: number[] = [];
+      for (let i = 0; i < 120; i++) {
+        const before = line();
+        const key = i % 2 === 0 ? "a" : "Backspace";
+        const start = performance.now();
+        target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+        await nextFrame();
+        times.push(performance.now() - start);
+        if (line() === before) throw new Error("the key was not rendered");
+      }
+      return times;
+    });
+    const p95 = percentile(samples, 95);
+    console.log(
+      `terminal key to next frame: median ${percentile(samples, 50).toFixed(1)} ms, p95 ${p95.toFixed(1)} ms`,
+    );
+    expect(p95).toBeLessThan(KEYPRESS_BUDGET_MS);
+  });
+
   test("moving to the next exercise takes under 150 ms", async ({ page }) => {
     await onboardSkippingCheck(page);
     await page.getByRole("button", { name: "Continue Training" }).click();

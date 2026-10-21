@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: linux-shell-search
+slug: linux.shell.search
+
+title: "Search text and files"
+description: "Find lines with grep and files with find."
+
+domain: linux
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - linux.shell.view
+concepts:
+  - search
+tags:
+  - search
+  - text

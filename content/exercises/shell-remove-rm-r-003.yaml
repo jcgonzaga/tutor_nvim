@@ -1,0 +1,45 @@
+schemaVersion: 1
+kind: shell
+id: shell-remove-rm-r-003
+slug: shell.remove.rm-r-003
+title: Delete an old year
+instruction: Delete the 2023 photos folder.
+skillIds:
+  - linux.shell.remove
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    photos/2024/beach.jpg: ""
+    photos/2024/city.jpg: ""
+    photos/2023/lake.jpg: ""
+    photos/readme.txt: |
+      My photos
+objective:
+  type: fs_matches
+  absent:
+    - photos/2023
+  files:
+    photos/2024/city.jpg: ""
+solutions:
+  - commands:
+      - rm -r photos/2023
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "A folder: you need -r."
+  - afterMs: 8000
+    level: 2
+    text: rm -r photos/2023
+metadata:
+  language: bash
+  context: photos
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:photos

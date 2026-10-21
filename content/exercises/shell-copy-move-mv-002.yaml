@@ -1,0 +1,44 @@
+schemaVersion: 1
+kind: shell
+id: shell-copy-move-mv-002
+slug: shell.copy-move.mv-002
+title: Move a file up
+instruction: Move beach.jpg out of 2024 into the photos folder itself.
+skillIds:
+  - linux.shell.copy-move
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    photos/2024/beach.jpg: ""
+    photos/2024/city.jpg: ""
+    photos/2023/lake.jpg: ""
+    photos/readme.txt: |
+      My photos
+  cwd: photos
+objective:
+  type: fs_matches
+  files:
+    photos/beach.jpg: ""
+  absent:
+    - photos/2024/beach.jpg
+solutions:
+  - commands:
+      - mv 2024/beach.jpg .
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: The destination is the folder you are in.
+  - afterMs: 8000
+    level: 2
+    text: "A single dot means here: mv 2024/beach.jpg ."
+metadata:
+  language: bash
+  context: photos
+  estimatedSeconds: 20
+  transferTags: []

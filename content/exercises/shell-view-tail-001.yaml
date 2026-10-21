@@ -1,0 +1,49 @@
+schemaVersion: 1
+kind: shell
+id: shell-view-tail-001
+slug: shell.view.tail-001
+title: The last line
+instruction: Show only the last line of app.log.
+skillIds:
+  - linux.shell.view
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+  cwd: logs
+objective:
+  type: last_output_equals
+  text: |
+    INFO shutdown
+solutions:
+  - commands:
+      - tail -n 1 app.log
+    classification: optimal
+  - commands:
+      - tail -1 app.log
+    classification: efficient
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: The opposite of head.
+  - afterMs: 8000
+    level: 2
+    text: tail -n 1 app.log
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags: []

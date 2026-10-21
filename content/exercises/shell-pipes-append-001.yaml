@@ -1,0 +1,40 @@
+schemaVersion: 1
+kind: shell
+id: shell-pipes-append-001
+slug: shell.pipes.append-001
+title: Add to the end
+instruction: Add the line second to the end of log.txt with >>.
+skillIds:
+  - linux.shell.pipes
+mode: imitate
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    log.txt: |
+      first
+objective:
+  type: fs_matches
+  files:
+    log.txt: |
+      first
+      second
+solutions:
+  - commands:
+      - echo second >> log.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: ">> appends, > would replace."
+  - afterMs: 8000
+    level: 2
+    text: echo second >> log.txt
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 15
+  transferTags: []

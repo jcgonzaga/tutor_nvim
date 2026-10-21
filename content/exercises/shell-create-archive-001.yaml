@@ -1,0 +1,50 @@
+schemaVersion: 1
+kind: shell
+id: shell-create-archive-001
+slug: shell.create.archive-001
+title: A folder and a file in it
+instruction: Create a folder called archive inside logs, and an empty file today.log in it.
+skillIds:
+  - linux.shell.create
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+objective:
+  type: fs_matches
+  dirs:
+    - logs/archive
+  files:
+    logs/archive/today.log: ""
+solutions:
+  - commands:
+      - mkdir logs/archive
+      - touch logs/archive/today.log
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: First the folder, then the file inside it.
+  - afterMs: 8000
+    level: 2
+    text: mkdir logs/archive, then touch logs/archive/today.log.
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:logs

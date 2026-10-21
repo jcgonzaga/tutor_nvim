@@ -1,0 +1,49 @@
+schemaVersion: 1
+kind: shell
+id: shell-remove-rm-003
+slug: shell.remove.rm-003
+title: Only the logs
+instruction: Delete the three .log files in this folder and keep keep.txt.
+skillIds:
+  - linux.shell.remove
+mode: discriminate
+difficulty: 3
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    a.log: ""
+    b.log: ""
+    c.log: ""
+    keep.txt: |
+      stay
+objective:
+  type: fs_matches
+  absent:
+    - a.log
+    - b.log
+    - c.log
+  files:
+    keep.txt: |
+      stay
+solutions:
+  - commands:
+      - rm *.log
+    classification: optimal
+  - commands:
+      - rm a.log b.log c.log
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: A star stands for any characters.
+  - afterMs: 8000
+    level: 2
+    text: rm *.log
+metadata:
+  language: bash
+  context: config
+  estimatedSeconds: 25
+  transferTags: []

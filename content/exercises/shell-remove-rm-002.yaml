@@ -1,0 +1,53 @@
+schemaVersion: 1
+kind: shell
+id: shell-remove-rm-002
+slug: shell.remove.rm-002
+title: One file, not the other
+instruction: Delete the file ideas.txt but keep todo.txt.
+skillIds:
+  - linux.shell.remove
+mode: recall
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+    notes/ideas.txt: |
+      app for learning vim
+      recipe site
+    notes/archive/2023.txt: |
+      old note
+  cwd: notes
+objective:
+  type: fs_matches
+  absent:
+    - notes/ideas.txt
+  files:
+    notes/todo.txt: |
+      buy milk
+      call mom
+      buy bread
+      book dentist
+solutions:
+  - commands:
+      - rm ideas.txt
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Name only the file you mean.
+  - afterMs: 8000
+    level: 2
+    text: rm ideas.txt
+metadata:
+  language: bash
+  context: notes
+  estimatedSeconds: 15
+  transferTags: []

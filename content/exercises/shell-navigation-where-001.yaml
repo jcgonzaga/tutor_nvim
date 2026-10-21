@@ -1,0 +1,57 @@
+schemaVersion: 1
+kind: shell
+id: shell-navigation-where-001
+slug: shell.navigation.where-001
+title: Move and check
+instruction: Move into the logs folder, then into old, and print where you are.
+skillIds:
+  - linux.shell.navigation
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    logs/app.log: |
+      INFO server started
+      ERROR disk full
+      INFO request ok
+      ERROR timeout
+      INFO shutdown
+    logs/old/app.log.1: |
+      INFO old start
+      ERROR crash
+objective:
+  type: all
+  goals:
+    - type: cwd_equals
+      path: logs/old
+    - type: last_output_equals
+      text: |
+        /home/user/logs/old
+solutions:
+  - commands:
+      - cd logs/old
+      - pwd
+    classification: optimal
+  - commands:
+      - cd logs
+      - cd old
+      - pwd
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Two steps: move, then print the folder."
+  - afterMs: 8000
+    level: 2
+    text: cd logs/old, then pwd.
+metadata:
+  language: bash
+  context: logs
+  estimatedSeconds: 20
+  transferTags:
+    - context:bash
+    - context:logs

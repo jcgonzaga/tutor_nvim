@@ -1,0 +1,54 @@
+schemaVersion: 1
+kind: shell
+id: shell-create-mkdir-002
+slug: shell.create.mkdir-002
+title: A folder inside another
+instruction: Create a folder called tests inside project.
+skillIds:
+  - linux.shell.create
+mode: recall
+difficulty: 1
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+objective:
+  type: fs_matches
+  dirs:
+    - project/tests
+solutions:
+  - commands:
+      - mkdir project/tests
+    classification: optimal
+  - commands:
+      - cd project
+      - mkdir tests
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: Give mkdir the whole path.
+  - afterMs: 8000
+    level: 2
+    text: mkdir project/tests
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 15
+  transferTags: []

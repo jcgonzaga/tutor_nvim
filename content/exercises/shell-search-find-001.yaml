@@ -1,0 +1,56 @@
+schemaVersion: 1
+kind: shell
+id: shell-search-find-001
+slug: shell.search.find-001
+title: Find by name
+instruction: List the paths of all .js files under project.
+skillIds:
+  - linux.shell.search
+mode: discriminate
+difficulty: 3
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+objective:
+  type: all
+  goals:
+    - type: last_output_contains
+      text: project/src/app.js
+    - type: last_output_contains
+      text: project/src/util.js
+solutions:
+  - commands:
+      - find project -name '*.js'
+    classification: optimal
+  - commands:
+      - find project -name "*.js"
+    classification: valid
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: find looks at names, grep looks inside files.
+  - afterMs: 8000
+    level: 2
+    text: find project -name '*.js'
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 25
+  transferTags: []

@@ -1,0 +1,50 @@
+schemaVersion: 1
+kind: shell
+id: shell-view-wc-001
+slug: shell.view.wc-001
+title: Count the lines
+instruction: Count the lines of README.md.
+skillIds:
+  - linux.shell.view
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    project/README.md: |
+      # Demo app
+      Run the server with npm start.
+    project/src/app.js: |
+      const API_URL = 'http://localhost:3000';
+      console.log(API_URL);
+    project/src/util.js: |
+      export const add = (a, b) => a + b;
+    project/config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    project/config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+  cwd: project
+objective:
+  type: last_output_contains
+  text: 2 README.md
+solutions:
+  - commands:
+      - wc -l README.md
+    classification: optimal
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: wc counts words, lines and bytes.
+  - afterMs: 8000
+    level: 2
+    text: The option for lines is -l.
+metadata:
+  language: bash
+  context: project
+  estimatedSeconds: 20
+  transferTags: []

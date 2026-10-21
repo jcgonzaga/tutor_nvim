@@ -68,7 +68,16 @@ describe("curriculum coverage", () => {
       if (objective.type === "all") objective.goals.forEach(collect);
     };
     bundle.exercises.forEach((exercise) => collect(exercise.objective));
-    expect([...goalTypes].sort()).toEqual(["all", "buffer_equals", "cursor_at", "mode_equals"]);
+    expect([...goalTypes].sort()).toEqual([
+      "all",
+      "buffer_equals",
+      "cursor_at",
+      "cwd_equals",
+      "fs_matches",
+      "last_output_contains",
+      "last_output_equals",
+      "mode_equals",
+    ]);
   });
 
   it("gives skills with transfer exercises more than one context", () => {
