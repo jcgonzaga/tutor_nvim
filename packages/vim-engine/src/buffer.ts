@@ -111,3 +111,19 @@ export function normalizeCursor(buffer: TextBuffer, position: Position, mode: Vi
   const maxColumn = mode === "insert" ? length : Math.max(length - 1, 0);
   return { line, column: Math.min(Math.max(position.column, 0), maxColumn) };
 }
+
+/** Number of leading blanks (spaces and tabs). */
+export function leadingBlanks(line: string): number {
+  const match = /^[ \t]*/.exec(line);
+  return match ? match[0].length : 0;
+}
+
+/** Column of the first non-blank, or the last column when the line is all blanks (Vim's `^`). */
+export function firstNonBlankColumn(line: string): number {
+  const blanks = leadingBlanks(line);
+  return blanks < line.length ? blanks : Math.max(line.length - 1, 0);
+}
+
+export function sameLines(a: TextBuffer, b: TextBuffer): boolean {
+  return a === b || (a.lines.length === b.lines.length && a.lines.every((line, i) => line === b.lines[i]));
+}

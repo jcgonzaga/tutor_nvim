@@ -71,8 +71,14 @@ describe("shouldPreventDefault", () => {
     }
   });
 
+  it("captures Ctrl+r (redo) but no other Ctrl chord", () => {
+    expect(shouldPreventDefault({ key: "r", ctrl: true })).toBe(true);
+    expect(shouldPreventDefault({ key: "R", ctrl: true })).toBe(true);
+    expect(shouldPreventDefault({ key: "t", ctrl: true })).toBe(false);
+    expect(shouldPreventDefault({ key: "r", ctrl: true, meta: true })).toBe(false);
+  });
+
   it("leaves browser and OS chords and function keys alone", () => {
-    expect(shouldPreventDefault({ key: "r", ctrl: true })).toBe(false);
     expect(shouldPreventDefault({ key: "w", meta: true })).toBe(false);
     expect(shouldPreventDefault({ key: "d", alt: true })).toBe(false);
     expect(shouldPreventDefault({ key: "F5" })).toBe(false);

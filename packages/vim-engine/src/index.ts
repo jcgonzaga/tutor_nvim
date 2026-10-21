@@ -1,12 +1,19 @@
 export type {
+  CharSearch,
+  CharSearchKind,
+  DesiredColumn,
   DispatchResult,
+  InsertSession,
   KeyInput,
   Operator,
   PendingCommand,
   Position,
   Range,
+  Register,
+  RepeatState,
   TextBuffer,
   TextObjectModifier,
+  UndoEntry,
   VimMode,
   VimState,
 } from "./types";
@@ -31,5 +38,5 @@ export {
   parseKeySequence,
   tokenizeKeySequence,
 } from "./keys";
-export { findInnerQuotes, type ColumnSpan } from "./text-objects";
+export { findQuotedSpan, type ColumnSpan } from "./text-objects";
 export { createVimState, dispatch, pendingKeys, runKeys, type InitialVimState } from "./engine";

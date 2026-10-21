@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "content:validate": "tsx scripts/content-validate.ts"
+    "content:validate": "tsx scripts/content-validate.ts",
+    "vim:oracle": "tsx scripts/vim-oracle.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

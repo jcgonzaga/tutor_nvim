@@ -71,12 +71,18 @@ export function toKeyInput(event: KeyboardEventLike, timestamp: number): TimedKe
   };
 }
 
+/** Chords the Vim subset uses, so the browser must not also act on them (`Ctrl+r` is redo, not reload). */
+const CAPTURED_CHORDS: ReadonlySet<string> = new Set(["r"]);
+
 /**
- * Whether the browser's default action should be suppressed. Command chords
- * (Ctrl/Alt/Cmd + key) and function keys are left alone so reload, devtools,
- * tab switching etc. keep working inside the practice area.
+ * Whether the browser's default action should be suppressed. Chords the engine
+ * does not use (Ctrl/Alt/Cmd + key) and function keys are left alone so
+ * devtools, tab switching, reload (F5) etc. keep working inside the practice area.
  */
 export function shouldPreventDefault(input: KeyInput): boolean {
+  if (input.ctrl === true && input.alt !== true && input.meta !== true) {
+    return CAPTURED_CHORDS.has(input.key.toLowerCase());
+  }
   if (input.ctrl === true || input.alt === true || input.meta === true) return false;
   return [...input.key].length === 1 || CAPTURED_NAMED_KEYS.has(input.key);
 }
