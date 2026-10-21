@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-ci-quotes-second-string-001
+slug: vim.ci-quotes.second-string-001
+
+title: "Which string?"
+instruction: "Change world to there. The cursor is inside world."
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-quotes
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    print("hello", "world")
+  cursor:
+    line: 1
+    column: 18
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    print("hello", "there")
+
+solutions:
+  - sequence: 'ci"there<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is inside the second string: the text object picks that one."
+  - afterMs: 8000
+    level: 2
+    text: 'ci"'
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:python

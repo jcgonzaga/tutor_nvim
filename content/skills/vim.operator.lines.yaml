@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-operator-lines
+slug: vim.operator.lines
+
+title: "Whole lines"
+description: "Delete, copy or change a whole line with dd, yy and cc."
+
+domain: vim
+tier: 4
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.operator.delete
+concepts:
+  - operator
+  - line
+tags:
+  - operator
+  - line

@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-change-to-end-001
+slug: vim.change.to-end-001
+
+title: "Change to the end of the line"
+instruction: "Replace everything from old onwards with new."
+
+skillIds:
+  - vim.operator.change
+  - vim.navigation.line
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    echo old text here
+  cursor:
+    line: 1
+    column: 6
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    echo new
+
+solutions:
+  - sequence: "c$new<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Change from the cursor to the end of the line."
+  - afterMs: 8000
+    level: 2
+    text: "c$"
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 10
+  transferTags:
+    - context:shell

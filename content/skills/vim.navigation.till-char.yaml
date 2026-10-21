@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-navigation-till-char
+slug: vim.navigation.till-char
+
+title: "Till a character, and repeat"
+description: "Land just before a character with t, and repeat or reverse a find with ; and ,."
+
+domain: vim
+tier: 3
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.navigation.find-char
+concepts:
+  - motion
+  - search
+tags:
+  - motion
+  - find

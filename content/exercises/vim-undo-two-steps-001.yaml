@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-undo-two-steps-001
+slug: vim.undo.two-steps-001
+
+title: "Undo two steps"
+instruction: "Three words were deleted. Undo the last two, so b c d is left."
+
+skillIds:
+  - vim.undo
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    a b c d
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+  setupKeys: "dwdwdw"
+
+objective:
+  type: buffer_equals
+  target: |
+    b c d
+
+solutions:
+  - sequence: "uu"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns: []
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Each press of u undoes one change."
+  - afterMs: 8000
+    level: 2
+    text: "u twice."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 10
+  transferTags: []

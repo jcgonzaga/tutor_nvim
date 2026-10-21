@@ -1,0 +1,23 @@
+schemaVersion: 1
+
+id: vim-textobject-around
+slug: vim.textobject.around
+
+title: "Around a pair"
+description: 'Take the delimiters too with a", a( and a{, for example to delete a whole argument list.'
+
+domain: vim
+tier: 5
+difficulty: 4
+enabled: true
+
+prerequisites:
+  - vim.textobject.inner-quotes
+  - vim.textobject.inner-parentheses
+concepts:
+  - operator
+  - modifier
+  - text-object
+tags:
+  - text-object
+  - around

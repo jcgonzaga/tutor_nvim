@@ -1,0 +1,61 @@
+schemaVersion: 1
+
+id: vim-inner-word-ciw-json-001
+slug: vim.inner-word.ciw-json-001
+
+title: "Fix a JSON key"
+instruction: "Fix the typo in the key: nmae should be name."
+
+skillIds:
+  - vim.textobject.inner-word
+  - vim.operator.change
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    {"nmae": 1}
+  cursor:
+    line: 1
+    column: 4
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    {"name": 1}
+
+solutions:
+  - sequence: "ciwname<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The quotes are not part of the word."
+  - afterMs: 8000
+    level: 2
+    text: "ciw"
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:json
+    - context:config-file

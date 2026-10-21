@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-repeat-dot-x-001
+slug: vim.repeat.dot-x-001
+
+title: "Repeat x"
+instruction: "Remove the three # characters."
+
+skillIds:
+  - vim.repeat
+  - vim.edit.delete-char
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    ### Title
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |2
+     Title
+
+solutions:
+  - sequence: "x.."
+    classification: optimal
+  - sequence: "xxx"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns: []
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Delete one, then repeat the deletion."
+  - afterMs: 8000
+    level: 2
+    text: "x, then . twice."
+
+metadata:
+  language: markdown
+  context: prose
+  estimatedSeconds: 10
+  transferTags: []

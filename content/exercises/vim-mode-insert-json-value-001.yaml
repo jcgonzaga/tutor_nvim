@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-mode-insert-json-value-001
+slug: vim.mode-insert.json-value-001
+
+title: "Fill in a JSON value"
+instruction: "Insert 8080 as the value of port."
+
+skillIds:
+  - vim.mode.insert
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    {"port": }
+  cursor:
+    line: 1
+    column: 10
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    {"port": 8080}
+
+solutions:
+  - sequence: "i8080<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is already on the closing brace: insert before it."
+  - afterMs: 8000
+    level: 2
+    text: "i, type 8080, then Esc."
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:json
+    - context:config-file

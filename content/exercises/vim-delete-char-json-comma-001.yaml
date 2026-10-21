@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-delete-char-json-comma-001
+slug: vim.delete-char.json-comma-001
+
+title: "Remove a trailing comma"
+instruction: "JSON does not allow the trailing comma. Delete it."
+
+skillIds:
+  - vim.edit.delete-char
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    {"a": 1,}
+  cursor:
+    line: 1
+    column: 8
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    {"a": 1}
+
+solutions:
+  - sequence: "x"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is on the comma."
+  - afterMs: 8000
+    level: 2
+    text: "x"
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:json
+    - context:config-file

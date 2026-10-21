@@ -156,7 +156,7 @@ due) flow into `mixed` instead of being invented. A skill never repeats more tha
   `vim.mode.normal` had no standalone exercise, so a brand-new learner got an empty session. M4
   adds `vim-mode-normal-001` and `tests/pedagogy-flow.test.ts` now fails if any skill lacks an
   exercise that uses only itself and its ancestors.
-- **A skill can only be mastered if it has exercises in more than one context.** Today only
+- **A skill can only be mastered if it has exercises in more than one context.** _(Closed in M7: every skill now has ≥ 3 contexts and a transfer exercise.)_ Today only
   `vim.operator.change` and `vim.textobject.inner-quotes` do; the rest top out at `fluent` with
   mastery 90. M7 content must give every skill at least two contexts.
 

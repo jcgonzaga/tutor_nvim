@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-around-ca-paren-001
+slug: vim.around.ca-paren-001
+
+title: "Replace a parenthesized group"
+instruction: "Replace (a + b), parentheses included, with x."
+
+skillIds:
+  - vim.textobject.around
+  - vim.operator.change
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    result = (a + b) * c
+  cursor:
+    line: 1
+    column: 11
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    result = x * c
+
+solutions:
+  - sequence: "ca(x<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Change around parentheses."
+  - afterMs: 8000
+    level: 2
+    text: "ca("
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:python

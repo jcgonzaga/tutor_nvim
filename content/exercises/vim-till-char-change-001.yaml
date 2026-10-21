@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-till-char-change-001
+slug: vim.till-char.change-001
+
+title: "Change up to a character"
+instruction: "Change the colour dark red to blue."
+
+skillIds:
+  - vim.navigation.till-char
+  - vim.operator.change
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    color: dark red; margin: 0;
+  cursor:
+    line: 1
+    column: 8
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    color: blue; margin: 0;
+
+solutions:
+  - sequence: "ct;blue<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "c works with t too."
+  - afterMs: 8000
+    level: 2
+    text: "c, t and ;, then type blue and Esc."
+
+metadata:
+  language: css
+  context: stylesheet
+  estimatedSeconds: 12
+  transferTags:
+    - context:css
+    - context:stylesheet

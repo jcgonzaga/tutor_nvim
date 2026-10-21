@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-around-da-paren-ts-001
+slug: vim.around.da-paren-ts-001
+
+title: "Delete a call's parentheses (TypeScript)"
+instruction: "Remove the parentheses and their arguments."
+
+skillIds:
+  - vim.textobject.around
+  - vim.operator.delete
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const r = max(a, b) + 1;
+  cursor:
+    line: 1
+    column: 15
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const r = max + 1;
+
+solutions:
+  - sequence: "da("
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Around parentheses."
+  - afterMs: 8000
+    level: 2
+    text: "da("
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:typescript

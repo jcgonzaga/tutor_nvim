@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-around-vs-inner-001
+slug: vim.around.vs-inner-001
+
+title: "Inner or around?"
+instruction: "Turn run(a, b); into run; (remove the parentheses too)."
+
+skillIds:
+  - vim.textobject.around
+  - vim.operator.delete
+
+mode: discriminate
+difficulty: 4
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    run(a, b);
+  cursor:
+    line: 1
+    column: 5
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    run;
+
+solutions:
+  - sequence: "da("
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "di( would leave the parentheses behind."
+  - afterMs: 8000
+    level: 2
+    text: "da("
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 14
+  transferTags:
+    - context:javascript

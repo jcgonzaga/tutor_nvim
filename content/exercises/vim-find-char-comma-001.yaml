@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-find-char-comma-001
+slug: vim.find-char.comma-001
+
+title: "Find the comma"
+instruction: "Jump onto the comma."
+
+skillIds:
+  - vim.navigation.find-char
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    foo(bar, baz)
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 8
+
+solutions:
+  - sequence: "f,"
+    classification: optimal
+  - sequence: "lllllll"
+    classification: inefficient
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "f followed by a character jumps to it."
+  - afterMs: 8000
+    level: 2
+    text: "f and then the comma."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:javascript

@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-undo-change-001
+slug: vim.undo.change-001
+
+title: "Undo a change"
+instruction: "The name was changed by mistake. Undo it."
+
+skillIds:
+  - vim.undo
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    PORT=8080
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+  setupKeys: "cwHOST<Esc>"
+
+objective:
+  type: buffer_equals
+  target: |
+    PORT=8080
+
+solutions:
+  - sequence: "u"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns: []
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "A change plus its typed text is one undo step."
+  - afterMs: 8000
+    level: 2
+    text: "u"
+
+metadata:
+  language: shell
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:config-file

@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-inner-parens-ci-js-001
+slug: vim.inner-parens.ci-js-001
+
+title: "Change a call's argument"
+instruction: "Replace the argument oldValue with newValue."
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-parentheses
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    console.log(oldValue);
+  cursor:
+    line: 1
+    column: 14
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    console.log(newValue);
+
+solutions:
+  - sequence: "ci(newValue<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Change + inside + parentheses."
+  - afterMs: 8000
+    level: 2
+    text: "ci("
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:javascript

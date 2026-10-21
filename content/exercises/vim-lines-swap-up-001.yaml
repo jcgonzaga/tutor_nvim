@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-lines-swap-up-001
+slug: vim.lines.swap-up-001
+
+title: "Move a line up"
+instruction: "Swap the lines so second comes first."
+
+skillIds:
+  - vim.operator.lines
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    first
+    second
+  cursor:
+    line: 2
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    second
+    first
+
+solutions:
+  - sequence: "ddkP"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Delete the line, go up, then put it above."
+  - afterMs: 8000
+    level: 2
+    text: "dd, k, P."
+
+metadata:
+  language: lua
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:lua

@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-lines-dd-last-001
+slug: vim.lines.dd-last-001
+
+title: "Delete the last line"
+instruction: "Delete the commented-out last line."
+
+skillIds:
+  - vim.operator.lines
+
+mode: transfer
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    [section]
+    key=1
+    #old
+  cursor:
+    line: 3
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    [section]
+    key=1
+
+solutions:
+  - sequence: "dd"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is already on it."
+  - afterMs: 8000
+    level: 2
+    text: "dd"
+
+metadata:
+  language: ini
+  context: config-file
+  estimatedSeconds: 8
+  transferTags:
+    - context:config-file

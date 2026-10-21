@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-append-a-vs-i-001
+slug: vim.append.a-vs-i-001
+
+title: "a or i?"
+instruction: "Turn user into users."
+
+skillIds:
+  - vim.insert.append-open
+
+mode: discriminate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const user = 1;
+  cursor:
+    line: 1
+    column: 10
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const users = 1;
+
+solutions:
+  - sequence: "as<Esc>"
+    classification: optimal
+  - sequence: "lis<Esc>"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is on the last letter of user."
+  - afterMs: 8000
+    level: 2
+    text: "Insert after it, not before it."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:javascript

@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-till-char-reverse-001
+slug: vim.till-char.reverse-001
+
+title: "Go back with a comma"
+instruction: "You went one comma too far. Move back to the second comma."
+
+skillIds:
+  - vim.navigation.till-char
+  - vim.navigation.find-char
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    a,b,c,d,e
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+  setupKeys: "f,;;"
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 4
+
+solutions:
+  - sequence: ","
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The comma key repeats the search in the opposite direction."
+  - afterMs: 8000
+    level: 2
+    text: ","
+
+metadata:
+  language: text
+  context: csv-data
+  estimatedSeconds: 12
+  transferTags:
+    - context:csv-data

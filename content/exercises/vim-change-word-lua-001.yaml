@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-change-word-lua-001
+slug: vim.change.word-lua-001
+
+title: "Rename in Lua"
+instruction: "Rename speed to velocity."
+
+skillIds:
+  - vim.operator.change
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    local speed = 10
+  cursor:
+    line: 1
+    column: 7
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    local velocity = 10
+
+solutions:
+  - sequence: "cwvelocity<Esc>"
+    classification: optimal
+  - sequence: "dwivelocity <Esc>"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Same command, another language."
+  - afterMs: 8000
+    level: 2
+    text: "cw"
+
+metadata:
+  language: lua
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:lua

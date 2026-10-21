@@ -1,0 +1,66 @@
+schemaVersion: 1
+
+id: vim-repeat-dot-append-001
+slug: vim.repeat.dot-append-001
+
+title: "Add a semicolon to each line"
+instruction: "Add a ; at the end of all three lines."
+
+skillIds:
+  - vim.repeat
+  - vim.insert.append-open
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    let a = 1
+    let b = 2
+    let c = 3
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    let a = 1;
+    let b = 2;
+    let c = 3;
+
+solutions:
+  - sequence: "$a;<Esc>j$.j$."
+    classification: optimal
+  - sequence: "$a;<Esc>j$a;<Esc>j$a;<Esc>"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "$a; adds one. Then repeat the insertion on the next lines."
+  - afterMs: 8000
+    level: 2
+    text: "After each j, press $ and then ."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:javascript

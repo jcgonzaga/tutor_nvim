@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-find-char-equals-001
+slug: vim.find-char.equals-001
+
+title: "Find the equals sign"
+instruction: "Jump onto the = sign."
+
+skillIds:
+  - vim.navigation.find-char
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    export API_KEY=abc123
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 15
+
+solutions:
+  - sequence: "f="
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "One command finds a character on the line."
+  - afterMs: 8000
+    level: 2
+    text: "f="
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 10
+  transferTags:
+    - context:shell

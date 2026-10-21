@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-till-char-basic-001
+slug: vim.till-char.basic-001
+
+title: "Stop just before a character"
+instruction: "Move to the o right before the comma."
+
+skillIds:
+  - vim.navigation.till-char
+
+mode: learn
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    hello, world
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 5
+
+solutions:
+  - sequence: "t,"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "t is like f, but it stops one character short."
+  - afterMs: 8000
+    level: 2
+    text: "t,"
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 10
+  transferTags: []

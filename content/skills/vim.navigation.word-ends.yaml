@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-navigation-word-ends
+slug: vim.navigation.word-ends
+
+title: "Back and end of words"
+description: "Move backwards with b and to the end of a word with e, and jump over punctuation with W, B and E."
+
+domain: vim
+tier: 3
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.navigation.words
+concepts:
+  - motion
+  - word
+tags:
+  - motion
+  - word

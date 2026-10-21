@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-delete-char-vs-word-001
+slug: vim.delete-char.vs-word-001
+
+title: "x or something bigger?"
+instruction: "Delete the word unwanted and the space after it."
+
+skillIds:
+  - vim.edit.delete-char
+  - vim.operator.delete
+
+mode: discriminate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    remove unwanted text
+  cursor:
+    line: 1
+    column: 8
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    remove text
+
+solutions:
+  - sequence: "dw"
+    classification: optimal
+  - sequence: "xxxxxxxxx"
+    classification: anti-pattern
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Nine presses of x would work. Is there a command that deletes a word?"
+  - afterMs: 8000
+    level: 2
+    text: "dw deletes from the cursor to the start of the next word."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 10
+  transferTags: []

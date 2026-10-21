@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-till-char-delete-001
+slug: vim.till-char.delete-001
+
+title: "Delete up to a character"
+instruction: "Delete the arguments but keep the parentheses."
+
+skillIds:
+  - vim.navigation.till-char
+  - vim.operator.delete
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    call(arg1, arg2)
+  cursor:
+    line: 1
+    column: 6
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    call()
+
+solutions:
+  - sequence: "dt)"
+    classification: optimal
+  - sequence: "xxxxxxxxxx"
+    classification: anti-pattern
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "An operator can use t as its motion."
+  - afterMs: 8000
+    level: 2
+    text: "d, then t and the character to stop before."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:javascript

@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-ci-quotes-ts-001
+slug: vim.ci-quotes.ts-001
+
+title: "Change inside quotes (TypeScript)"
+instruction: 'Switch the mode to "production" by changing only what is between the quotes.'
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-quotes
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const mode: string = "development";
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const mode: string = "production";
+
+solutions:
+  - sequence: 'ci"production<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Same skill, another language."
+  - afterMs: 8000
+    level: 2
+    text: 'ci" finds the string even if the cursor is before it.'
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:typescript

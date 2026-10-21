@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-inner-parens-ts-001
+slug: vim.inner-parens.ts-001
+
+title: "Change a parameter list"
+instruction: "Change the parameter to user: User."
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-parentheses
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    function greet(name: string) {
+  cursor:
+    line: 1
+    column: 16
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    function greet(user: User) {
+
+solutions:
+  - sequence: "ci(user: User<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is inside the parentheses."
+  - afterMs: 8000
+    level: 2
+    text: "ci("
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:typescript

@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-line-start-001
+slug: vim.line.start-001
+
+title: "Jump to the start of the line"
+instruction: "Move to the first character of the line."
+
+skillIds:
+  - vim.navigation.line
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    local x = 10
+  cursor:
+    line: 1
+    column: 12
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 1
+
+solutions:
+  - sequence: "0"
+    classification: optimal
+  - sequence: "hhhhhhhhhhh"
+    classification: inefficient
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "0 goes to the very start of the line."
+  - afterMs: 8000
+    level: 2
+    text: "One key."
+
+metadata:
+  language: lua
+  context: source-code
+  estimatedSeconds: 8
+  transferTags:
+    - context:lua

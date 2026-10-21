@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-around-da-paren-001
+slug: vim.around.da-paren-001
+
+title: "Delete the parentheses too"
+instruction: "Delete the arguments together with their parentheses."
+
+skillIds:
+  - vim.textobject.around
+  - vim.operator.delete
+
+mode: learn
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    foo(bar, baz) + 1
+  cursor:
+    line: 1
+    column: 5
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    foo + 1
+
+solutions:
+  - sequence: "da("
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "a means around: the delimiters are included."
+  - afterMs: 8000
+    level: 2
+    text: "da("
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:javascript

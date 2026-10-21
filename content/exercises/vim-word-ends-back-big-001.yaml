@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-word-ends-back-big-001
+slug: vim.word-ends.back-big-001
+
+title: "Back over a whole call"
+instruction: "Jump back to the start of compute(value)."
+
+skillIds:
+  - vim.navigation.word-ends
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    result = compute(value)
+  cursor:
+    line: 1
+    column: 23
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 10
+
+solutions:
+  - sequence: "B"
+    classification: optimal
+  - sequence: "bbb"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Capital B jumps back over punctuation too."
+  - afterMs: 8000
+    level: 2
+    text: "One key: B."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:python

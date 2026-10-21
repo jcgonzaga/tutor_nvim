@@ -1,0 +1,63 @@
+schemaVersion: 1
+
+id: vim-lines-cc-001
+slug: vim.lines.cc-001
+
+title: "Replace a whole line"
+instruction: "Replace the middle line with let b = 2;"
+
+skillIds:
+  - vim.operator.lines
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    let a = 1;
+    let wrong line here;
+    let c = 3;
+  cursor:
+    line: 2
+    column: 5
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    let a = 1;
+    let b = 2;
+    let c = 3;
+
+solutions:
+  - sequence: "cclet b = 2;<Esc>"
+    classification: optimal
+  - sequence: "ddkolet b = 2;<Esc>"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "cc deletes the line's text and starts INSERT."
+  - afterMs: 8000
+    level: 2
+    text: "cc, type the new line, Esc."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:javascript

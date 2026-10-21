@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-till-char-repeat-001
+slug: vim.till-char.repeat-001
+
+title: "Repeat the search with ;"
+instruction: "Move to the e right before the third comma."
+
+skillIds:
+  - vim.navigation.till-char
+
+mode: imitate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    one,two,three,four
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 13
+
+solutions:
+  - sequence: "t,;;"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "; repeats the last t, f, T or F."
+  - afterMs: 8000
+    level: 2
+    text: "t, once, then ; twice."
+
+metadata:
+  language: text
+  context: csv-data
+  estimatedSeconds: 12
+  transferTags:
+    - context:csv-data

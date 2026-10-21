@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic-json-001
+slug: vim.navigation-atomic.json-001
+
+title: "Move around a JSON file"
+instruction: "Move the cursor onto the n of name."
+
+skillIds:
+  - vim.navigation.atomic
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |2
+    {
+      "name": "tutor",
+      "version": 1
+    }
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 2
+  column: 4
+
+solutions:
+  - sequence: "jlll"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Down one line, then right."
+  - afterMs: 8000
+    level: 2
+    text: "j once, then l three times."
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:json
+    - context:config-file

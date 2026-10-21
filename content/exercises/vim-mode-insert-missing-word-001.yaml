@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-mode-insert-missing-word-001
+slug: vim.mode-insert.missing-word-001
+
+title: "Insert a missing word"
+instruction: "Add the word brown (and a space) before fox."
+
+skillIds:
+  - vim.mode.insert
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    The quick fox jumps
+  cursor:
+    line: 1
+    column: 11
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    The quick brown fox jumps
+
+solutions:
+  - sequence: "ibrown <Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Put the cursor on fox, then start inserting before it."
+  - afterMs: 8000
+    level: 2
+    text: "i, then type brown and a space, then Esc."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 10
+  transferTags: []

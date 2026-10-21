@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-delete-to-end-002
+slug: vim.delete.to-end-002
+
+title: "Delete a trailing comment"
+instruction: "Delete the comment and the space before it."
+
+skillIds:
+  - vim.operator.delete
+  - vim.navigation.line
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const a = 1; // remove me
+  cursor:
+    line: 1
+    column: 13
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const a = 1;
+
+solutions:
+  - sequence: "d$"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Delete from the cursor to the end of the line."
+  - afterMs: 8000
+    level: 2
+    text: "d$"
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:javascript

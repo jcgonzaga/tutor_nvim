@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-around-da-quote-001
+slug: vim.around.da-quote-001
+
+title: "Delete a string and its quotes"
+instruction: "Delete the first string, quotes included."
+
+skillIds:
+  - vim.textobject.around
+  - vim.operator.delete
+
+mode: imitate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    echo "one" "two"
+  cursor:
+    line: 1
+    column: 7
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    echo "two"
+
+solutions:
+  - sequence: 'da"'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: 'a" takes the quotes and the space after the string.'
+  - afterMs: 8000
+    level: 2
+    text: 'da"'
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 12
+  transferTags:
+    - context:shell

@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic-config-001
+slug: vim.navigation-atomic.config-001
+
+title: "Move around a config file"
+instruction: "Move the cursor onto the 8 of 8080."
+
+skillIds:
+  - vim.navigation.atomic
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    HOST=localhost
+    PORT=8080
+    DEBUG=false
+  cursor:
+    line: 3
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 2
+  column: 6
+
+solutions:
+  - sequence: "klllll"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "k goes up, l goes right."
+  - afterMs: 8000
+    level: 2
+    text: "One line up, then five characters right."
+
+metadata:
+  language: shell
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:config-file

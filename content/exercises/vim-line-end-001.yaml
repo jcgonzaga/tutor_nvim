@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-line-end-001
+slug: vim.line.end-001
+
+title: "Jump to the end of the line"
+instruction: "Move to the last character of the line."
+
+skillIds:
+  - vim.navigation.line
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    The quick brown fox
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 19
+
+solutions:
+  - sequence: "$"
+    classification: optimal
+  - sequence: "llllllllllllllllll"
+    classification: inefficient
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "$ goes to the end of the line."
+  - afterMs: 8000
+    level: 2
+    text: "One key."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

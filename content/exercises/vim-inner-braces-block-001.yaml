@@ -1,0 +1,63 @@
+schemaVersion: 1
+
+id: vim-inner-braces-block-001
+slug: vim.inner-braces.block-001
+
+title: "Empty a block"
+instruction: "Delete the body of the block but keep the braces."
+
+skillIds:
+  - vim.operator.delete
+  - vim.textobject.inner-braces
+
+mode: discriminate
+difficulty: 4
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |2
+    if (ok) {
+      run();
+    }
+  cursor:
+    line: 2
+    column: 3
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    if (ok) {
+    }
+
+solutions:
+  - sequence: "di{"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "i{ works across lines."
+  - afterMs: 8000
+    level: 2
+    text: "di{"
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 14
+  transferTags:
+    - context:javascript

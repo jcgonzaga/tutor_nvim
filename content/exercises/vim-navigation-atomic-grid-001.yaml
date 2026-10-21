@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic-grid-001
+slug: vim.navigation-atomic.grid-001
+
+title: "Walk through code with h j k l"
+instruction: "Move the cursor onto the r of return."
+
+skillIds:
+  - vim.navigation.atomic
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |2
+    def total(items):
+        result = 0
+        for item in items:
+            result += item
+        return result
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 5
+  column: 5
+
+solutions:
+  - sequence: "jjjjllll"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Down to the last line first, then right."
+  - afterMs: 8000
+    level: 2
+    text: "Four lines down, then four characters right."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 10
+  transferTags: []

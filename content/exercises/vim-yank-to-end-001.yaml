@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-yank-to-end-001
+slug: vim.yank.to-end-001
+
+title: "Copy to the end of the line"
+instruction: "Make the line read abcabc by copying it all."
+
+skillIds:
+  - vim.operator.yank
+  - vim.navigation.line
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    abc
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    abcabc
+
+solutions:
+  - sequence: "y$$p"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "y$ copies from the cursor to the end of the line."
+  - afterMs: 8000
+    level: 2
+    text: "y$, then $ to go to the end, then p."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 10
+  transferTags:
+    - context:text
+    - context:plain-text

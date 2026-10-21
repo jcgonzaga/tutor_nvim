@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-around-da-brace-001
+slug: vim.around.da-brace-001
+
+title: "Delete an object with its braces"
+instruction: "Remove the object argument, braces included."
+
+skillIds:
+  - vim.textobject.around
+  - vim.operator.delete
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    call({ a: 1 });
+  cursor:
+    line: 1
+    column: 8
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    call();
+
+solutions:
+  - sequence: "da{"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Around braces."
+  - afterMs: 8000
+    level: 2
+    text: "da{"
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:javascript

@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-line-json-end-001
+slug: vim.line.json-end-001
+
+title: "End of a JSON line"
+instruction: "Move onto the comma at the end of the line."
+
+skillIds:
+  - vim.navigation.line
+
+mode: transfer
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |2
+      "key": "value",
+  cursor:
+    line: 1
+    column: 4
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 17
+
+solutions:
+  - sequence: "$"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The comma is the last character."
+  - afterMs: 8000
+    level: 2
+    text: "$"
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 8
+  transferTags:
+    - context:json
+    - context:config-file

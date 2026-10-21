@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-repeat-dot-ciw-001
+slug: vim.repeat.dot-ciw-001
+
+title: "Replace every old"
+instruction: "Replace the three old with new."
+
+skillIds:
+  - vim.repeat
+  - vim.textobject.inner-word
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    old, old, old
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    new, new, new
+
+solutions:
+  - sequence: "ciwnew<Esc>ww.ww."
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Change one, then move to the next and repeat."
+  - afterMs: 8000
+    level: 2
+    text: "ww gets to the next old (the comma counts as a word)."
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:typescript

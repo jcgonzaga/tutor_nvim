@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-inner-word-ciw-js-001
+slug: vim.inner-word.ciw-js-001
+
+title: "Change a word from its middle"
+instruction: "Change price to cost. The cursor is in the middle of the word."
+
+skillIds:
+  - vim.textobject.inner-word
+  - vim.operator.change
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const total = price * qty;
+  cursor:
+    line: 1
+    column: 17
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const total = cost * qty;
+
+solutions:
+  - sequence: "ciwcost<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "ciw changes the whole word, wherever the cursor is inside it."
+  - afterMs: 8000
+    level: 2
+    text: "c, i, w, then the new word, then Esc."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:javascript

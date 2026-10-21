@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-words-fruit-001
+slug: vim.words.fruit-001
+
+title: "Jump by words"
+instruction: "Jump to the start of cherry."
+
+skillIds:
+  - vim.navigation.words
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    apple banana cherry
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 14
+
+solutions:
+  - sequence: "ww"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "w jumps to the start of the next word."
+  - afterMs: 8000
+    level: 2
+    text: "Two words ahead."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

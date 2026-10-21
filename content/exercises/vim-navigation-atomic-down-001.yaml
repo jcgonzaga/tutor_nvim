@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic-down-001
+slug: vim.navigation-atomic.down-001
+
+title: "Go down with j"
+instruction: "Move the cursor down to the last line."
+
+skillIds:
+  - vim.navigation.atomic
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    one
+    two
+    three
+    four
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 4
+  column: 1
+
+solutions:
+  - sequence: "jjj"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "j moves down one line."
+  - afterMs: 8000
+    level: 2
+    text: "Three lines down."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

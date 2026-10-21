@@ -4,7 +4,7 @@ Web-first, gamified trainer for Linux basics, Vim/Neovim and (later) LazyVim.
 Source of truth: [`docs/PRD.md`](docs/PRD.md), [`AGENTS.md`](AGENTS.md),
 [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
 
-Current state: **Milestone 6** (optional cloud persistence: Fastify API, Neon Postgres via Drizzle,
+Current state: **Milestone 7** (MVP content: 21 skills, 120 exercises) on top of **Milestone 6** (optional cloud persistence: Fastify API, Neon Postgres via Drizzle,
 Neon Auth) on top of **Milestone 5** (local product MVP: onboarding, calibration, daily session, skill
 map, local progress) on top of the pedagogy engine (M4), the exercise platform (M3), the Vim core
 (M2) and the first practice slice (M1):
@@ -13,7 +13,8 @@ map, local progress) on top of the pedagogy engine (M4), the exercise platform (
 [`m3-exercise-platform`](docs/architecture/m3-exercise-platform.md),
 [`m4-pedagogy-engine`](docs/architecture/m4-pedagogy-engine.md),
 [`m5-local-product`](docs/architecture/m5-local-product.md),
-[`m6-cloud-persistence`](docs/architecture/m6-cloud-persistence.md) (+ [ADRs](docs/architecture/adr)).
+[`m6-cloud-persistence`](docs/architecture/m6-cloud-persistence.md) (+ [ADRs](docs/architecture/adr)),
+[`m7-content`](docs/architecture/m7-content.md).
 
 ## Commands
 

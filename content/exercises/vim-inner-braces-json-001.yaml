@@ -1,0 +1,61 @@
+schemaVersion: 1
+
+id: vim-inner-braces-json-001
+slug: vim.inner-braces.json-001
+
+title: "Change what is inside braces"
+instruction: 'Replace the contents of the object with "b": 2.'
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-braces
+
+mode: learn
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    {"a": 1}
+  cursor:
+    line: 1
+    column: 3
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    {"b": 2}
+
+solutions:
+  - sequence: 'ci{"b": 2<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "i{ is the text object for braces."
+  - afterMs: 8000
+    level: 2
+    text: "ci{"
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:json
+    - context:config-file

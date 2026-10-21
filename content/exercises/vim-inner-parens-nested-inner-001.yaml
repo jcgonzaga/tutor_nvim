@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-inner-parens-nested-inner-001
+slug: vim.inner-parens.nested-inner-001
+
+title: "Nested: the inner call"
+instruction: "Change the 1 inside bar(1) to 9."
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-parentheses
+
+mode: discriminate
+difficulty: 4
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    foo(bar(1), 2)
+  cursor:
+    line: 1
+    column: 9
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    foo(bar(9), 2)
+
+solutions:
+  - sequence: "ci(9<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor sits inside the inner parentheses."
+  - afterMs: 8000
+    level: 2
+    text: "ci("
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 14
+  transferTags:
+    - context:javascript

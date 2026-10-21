@@ -1,0 +1,22 @@
+schemaVersion: 1
+
+id: vim-textobject-inner-braces
+slug: vim.textobject.inner-braces
+
+title: "Inside braces"
+description: "Operate on what is inside { } with i{, in objects, blocks and tables."
+
+domain: vim
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.operator.change
+concepts:
+  - operator
+  - modifier
+  - text-object
+tags:
+  - text-object
+  - braces

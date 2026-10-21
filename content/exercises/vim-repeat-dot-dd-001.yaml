@@ -1,0 +1,66 @@
+schemaVersion: 1
+
+id: vim-repeat-dot-dd-001
+slug: vim.repeat.dot-dd-001
+
+title: "Delete several lines"
+instruction: "Delete the first three lines."
+
+skillIds:
+  - vim.repeat
+  - vim.operator.lines
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    a
+    b
+    c
+    d
+    e
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    d
+    e
+
+solutions:
+  - sequence: "dd.."
+    classification: optimal
+  - sequence: "dddddd"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Do it once, then repeat."
+  - afterMs: 8000
+    level: 2
+    text: "dd, then . twice."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 10
+  transferTags: []

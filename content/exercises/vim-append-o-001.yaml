@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-append-o-001
+slug: vim.append.o-001
+
+title: "Open a line below"
+instruction: "Add a new line below with import sys."
+
+skillIds:
+  - vim.insert.append-open
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    import os
+  cursor:
+    line: 1
+    column: 3
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    import os
+    import sys
+
+solutions:
+  - sequence: "oimport sys<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "o opens a new line below and starts typing there."
+  - afterMs: 8000
+    level: 2
+    text: "o, type the line, then Esc."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 8
+  transferTags:
+    - context:python

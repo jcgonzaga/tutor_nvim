@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-word-ends-back-001
+slug: vim.word-ends.back-001
+
+title: "Go back a word"
+instruction: "Jump back to the start of beta."
+
+skillIds:
+  - vim.navigation.word-ends
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    alpha beta gamma
+  cursor:
+    line: 1
+    column: 12
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 7
+
+solutions:
+  - sequence: "b"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "b is w backwards."
+  - afterMs: 8000
+    level: 2
+    text: "One key."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

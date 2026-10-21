@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-inner-parens-shell-001
+slug: vim.inner-parens.shell-001
+
+title: "Change a command substitution"
+instruction: "Replace the command inside $( ) with uname."
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-parentheses
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    echo $(date +%s)
+  cursor:
+    line: 1
+    column: 8
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    echo $(uname)
+
+solutions:
+  - sequence: "ci(uname<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "$( ) has parentheses like any other."
+  - afterMs: 8000
+    level: 2
+    text: "ci("
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 12
+  transferTags:
+    - context:shell

@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-lines-swap-down-001
+slug: vim.lines.swap-down-001
+
+title: "Move a line down"
+instruction: "Swap the two lines, so import os comes first."
+
+skillIds:
+  - vim.operator.lines
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    import sys
+    import os
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    import os
+    import sys
+
+solutions:
+  - sequence: "ddp"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Delete puts the line in the register. Put it back below."
+  - afterMs: 8000
+    level: 2
+    text: "dd, then p."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:python

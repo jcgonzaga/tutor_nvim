@@ -1,0 +1,61 @@
+schemaVersion: 1
+
+id: vim-yank-line-dup-001
+slug: vim.yank.line-dup-001
+
+title: "Duplicate the middle line"
+instruction: "Duplicate the line const b = 2;."
+
+skillIds:
+  - vim.operator.yank
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const a = 1;
+    const b = 2;
+    const c = 3;
+  cursor:
+    line: 2
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const a = 1;
+    const b = 2;
+    const b = 2;
+    const c = 3;
+
+solutions:
+  - sequence: "yyp"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "yy copies a line, p puts it below."
+  - afterMs: 8000
+    level: 2
+    text: "yy, then p."
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 8
+  transferTags:
+    - context:typescript

@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-edit-delete-char
+slug: vim.edit.delete-char
+
+title: "Delete a character"
+description: "Remove the character under the cursor with x, and know when a bigger command is better."
+
+domain: vim
+tier: 2
+difficulty: 1
+enabled: true
+
+prerequisites:
+  - vim.navigation.atomic
+concepts:
+  - edit
+  - character
+tags:
+  - edit
+  - x

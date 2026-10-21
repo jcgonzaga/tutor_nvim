@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-line-indent-001
+slug: vim.line.indent-001
+
+title: "First non-blank character"
+instruction: "Move to the r of return, skipping the indentation."
+
+skillIds:
+  - vim.navigation.line
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |2
+        return result
+  cursor:
+    line: 1
+    column: 12
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 5
+
+solutions:
+  - sequence: "^"
+    classification: optimal
+  - sequence: "0w"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "There is a key for the first character that is not a space."
+  - afterMs: 8000
+    level: 2
+    text: "^"
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:python

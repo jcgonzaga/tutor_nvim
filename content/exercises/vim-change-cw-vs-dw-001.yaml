@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-change-cw-vs-dw-001
+slug: vim.change.cw-vs-dw-001
+
+title: "cw or dw then insert?"
+instruction: "Replace bar with qux."
+
+skillIds:
+  - vim.operator.change
+  - vim.operator.delete
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    foo bar baz
+  cursor:
+    line: 1
+    column: 5
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    foo qux baz
+
+solutions:
+  - sequence: "cwqux<Esc>"
+    classification: optimal
+  - sequence: "dwiqux <Esc>"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "dw also removes the space after the word. cw does not."
+  - afterMs: 8000
+    level: 2
+    text: "cw, then qux, then Esc."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 12
+  transferTags: []

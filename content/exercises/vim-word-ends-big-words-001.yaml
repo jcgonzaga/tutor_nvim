@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-word-ends-big-words-001
+slug: vim.word-ends.big-words-001
+
+title: "WORDS skip punctuation"
+instruction: "Jump to the start of ./build/cache."
+
+skillIds:
+  - vim.navigation.word-ends
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    rm -rf ./build/cache
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 8
+
+solutions:
+  - sequence: "WW"
+    classification: optimal
+  - sequence: "www"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Capital W treats everything between spaces as one word."
+  - afterMs: 8000
+    level: 2
+    text: "W twice: rm, -rf, then ./build/cache."
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 12
+  transferTags:
+    - context:shell

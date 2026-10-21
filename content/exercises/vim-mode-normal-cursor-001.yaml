@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-mode-normal-cursor-001
+slug: vim.mode-normal.cursor-001
+
+title: "Where does the cursor go after Esc?"
+instruction: "Leave INSERT mode, and notice that the cursor steps back onto the last character."
+
+skillIds:
+  - vim.mode.normal
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    Done.
+  cursor:
+    line: 1
+    column: 6
+  vimMode: insert
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 5
+
+solutions:
+  - sequence: "<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "In INSERT mode the cursor sits between characters; in NORMAL mode it sits on one."
+  - afterMs: 8000
+    level: 2
+    text: "Esc leaves INSERT mode and moves the cursor back one place."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 8
+  transferTags: []

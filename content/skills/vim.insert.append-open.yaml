@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-insert-append-open
+slug: vim.insert.append-open
+
+title: "Append and open a line"
+description: "Start typing after the cursor with a, or on a new line below with o."
+
+domain: vim
+tier: 2
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.mode.insert
+concepts:
+  - insert
+  - mode
+tags:
+  - insert
+  - append

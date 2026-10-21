@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-yank-put-before-001
+slug: vim.yank.put-before-001
+
+title: "p or P?"
+instruction: "Copy the last line and put it above the first line."
+
+skillIds:
+  - vim.operator.yank
+
+mode: discriminate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    first
+    second
+  cursor:
+    line: 2
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    second
+    first
+    second
+
+solutions:
+  - sequence: "yykP"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "P puts the copied line above the cursor line."
+  - afterMs: 8000
+    level: 2
+    text: "yy, move to the first line, then P."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 10
+  transferTags: []

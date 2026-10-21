@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-undo-redo-002
+slug: vim.undo.redo-002
+
+title: "Redo a deletion"
+instruction: "You undid the deletion of b by mistake. Redo it."
+
+skillIds:
+  - vim.undo
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    a
+    b
+    c
+  cursor:
+    line: 2
+    column: 1
+  vimMode: normal
+  setupKeys: "ddu"
+
+objective:
+  type: buffer_equals
+  target: |
+    a
+    c
+
+solutions:
+  - sequence: "<C-r>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns: []
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Redo is the opposite of undo."
+  - afterMs: 8000
+    level: 2
+    text: "Ctrl+r"
+
+metadata:
+  language: lua
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:lua

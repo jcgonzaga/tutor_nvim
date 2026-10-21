@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-change-word-ts-001
+slug: vim.change.word-ts-001
+
+title: "Fix a typo in a name"
+instruction: "Rename nme to name."
+
+skillIds:
+  - vim.operator.change
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const nme: string = "x";
+  cursor:
+    line: 1
+    column: 7
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const name: string = "x";
+
+solutions:
+  - sequence: "cwname<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Change the whole word."
+  - afterMs: 8000
+    level: 2
+    text: "cw"
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:typescript

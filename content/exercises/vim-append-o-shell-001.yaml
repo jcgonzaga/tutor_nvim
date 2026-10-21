@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-append-o-shell-001
+slug: vim.append.o-shell-001
+
+title: "Add an alias below"
+instruction: 'Add alias la="ls -a" on the next line.'
+
+skillIds:
+  - vim.insert.append-open
+
+mode: transfer
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    alias ll="ls -l"
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    alias ll="ls -l"
+    alias la="ls -a"
+
+solutions:
+  - sequence: 'oalias la="ls -a"<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Open a line below the current one."
+  - afterMs: 8000
+    level: 2
+    text: "o, type the alias, Esc."
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 10
+  transferTags:
+    - context:shell

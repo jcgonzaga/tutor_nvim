@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-yank-word-001
+slug: vim.yank.word-001
+
+title: "Copy a word and paste it"
+instruction: "Make it hello hello world by copying the first word."
+
+skillIds:
+  - vim.operator.yank
+
+mode: learn
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    hello world
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    hello hello world
+
+solutions:
+  - sequence: "ywP"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "y yanks (copies) just like d deletes. P puts before the cursor."
+  - afterMs: 8000
+    level: 2
+    text: "yw, then P."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 10
+  transferTags: []

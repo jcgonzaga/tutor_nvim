@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-ci-quotes-shell-001
+slug: vim.ci-quotes.shell-001
+
+title: "Change inside quotes (shell)"
+instruction: 'Set NODE_ENV to "production" without touching anything else.'
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-quotes
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    export NODE_ENV="development"
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    export NODE_ENV="production"
+
+solutions:
+  - sequence: 'ci"production<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Same skill, in a shell script."
+  - afterMs: 8000
+    level: 2
+    text: 'ci"'
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 12
+  transferTags:
+    - context:shell

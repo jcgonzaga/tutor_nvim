@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-find-char-paren-001
+slug: vim.find-char.paren-001
+
+title: "Find a closing parenthesis"
+instruction: "Jump onto the first closing parenthesis."
+
+skillIds:
+  - vim.navigation.find-char
+
+mode: discriminate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    foo(bar(1), 2)
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 10
+
+solutions:
+  - sequence: "f)"
+    classification: optimal
+  - sequence: "lllllllll"
+    classification: inefficient
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "f stops at the first match."
+  - afterMs: 8000
+    level: 2
+    text: "f)"
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 10
+  transferTags:
+    - context:python

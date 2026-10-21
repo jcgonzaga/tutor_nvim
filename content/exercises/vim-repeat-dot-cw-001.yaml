@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-repeat-dot-cw-001
+slug: vim.repeat.dot-cw-001
+
+title: "Repeat a change"
+instruction: "Rename both foo to bar, repeating the change."
+
+skillIds:
+  - vim.repeat
+  - vim.operator.change
+
+mode: learn
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    foo = foo + 1
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    bar = bar + 1
+
+solutions:
+  - sequence: "cwbar<Esc>ww."
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Make the change once, move, then repeat it."
+  - afterMs: 8000
+    level: 2
+    text: ". repeats the last change."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:python

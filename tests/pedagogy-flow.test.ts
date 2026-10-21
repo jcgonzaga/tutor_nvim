@@ -163,7 +163,7 @@ describe("M4 integration: exercise → attempt → evaluation → mastery → re
     }
   });
 
-  it("only skills with context variation can be mastered (content gap for M7)", () => {
+  it("only skills with context variation can be mastered, and since M7 that is every skill", () => {
     const { learner } = liveJourney(60);
     const mastered = Object.values(learner.skills)
       .filter((skill) => skill.stage === "mastered")
@@ -181,6 +181,10 @@ describe("M4 integration: exercise → attempt → evaluation → mastery → re
         .map((skill) => skill.slug),
     );
     for (const slug of mastered) expect(withVariation.has(slug)).toBe(true);
+    // The M4 content gap (skills with a single context could never be mastered) is closed.
+    expect(
+      bundle.skills.filter((skill) => !withVariation.has(skill.slug)).map((s) => s.slug),
+    ).toEqual([]);
   });
 
   it("is reproducible: the same history yields the same learner and sessions", () => {

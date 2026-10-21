@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-delete-char-typo-001
+slug: vim.delete-char.typo-001
+
+title: "Remove a stray letter"
+instruction: "Hello has one l too many. Delete one."
+
+skillIds:
+  - vim.edit.delete-char
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    helllo
+  cursor:
+    line: 1
+    column: 4
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    hello
+
+solutions:
+  - sequence: "x"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "x deletes the character under the cursor."
+  - afterMs: 8000
+    level: 2
+    text: "One press."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 8
+  transferTags: []

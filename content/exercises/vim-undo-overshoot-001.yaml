@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-undo-overshoot-001
+slug: vim.undo.overshoot-001
+
+title: "Undid too much"
+instruction: "You undid one step too many. Get back to cd."
+
+skillIds:
+  - vim.undo
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    abcd
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+  setupKeys: "xxxuu"
+
+objective:
+  type: buffer_equals
+  target: |
+    cd
+
+solutions:
+  - sequence: "<C-r>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns: []
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Undo went back past cd."
+  - afterMs: 8000
+    level: 2
+    text: "Ctrl+r goes forward one step."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 12
+  transferTags: []

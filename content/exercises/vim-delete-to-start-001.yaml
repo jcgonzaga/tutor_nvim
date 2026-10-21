@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-delete-to-start-001
+slug: vim.delete.to-start-001
+
+title: "Delete to the start of the line"
+instruction: "Delete everything before the f of fix."
+
+skillIds:
+  - vim.operator.delete
+  - vim.navigation.line
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    # TODO: fix later
+  cursor:
+    line: 1
+    column: 9
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    fix later
+
+solutions:
+  - sequence: "d0"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "0 is a motion too: to the start of the line."
+  - afterMs: 8000
+    level: 2
+    text: "d0"
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 12
+  transferTags:
+    - context:shell

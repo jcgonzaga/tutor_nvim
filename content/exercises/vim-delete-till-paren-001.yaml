@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-delete-till-paren-001
+slug: vim.delete.till-paren-001
+
+title: "Delete up to the parenthesis"
+instruction: "Delete everything before the opening parenthesis."
+
+skillIds:
+  - vim.operator.delete
+  - vim.navigation.till-char
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    value = compute(a, b)
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    (a, b)
+
+solutions:
+  - sequence: "dt("
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Delete until, but not including, a character."
+  - afterMs: 8000
+    level: 2
+    text: "dt("
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:python

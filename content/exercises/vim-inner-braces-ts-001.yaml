@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-inner-braces-ts-001
+slug: vim.inner-braces.ts-001
+
+title: "Change an interface body"
+instruction: "Replace the contents of the interface with y: string."
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-braces
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    interface A { x: number }
+  cursor:
+    line: 1
+    column: 15
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    interface A { y: string }
+
+solutions:
+  - sequence: "ci{ y: string <Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Braces again, in TypeScript."
+  - afterMs: 8000
+    level: 2
+    text: "ci{"
+
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags:
+    - context:typescript

@@ -1,0 +1,61 @@
+schemaVersion: 1
+
+id: vim-inner-word-vs-cw-001
+slug: vim.inner-word.vs-cw-001
+
+title: "ciw or cw?"
+instruction: "Change quick to slow. The cursor is in the middle of the word."
+
+skillIds:
+  - vim.textobject.inner-word
+  - vim.operator.change
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    The quick brown fox
+  cursor:
+    line: 1
+    column: 7
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    The slow brown fox
+
+solutions:
+  - sequence: "ciwslow<Esc>"
+    classification: optimal
+  - sequence: "bcwslow<Esc>"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "cw only changes from the cursor to the end of the word."
+  - afterMs: 8000
+    level: 2
+    text: "ciw selects the whole word first."
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 12
+  transferTags: []

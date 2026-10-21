@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-delete-word-prose-001
+slug: vim.delete.word-prose-001
+
+title: "Delete a word in prose"
+instruction: "Delete the word very."
+
+skillIds:
+  - vim.operator.delete
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    The very quick brown fox
+  cursor:
+    line: 1
+    column: 5
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    The quick brown fox
+
+solutions:
+  - sequence: "dw"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Delete + word."
+  - afterMs: 8000
+    level: 2
+    text: "dw"
+
+metadata:
+  language: text
+  context: prose
+  estimatedSeconds: 10
+  transferTags: []

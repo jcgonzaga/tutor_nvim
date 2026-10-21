@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-mode-normal-basic-003
+slug: vim.mode-normal.basic-003
+
+title: "Leave INSERT mode in a shell file"
+instruction: "You are typing in INSERT mode. Go back to NORMAL mode."
+
+skillIds:
+  - vim.mode.normal
+
+mode: transfer
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    export PATH=$HOME/bin
+  cursor:
+    line: 1
+    column: 22
+  vimMode: insert
+
+objective:
+  type: mode_equals
+  mode: normal
+
+solutions:
+  - sequence: "<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "NORMAL mode is where keys are commands."
+  - afterMs: 8000
+    level: 2
+    text: "One key leaves INSERT mode."
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 8
+  transferTags:
+    - context:shell

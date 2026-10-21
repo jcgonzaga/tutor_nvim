@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-append-a-001
+slug: vim.append.a-001
+
+title: "Add a closing parenthesis"
+instruction: "Add the missing ) at the end."
+
+skillIds:
+  - vim.insert.append-open
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    print("hi"
+  cursor:
+    line: 1
+    column: 10
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    print("hi")
+
+solutions:
+  - sequence: "a)<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "i inserts before the cursor; a inserts after it."
+  - afterMs: 8000
+    level: 2
+    text: "a, then ), then Esc."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 8
+  transferTags:
+    - context:python

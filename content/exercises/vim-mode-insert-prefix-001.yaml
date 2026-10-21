@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-mode-insert-prefix-001
+slug: vim.mode-insert.prefix-001
+
+title: "Insert at the start of a command"
+instruction: "Put sudo and a space in front of the command."
+
+skillIds:
+  - vim.mode.insert
+
+mode: transfer
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    echo hello
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    sudo echo hello
+
+solutions:
+  - sequence: "isudo <Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is already at the start of the line."
+  - afterMs: 8000
+    level: 2
+    text: "i, type sudo and a space, then Esc."
+
+metadata:
+  language: shell
+  context: shell-script
+  estimatedSeconds: 8
+  transferTags:
+    - context:shell

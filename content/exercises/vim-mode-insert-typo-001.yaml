@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-mode-insert-typo-001
+slug: vim.mode-insert.typo-001
+
+title: "Insert a missing letter"
+instruction: "A letter is missing from print. Insert it, then go back to NORMAL mode."
+
+skillIds:
+  - vim.mode.insert
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    prnt("hi")
+  cursor:
+    line: 1
+    column: 3
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    print("hi")
+
+solutions:
+  - sequence: "ii<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "i inserts text before the character under the cursor."
+  - afterMs: 8000
+    level: 2
+    text: "Press i, type the missing letter, then Esc."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 8
+  transferTags: []
