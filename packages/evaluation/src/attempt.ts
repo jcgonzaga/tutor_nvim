@@ -2,6 +2,8 @@ import {
   createVimState,
   dispatch,
   formatKey,
+  keyInputFromToken,
+  runKeys,
   type KeyInput,
   type Position,
   type VimMode,
@@ -9,6 +11,7 @@ import {
 } from "@tutor-nvim/vim-engine";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import { evaluateGoal } from "./goal";
+import type { HintReveal } from "./hints";
 
 /** Input stamped by the adapter (`performance.now()`), in milliseconds. */
 export interface TimedKeyInput extends KeyInput {
@@ -45,15 +48,20 @@ export interface Attempt {
   readonly events: readonly InputEvent[];
   /** Timestamp of the input that satisfied the goal; `null` while in progress. */
   readonly completedAt: number | null;
+  /** Hints the learner asked for, in order. */
+  readonly hints: readonly HintReveal[];
 }
 
 export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
-  const initialState = createVimState({
-    lines: exercise.initialState.lines,
-    cursor: exercise.initialState.cursor,
-    mode: exercise.initialState.vimMode,
-  });
-  return { startedAt, initialState, state: initialState, events: [], completedAt: null };
+  const initialState = runKeys(
+    createVimState({
+      lines: exercise.initialState.lines,
+      cursor: exercise.initialState.cursor,
+      mode: exercise.initialState.vimMode,
+    }),
+    exercise.initialState.setupKeys.map(keyInputFromToken),
+  );
+  return { startedAt, initialState, state: initialState, events: [], completedAt: null, hints: [] };
 }
 
 /** Telemetry only: runs the engine and appends the event. Knows nothing about goals. */

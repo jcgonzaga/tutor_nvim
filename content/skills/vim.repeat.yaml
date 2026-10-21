@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: vim-repeat
+slug: vim.repeat
+
+title: "Repeat the last change"
+description: "Repeat the last change with the dot command."
+
+domain: vim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.operator.change
+  - vim.operator.delete
+concepts:
+  - repeat
+tags:
+  - repeat

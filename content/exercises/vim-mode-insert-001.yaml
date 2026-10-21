@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-mode-insert-001
+slug: vim.mode-insert.basic-001
+
+title: "Insert before the cursor"
+instruction: 'Insert "Hello, " in front of the word, then go back to NORMAL mode.'
+
+skillIds:
+  - vim.mode.insert
+  - vim.mode.normal
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    world
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    Hello, world
+
+solutions:
+  - sequence: "iHello, <Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - insert_mode_navigation
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "i starts inserting before the cursor."
+  - afterMs: 8000
+    level: 2
+    text: "Type the text, then press Esc to get back to NORMAL mode."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

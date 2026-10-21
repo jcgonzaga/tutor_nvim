@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-change-001
+slug: vim.change.word-001
+
+title: "Change a word"
+instruction: 'Change "pending" into "done".'
+
+skillIds:
+  - vim.operator.change
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    let status = pending;
+  cursor:
+    line: 1
+    column: 14
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    let status = done;
+
+solutions:
+  - sequence: "cwdone<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "c deletes and leaves you in INSERT mode, ready to type."
+  - afterMs: 8000
+    level: 2
+    text: "cw changes up to the end of the word."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 8
+  transferTags: []

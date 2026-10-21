@@ -1,0 +1,55 @@
+schemaVersion: 1
+
+id: vim-undo-002
+slug: vim.undo.redo-001
+
+title: "Redo what you undid"
+instruction: 'You undid too much. Redo the first deletion, so "two three" is left.'
+
+skillIds:
+  - vim.undo
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    one two three
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+  setupKeys: "dwdwuu"
+
+objective:
+  type: buffer_equals
+  target: |
+    two three
+
+solutions:
+  - sequence: "<C-r>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns: []
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Undo has a counterpart that replays what you undid."
+  - afterMs: 8000
+    level: 2
+    text: "Ctrl-r redoes the last undone change."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 4
+  transferTags: []

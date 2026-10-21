@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-navigation-find-char
+slug: vim.navigation.find-char
+
+title: "Find a character"
+description: "Jump to a character on the line with f and t, and repeat with ; and ,."
+
+domain: vim
+tier: 2
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.navigation.line
+concepts:
+  - motion
+  - search
+tags:
+  - motion
+  - find

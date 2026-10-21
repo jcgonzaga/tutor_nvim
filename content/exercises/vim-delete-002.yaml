@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-delete-002
+slug: vim.delete.word-001
+
+title: "Delete a word"
+instruction: 'Delete the word "very" and the space after it.'
+
+skillIds:
+  - vim.operator.delete
+  - vim.navigation.words
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const very long = 1;
+  cursor:
+    line: 1
+    column: 7
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const long = 1;
+
+solutions:
+  - sequence: "dw"
+    classification: optimal
+  - sequence: "xxxxx"
+    classification: anti-pattern
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "d needs a motion that says how much to delete."
+  - afterMs: 8000
+    level: 2
+    text: "dw deletes up to the start of the next word."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 6
+  transferTags: []

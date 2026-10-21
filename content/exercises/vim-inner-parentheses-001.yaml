@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-inner-parentheses-001
+slug: vim.inner-parentheses.basic-001
+
+title: "Change inside parentheses"
+instruction: 'Replace both arguments with the single argument "value".'
+
+skillIds:
+  - vim.textobject.inner-parentheses
+  - vim.operator.change
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    print(first, second)
+  cursor:
+    line: 1
+    column: 9
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    print(value)
+
+solutions:
+  - sequence: "ci(value<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Think Change + Inside + parentheses."
+  - afterMs: 8000
+    level: 2
+    text: "i( is the text object for what is between ( and )."
+
+metadata:
+  language: python
+  context: source-code
+  estimatedSeconds: 8
+  transferTags: []

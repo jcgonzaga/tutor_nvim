@@ -1,0 +1,22 @@
+schemaVersion: 1
+
+id: vim-operator-change
+slug: vim.operator.change
+
+title: "Change"
+description: "Replace text with c combined with a motion, such as cw."
+
+domain: vim
+tier: 3
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.mode.insert
+  - vim.navigation.words
+concepts:
+  - operator
+  - insert
+tags:
+  - operator
+  - change

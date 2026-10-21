@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-mode-insert
+slug: vim.mode.insert
+
+title: "Insert mode"
+description: "Enter INSERT mode with i, a and o, type text, and leave with Esc."
+
+domain: vim
+tier: 1
+difficulty: 1
+enabled: true
+
+prerequisites:
+  - vim.mode.normal
+concepts:
+  - mode
+  - insert
+tags:
+  - mode
+  - insert

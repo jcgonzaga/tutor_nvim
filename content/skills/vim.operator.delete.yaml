@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: vim-operator-delete
+slug: vim.operator.delete
+
+title: "Delete"
+description: "Delete text with d combined with a motion, and whole lines with dd."
+
+domain: vim
+tier: 3
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.navigation.words
+concepts:
+  - operator
+tags:
+  - operator
+  - delete

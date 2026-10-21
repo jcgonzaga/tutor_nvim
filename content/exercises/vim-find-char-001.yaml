@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-find-char-001
+slug: vim.find-char.basic-001
+
+title: "Find a character"
+instruction: 'Jump onto the "c" of "callback" with a single search.'
+
+skillIds:
+  - vim.navigation.find-char
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    render(user, options, callback);
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 23
+
+solutions:
+  - sequence: "fc"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "f followed by a character jumps onto the next occurrence on the line."
+  - afterMs: 8000
+    level: 2
+    text: 'The first "c" on the line is in "callback".'
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 6
+  transferTags: []

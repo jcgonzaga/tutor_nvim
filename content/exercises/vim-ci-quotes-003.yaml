@@ -1,0 +1,60 @@
+schemaVersion: 1
+
+id: vim-ci-quotes-003
+slug: vim.ci-quotes.lua-001
+
+title: "Change inside quotes (Lua)"
+instruction: 'Change only the text inside the quotes to "gruvbox".'
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-quotes
+
+mode: transfer
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    local theme = "tokyonight"
+  cursor:
+    line: 1
+    column: 19
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    local theme = "gruvbox"
+
+solutions:
+  - sequence: 'ci"gruvbox<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Same skill, another language: Change + Inside + quotes."
+  - afterMs: 8000
+    level: 2
+    text: "The cursor is already inside the string."
+
+metadata:
+  language: lua
+  context: config-file
+  estimatedSeconds: 8
+  transferTags:
+    - context:lua
+    - context:config-file

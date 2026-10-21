@@ -1,4 +1,4 @@
-import { useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { pendingKeys } from "@tutor-nvim/vim-engine";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import { shouldPreventDefault, toKeyInput } from "../input/keyboard";
@@ -6,11 +6,30 @@ import { EditorView } from "./EditorView";
 import { ResultPanel } from "./ResultPanel";
 import { usePracticeAttempt } from "./usePracticeAttempt";
 
-export function PracticeScreen({ exercise }: { exercise: Exercise }) {
-  const { attempt, evaluation, sendInput, reset } = usePracticeAttempt(exercise);
+interface PracticeScreenProps {
+  readonly exercise: Exercise;
+  readonly nextSlug: string | null;
+}
+
+export function PracticeScreen({ exercise, nextSlug }: PracticeScreenProps) {
+  const { attempt, evaluation, hints, sendInput, requestHint, reset } =
+    usePracticeAttempt(exercise);
   const editorRef = useRef<HTMLDivElement>(null);
   const retryRef = useRef<HTMLButtonElement>(null);
   const finished = evaluation !== null;
+
+  // The hint button wakes up when the next hint becomes available.
+  const [now, setNow] = useState(() => performance.now());
+  const nextHintAt = hints.next?.availableAt ?? null;
+  useEffect(() => {
+    if (nextHintAt === null) return;
+    const timer = setTimeout(
+      () => setNow(performance.now()),
+      Math.max(nextHintAt - performance.now(), 0),
+    );
+    return () => clearTimeout(timer);
+  }, [nextHintAt]);
+  const hintReady = !finished && nextHintAt !== null && now >= nextHintAt;
 
   useEffect(() => {
     editorRef.current?.focus();
@@ -30,6 +49,11 @@ export function PracticeScreen({ exercise }: { exercise: Exercise }) {
 
   function handleRetry() {
     reset();
+    editorRef.current?.focus();
+  }
+
+  function handleHint() {
+    requestHint();
     editorRef.current?.focus();
   }
 
@@ -83,8 +107,36 @@ export function PracticeScreen({ exercise }: { exercise: Exercise }) {
           </div>
         </div>
 
+        {exercise.hints.length > 0 && !finished ? (
+          <div className="text-sm">
+            <ol data-testid="hints" aria-live="polite" className="space-y-1 text-zinc-300">
+              {hints.revealed.map((hint) => (
+                <li key={hint.level}>
+                  <span className="text-zinc-400">Hint {hint.level}: </span>
+                  {hint.text}
+                </li>
+              ))}
+            </ol>
+            {hints.next ? (
+              <button
+                type="button"
+                onClick={handleHint}
+                disabled={!hintReady}
+                className="mt-2 rounded border border-zinc-600 px-3 py-1 text-xs hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400 disabled:cursor-not-allowed disabled:text-zinc-500 disabled:hover:bg-transparent"
+              >
+                {hintReady ? "Show hint" : "Hint available soon"}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
         {evaluation ? (
-          <ResultPanel ref={retryRef} evaluation={evaluation} onRetry={handleRetry} />
+          <ResultPanel
+            ref={retryRef}
+            evaluation={evaluation}
+            onRetry={handleRetry}
+            nextHref={nextSlug ? `?exercise=${encodeURIComponent(nextSlug)}` : null}
+          />
         ) : null}
       </div>
     </main>

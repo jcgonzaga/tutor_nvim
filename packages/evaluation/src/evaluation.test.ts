@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseExercise, type Exercise, type ExerciseInput } from "@tutor-nvim/exercise-schema";
 import { bufferToText, parseKeySequence } from "@tutor-nvim/vim-engine";
 import {
+  DEFAULT_EVALUATION_CONFIG,
   advanceAttempt,
   evaluateAttempt,
   evaluateGoal,
@@ -60,14 +61,14 @@ describe("goal evaluation", () => {
     expect(bufferToText(beforeEscape.state.buffer)).toBe('const mode = "production";');
     expect(evaluateGoal(exercise, beforeEscape.state)).toEqual({
       met: false,
-      bufferMatches: true,
+      objective: { type: "buffer_equals", met: true },
       modeMatches: false,
     });
 
     const done = simulateSolution(exercise, exercise.solutions[0]!);
     expect(evaluateGoal(exercise, done.state)).toEqual({
       met: true,
-      bufferMatches: true,
+      objective: { type: "buffer_equals", met: true },
       modeMatches: true,
     });
   });
@@ -77,7 +78,7 @@ describe("goal evaluation", () => {
     const attempt = play(relaxed, 0, 'ci"production');
     expect(evaluateGoal(relaxed, attempt.state)).toEqual({
       met: true,
-      bufferMatches: true,
+      objective: { type: "buffer_equals", met: true },
       modeMatches: null,
     });
     expect(attempt.completedAt).toBe(130);
@@ -182,12 +183,12 @@ describe("strategy classification", () => {
     expect(evaluation.strategy).toBe("optimal");
   });
 
-  it("keeps success separate from strategy: another route to the goal is only valid", () => {
-    // Same result, but with a pointless INSERT round trip first.
+  it("keeps success separate from strategy: another route to the goal is not the declared optimum", () => {
+    // Same result, but with a pointless INSERT round trip first: 16 keys against the optimal 14.
     const detour = play(exercise, 0, 'i<Esc>ci"production<Esc>');
     const evaluation = evaluateAttempt(exercise, detour);
     expect(evaluation.success).toBe(true);
-    expect(evaluation.strategy).toBe("valid");
+    expect(evaluation.strategy).toBe("efficient");
   });
 
   it("uses the classification declared for the matched solution", () => {
@@ -225,11 +226,20 @@ describe("metrics", () => {
 
     expect(metrics).toEqual({
       success: true,
+      accuracyScore: 100,
       strategyScore: 100,
       efficiencyScore: 100,
+      fluencyScore: 100,
+      recoveryScore: 100,
+      performanceScore: 100,
       firstInputLatencyMs: 250,
+      medianInterKeyLatencyMs: 50,
+      maxInterKeyLatencyMs: 200,
       totalDurationMs: 1050,
       keystrokes: 14,
+      unnecessaryKeystrokes: 0,
+      errors: 0,
+      hintsUsed: 0,
     });
     expect(evaluateAttempt(exercise, attempt)).toEqual(evaluateAttempt(exercise, attempt));
   });
@@ -253,13 +263,17 @@ describe("metrics", () => {
   it("takes weights from configuration", () => {
     const attempt = simulateSolution(exercise, exercise.solutions[0]!);
     const { metrics } = evaluateAttempt(exercise, attempt, {
-      strategyScores: {
-        optimal: 42,
-        efficient: 0,
-        valid: 0,
-        inefficient: 0,
-        "anti-pattern": 0,
-        failed: 0,
+      ...DEFAULT_EVALUATION_CONFIG,
+      metrics: {
+        ...DEFAULT_EVALUATION_CONFIG.metrics,
+        strategyScores: {
+          optimal: 42,
+          efficient: 0,
+          valid: 0,
+          inefficient: 0,
+          "anti-pattern": 0,
+          failed: 0,
+        },
       },
     });
     expect(metrics.strategyScore).toBe(42);

@@ -1,0 +1,19 @@
+schemaVersion: 1
+
+id: vim-undo
+slug: vim.undo
+
+title: "Undo and redo"
+description: "Undo a change with u and redo it with Ctrl-r."
+
+domain: vim
+tier: 3
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.operator.delete
+concepts:
+  - history
+tags:
+  - undo

@@ -1,0 +1,58 @@
+schemaVersion: 1
+
+id: vim-repeat-001
+slug: vim.repeat.dot-001
+
+title: "Repeat with the dot"
+instruction: 'Delete the three "very" so only "good" is left, repeating the deletion.'
+
+skillIds:
+  - vim.repeat
+  - vim.operator.delete
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    very very very good
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    good
+
+solutions:
+  - sequence: "dw.."
+    classification: optimal
+  - sequence: "dwdwdw"
+    classification: valid
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "One dw removes one word."
+  - afterMs: 8000
+    level: 2
+    text: "The dot command repeats the last change."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 6
+  transferTags: []

@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "content:validate": "tsx scripts/content-validate.ts",
+    "content:test": "tsx scripts/content-test.ts",
     "vim:oracle": "tsx scripts/vim-oracle.ts"
   },
   "devDependencies": {

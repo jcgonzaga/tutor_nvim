@@ -1,0 +1,59 @@
+schemaVersion: 1
+
+id: vim-delete-001
+slug: vim.delete.line-001
+
+title: "Delete a line"
+instruction: 'Delete the line that says "remove this line".'
+
+skillIds:
+  - vim.operator.delete
+
+mode: imitate
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    keep this line
+    remove this line
+    keep this one too
+  cursor:
+    line: 2
+    column: 4
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    keep this line
+    keep this one too
+
+solutions:
+  - sequence: "dd"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "d deletes, and doubling it works on the whole line."
+  - afterMs: 8000
+    level: 2
+    text: "dd removes the current line."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 5
+  transferTags: []

@@ -1,0 +1,63 @@
+schemaVersion: 1
+
+id: vim-delete-003
+slug: vim.delete.to-end-001
+
+title: "Delete to the end, then go home"
+instruction: "Delete everything from the comma to the end of the line, then put the cursor on the first character."
+
+skillIds:
+  - vim.operator.delete
+  - vim.navigation.line
+
+mode: discriminate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    keep this, drop this
+  cursor:
+    line: 1
+    column: 10
+  vimMode: normal
+
+objective:
+  type: all
+  goals:
+    - type: buffer_equals
+      target: |
+        keep this
+    - type: cursor_at
+      line: 1
+      column: 1
+
+solutions:
+  - sequence: "d$0"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "$ is the motion to the end of the line."
+  - afterMs: 8000
+    level: 2
+    text: "Delete with d$, then jump to the start with 0."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

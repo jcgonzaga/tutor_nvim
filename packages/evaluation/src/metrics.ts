@@ -1,10 +1,38 @@
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import type { Attempt } from "./attempt";
+import { optimalKeystrokes } from "./antipatterns";
 import type { StrategyClassification } from "./strategy";
+
+/** A latency band: at or below `idealMs` scores 100, at or above `worstMs` scores 0, linear in between. */
+export interface LatencyBand {
+  readonly idealMs: number;
+  readonly worstMs: number;
+}
 
 /** Scoring knobs live here, never in UI code. All scores are on a 0-100 scale. */
 export interface MetricsConfig {
   readonly strategyScores: Readonly<Record<StrategyClassification, number>>;
+  /** Weights of the performance score; they should add up to 1. */
+  readonly weights: {
+    readonly accuracy: number;
+    readonly strategy: number;
+    readonly efficiency: number;
+    readonly fluency: number;
+    readonly recovery: number;
+  };
+  readonly fluency: {
+    readonly firstInput: LatencyBand;
+    readonly medianInterKey: LatencyBand;
+    readonly maxInterKey: LatencyBand;
+    /** Relative weight of each latency component inside the fluency score. */
+    readonly weights: {
+      readonly firstInput: number;
+      readonly medianInterKey: number;
+      readonly maxInterKey: number;
+    };
+  };
+  /** Points taken off the recovery score for each hint used. */
+  readonly hintPenalty: number;
 }
 
 export const DEFAULT_METRICS_CONFIG: MetricsConfig = {
@@ -16,17 +44,56 @@ export const DEFAULT_METRICS_CONFIG: MetricsConfig = {
     "anti-pattern": 20,
     failed: 0,
   },
+  // PRD 25: accuracy 35, strategy 25, efficiency 15, fluency 15, recovery 10.
+  weights: { accuracy: 0.35, strategy: 0.25, efficiency: 0.15, fluency: 0.15, recovery: 0.1 },
+  fluency: {
+    firstInput: { idealMs: 400, worstMs: 4000 },
+    medianInterKey: { idealMs: 150, worstMs: 1500 },
+    maxInterKey: { idealMs: 400, worstMs: 4000 },
+    weights: { firstInput: 0.4, medianInterKey: 0.3, maxInterKey: 0.3 },
+  },
+  hintPenalty: 25,
 };
 
 export interface AttemptMetrics {
   readonly success: boolean;
+  /** Share of inputs the engine accepted; 0 unless the task was solved. */
+  readonly accuracyScore: number;
   readonly strategyScore: number;
   readonly efficiencyScore: number;
+  /** Speed of the hands, scaled by accuracy so fast sloppy runs do not score; 0 unless solved. */
+  readonly fluencyScore: number;
+  /** Finishing without leaning on hints; 0 unless solved. */
+  readonly recoveryScore: number;
+  readonly performanceScore: number;
   /** Time from the exercise being shown to the first input; `null` if there was none. */
   readonly firstInputLatencyMs: number | null;
+  readonly medianInterKeyLatencyMs: number | null;
+  readonly maxInterKeyLatencyMs: number | null;
   readonly totalDurationMs: number;
   /** Every logical input, including rejected ones. */
   readonly keystrokes: number;
+  /** Keystrokes beyond the shortest optimal solution. */
+  readonly unnecessaryKeystrokes: number;
+  /** Rejected inputs. */
+  readonly errors: number;
+  readonly hintsUsed: number;
+}
+
+const clamp = (value: number, min = 0, max = 100): number => Math.min(Math.max(value, min), max);
+
+function latencyScore(ms: number | null, band: LatencyBand): number | null {
+  if (ms === null) return null;
+  return clamp((100 * (band.worstMs - ms)) / (band.worstMs - band.idealMs));
+}
+
+function median(values: readonly number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1
+    ? (sorted[middle] ?? 0)
+    : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
 }
 
 export function computeMetrics(
@@ -37,25 +104,75 @@ export function computeMetrics(
   config: MetricsConfig = DEFAULT_METRICS_CONFIG,
 ): AttemptMetrics {
   const { events } = attempt;
+  const keystrokes = events.length;
   const first = events[0];
-  const last = events[events.length - 1];
+  const last = events[keystrokes - 1];
   const end = attempt.completedAt ?? last?.timestamp ?? attempt.startedAt;
+  const optimal = optimalKeystrokes(exercise);
+
+  const gaps = events
+    .slice(1)
+    .map((event, index) => event.timestamp - (events[index]?.timestamp ?? 0));
+  const firstInputLatencyMs = first === undefined ? null : first.timestamp - attempt.startedAt;
+  const medianInterKeyLatencyMs = median(gaps);
+  const maxInterKeyLatencyMs = gaps.length === 0 ? null : Math.max(...gaps);
+
+  const errors = events.filter((event) => !event.accepted).length;
+  const hintsUsed = attempt.hints.length;
+
+  const accuracyScore = success && keystrokes > 0 ? (100 * (keystrokes - errors)) / keystrokes : 0;
+  const efficiencyScore = success && keystrokes > 0 ? clamp((100 * optimal) / keystrokes) : 0;
+  const strategyScore = config.strategyScores[strategy];
+  const recoveryScore = success ? clamp(100 - config.hintPenalty * hintsUsed) : 0;
+
+  // Weighted mean of the latency components that exist (a one-key attempt has no inter-key gaps).
+  const parts = [
+    [
+      latencyScore(firstInputLatencyMs, config.fluency.firstInput),
+      config.fluency.weights.firstInput,
+    ],
+    [
+      latencyScore(medianInterKeyLatencyMs, config.fluency.medianInterKey),
+      config.fluency.weights.medianInterKey,
+    ],
+    [
+      latencyScore(maxInterKeyLatencyMs, config.fluency.maxInterKey),
+      config.fluency.weights.maxInterKey,
+    ],
+  ] as const;
+  const present = parts.filter((part): part is readonly [number, number] => part[0] !== null);
+  const totalWeight = present.reduce((sum, [, weight]) => sum + weight, 0);
+  const rawFluency =
+    totalWeight === 0
+      ? 0
+      : present.reduce((sum, [score, weight]) => sum + score * weight, 0) / totalWeight;
+  // Accuracy before speed: speed only counts in proportion to how clean the run was.
+  const fluencyScore = success ? (rawFluency * accuracyScore) / 100 : 0;
+
+  const { weights } = config;
+  const performanceScore = clamp(
+    accuracyScore * weights.accuracy +
+      strategyScore * weights.strategy +
+      efficiencyScore * weights.efficiency +
+      fluencyScore * weights.fluency +
+      recoveryScore * weights.recovery,
+  );
 
   return {
     success,
-    strategyScore: config.strategyScores[strategy],
-    efficiencyScore: success ? efficiencyScore(exercise, events.length) : 0,
-    firstInputLatencyMs: first === undefined ? null : first.timestamp - attempt.startedAt,
+    accuracyScore,
+    strategyScore,
+    efficiencyScore,
+    fluencyScore,
+    recoveryScore,
+    performanceScore,
+    firstInputLatencyMs,
+    medianInterKeyLatencyMs,
+    maxInterKeyLatencyMs,
     totalDurationMs: end - attempt.startedAt,
-    keystrokes: events.length,
+    keystrokes,
+    unnecessaryKeystrokes: Math.max(0, keystrokes - optimal),
+    errors,
+    hintsUsed,
   };
-}
-
-/** Ratio of the shortest reference solution to the keystrokes actually used. */
-function efficiencyScore(exercise: Exercise, keystrokes: number): number {
-  if (keystrokes === 0) return 0;
-  const optimal = exercise.solutions.filter((solution) => solution.classification === "optimal");
-  const references = optimal.length > 0 ? optimal : exercise.solutions;
-  const shortest = Math.min(...references.map((solution) => solution.keys.length));
-  return Math.min(100, (shortest / keystrokes) * 100);
 }

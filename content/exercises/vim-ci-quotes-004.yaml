@@ -1,0 +1,66 @@
+schemaVersion: 1
+
+id: vim-ci-quotes-004
+slug: vim.ci-quotes.json-001
+
+title: "Change inside quotes (JSON)"
+instruction: 'Change the value of "environment" to "production", not the key.'
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-quotes
+
+mode: transfer
+difficulty: 4
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    {
+      "environment": "development",
+      "debug": true
+    }
+  cursor:
+    line: 2
+    column: 21
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    {
+      "environment": "production",
+      "debug": true
+    }
+
+solutions:
+  - sequence: 'ci"production<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The cursor is inside the value, so Change + Inside + quotes edits the value."
+  - afterMs: 8000
+    level: 2
+    text: "Check which pair of quotes the cursor is in."
+
+metadata:
+  language: json
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:json
+    - context:config-file

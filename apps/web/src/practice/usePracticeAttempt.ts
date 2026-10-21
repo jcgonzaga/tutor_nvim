@@ -2,9 +2,12 @@ import { useCallback, useMemo, useReducer } from "react";
 import {
   advanceAttempt,
   evaluateAttempt,
+  hintStatus,
+  revealHint,
   startAttempt,
   type Attempt,
   type AttemptEvaluation,
+  type HintStatus,
   type TimedKeyInput,
 } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
@@ -16,12 +19,15 @@ interface PracticeState {
 
 type PracticeAction =
   | { readonly type: "input"; readonly input: TimedKeyInput }
+  | { readonly type: "hint"; readonly at: number }
   | { readonly type: "reset"; readonly at: number };
 
 function reducer(state: PracticeState, action: PracticeAction): PracticeState {
   switch (action.type) {
     case "input":
       return { ...state, attempt: advanceAttempt(state.exercise, state.attempt, action.input) };
+    case "hint":
+      return { ...state, attempt: revealHint(state.exercise, state.attempt, action.at) };
     case "reset":
       return { ...state, attempt: startAttempt(state.exercise, action.at) };
   }
@@ -38,9 +44,11 @@ export function usePracticeAttempt(exercise: Exercise) {
     () => (attempt.completedAt === null ? null : evaluateAttempt(exercise, attempt)),
     [attempt, exercise],
   );
+  const hints: HintStatus = useMemo(() => hintStatus(exercise, attempt), [exercise, attempt]);
 
   const sendInput = useCallback((input: TimedKeyInput) => dispatch({ type: "input", input }), []);
+  const requestHint = useCallback(() => dispatch({ type: "hint", at: performance.now() }), []);
   const reset = useCallback(() => dispatch({ type: "reset", at: performance.now() }), []);
 
-  return { attempt, evaluation, sendInput, reset };
+  return { attempt, evaluation, hints, sendInput, requestHint, reset };
 }

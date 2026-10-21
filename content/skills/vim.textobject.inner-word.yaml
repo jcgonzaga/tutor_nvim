@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-textobject-inner-word
+slug: vim.textobject.inner-word
+
+title: "Inside a word"
+description: "Operate on the word under the cursor with iw, wherever the cursor is inside it."
+
+domain: vim
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.operator.change
+concepts:
+  - operator
+  - text-object
+tags:
+  - text-object
+  - word

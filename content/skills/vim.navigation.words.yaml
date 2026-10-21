@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-navigation-words
+slug: vim.navigation.words
+
+title: "Move by words"
+description: "Jump between words with w, W, b, B, e and E."
+
+domain: vim
+tier: 2
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.navigation.atomic
+concepts:
+  - motion
+  - word
+tags:
+  - motion
+  - word

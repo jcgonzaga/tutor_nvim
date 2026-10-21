@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-navigation-words-001
+slug: vim.navigation-words.basic-001
+
+title: "Jump by words"
+instruction: 'Move onto the "f" of "four" using word motions.'
+
+skillIds:
+  - vim.navigation.words
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    one two three four five
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 15
+
+solutions:
+  - sequence: "www"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "w moves to the start of the next word."
+  - afterMs: 8000
+    level: 2
+    text: "Three words to the right."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 6
+  transferTags: []

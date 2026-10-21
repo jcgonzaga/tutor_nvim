@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic-001
+slug: vim.navigation-atomic.basic-001
+
+title: "Move with the home row"
+instruction: 'Move the cursor onto the "i" of "epsilon" (two lines down, then right).'
+
+skillIds:
+  - vim.navigation.atomic
+
+mode: imitate
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    alpha beta
+    gamma delta
+    epsilon zeta
+  cursor:
+    line: 1
+    column: 1
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 3
+  column: 4
+
+solutions:
+  - sequence: "jjlll"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "j goes down, l goes right."
+  - afterMs: 8000
+    level: 2
+    text: "Two lines down, then three characters right."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 8
+  transferTags: []

@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-operator-yank
+slug: vim.operator.yank
+
+title: "Yank and put"
+description: "Copy text with y and paste it with p and P."
+
+domain: vim
+tier: 3
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.operator.delete
+concepts:
+  - operator
+  - register
+tags:
+  - operator
+  - yank

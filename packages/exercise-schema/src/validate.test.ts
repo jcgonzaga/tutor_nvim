@@ -57,6 +57,7 @@ describe("exercise schema v1", () => {
       lines: ['const mode = "development";'],
       cursor: { line: 0, column: 17 },
       vimMode: "normal",
+      setupKeys: [],
     });
     expect(exercise.objective).toEqual({
       type: "buffer_equals",
@@ -77,7 +78,7 @@ describe("exercise schema v1", () => {
     expect(exercise.environment).toEqual({ type: "simulator", profile: "vim-basic-v1" });
     expect(exercise.antiPatterns).toEqual([]);
     expect(exercise.hints).toEqual([]);
-    expect(exercise.metadata).toEqual({});
+    expect(exercise.metadata).toEqual({ transferTags: [] });
     expect(exercise.instruction).toBe("Change inside quotes");
   });
 
@@ -156,6 +157,107 @@ describe("exercise schema v1", () => {
       ExerciseValidationError,
     );
     expect(() => parseExerciseYaml("id: [unterminated", "bad.yaml")).toThrow("bad.yaml");
+  });
+});
+
+describe("exercise schema: objectives, hints, metadata", () => {
+  it("normalizes cursor_at, mode_equals and compound objectives", () => {
+    const exercise = parseExercise({
+      ...validInput(),
+      objective: {
+        type: "all",
+        goals: [
+          { type: "cursor_at", line: 1, column: 3 },
+          { type: "mode_equals", mode: "normal" },
+        ],
+      },
+    });
+    expect(exercise.objective).toEqual({
+      type: "all",
+      goals: [
+        { type: "cursor_at", position: { line: 0, column: 2 } },
+        { type: "mode_equals", mode: "normal" },
+      ],
+    });
+  });
+
+  it("requires at least two goals in a compound objective, and rejects unknown goal types", () => {
+    expect(
+      issuesFor({
+        ...validInput(),
+        objective: { type: "all", goals: [{ type: "mode_equals", mode: "normal" }] },
+      }).join("\n"),
+    ).toContain("objective");
+    expect(issuesFor({ ...validInput(), objective: { type: "teleport" } }).join("\n")).toContain(
+      "objective",
+    );
+  });
+
+  it("rejects 0-based positions in cursor_at, like the initial cursor", () => {
+    expect(
+      issuesFor({ ...validInput(), objective: { type: "cursor_at", line: 0, column: 0 } }).join(
+        "\n",
+      ),
+    ).toContain("objective");
+  });
+
+  it("requires hint levels to count up from 1 and delays that do not go backwards", () => {
+    const hints = [
+      { afterMs: 4000, level: 2, text: "a" },
+      { afterMs: 1000, level: 2, text: "b" },
+    ];
+    const issues = issuesFor({ ...validInput(), hints });
+    expect(issues).toEqual([
+      "hints.0.level: hint levels must be 1, 2, 3... in order (expected 1)",
+      "hints.1.afterMs: a hint cannot become available before the previous one",
+    ]);
+    expect(() =>
+      parseExercise({
+        ...validInput(),
+        hints: [
+          { afterMs: 4000, level: 1, text: "ok" },
+          { afterMs: 4000, level: 2, text: "ok" },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
+  it("requires a solution classified optimal", () => {
+    const issues = issuesFor({
+      ...validInput(),
+      solutions: [{ sequence: 'ci"production<Esc>', classification: "valid" }],
+    });
+    expect(issues).toEqual([
+      "solutions: declare at least one solution classified optimal (it is the efficiency baseline)",
+    ]);
+  });
+
+  it("accepts setup keys, normalizing them to canonical tokens, and rejects invalid ones", () => {
+    const base = validInput();
+    const exercise = parseExercise({
+      ...base,
+      initialState: { ...base.initialState, setupKeys: "dw<Esc>" },
+    });
+    expect(exercise.initialState.setupKeys).toEqual(["d", "w", "<Esc>"]);
+    expect(
+      issuesFor({ ...base, initialState: { ...base.initialState, setupKeys: "<Nope>" } }),
+    ).toEqual(["initialState.setupKeys: Unknown key notation <Nope>"]);
+  });
+
+  it("accepts context and transfer tags, and rejects malformed tags", () => {
+    const exercise = parseExercise({
+      ...validInput(),
+      metadata: {
+        language: "python",
+        context: "config-file",
+        estimatedSeconds: 8,
+        transferTags: ["context:python"],
+      },
+    });
+    expect(exercise.metadata.transferTags).toEqual(["context:python"]);
+    expect(
+      issuesFor({ ...validInput(), metadata: { transferTags: ["Not A Tag"] } }).join("\n"),
+    ).toContain("metadata.transferTags.0");
   });
 });
 

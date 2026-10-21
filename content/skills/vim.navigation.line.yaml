@@ -1,0 +1,21 @@
+schemaVersion: 1
+
+id: vim-navigation-line
+slug: vim.navigation.line
+
+title: "Move within a line"
+description: "Jump to the start, first non-blank or end of a line with 0, ^ and $."
+
+domain: vim
+tier: 2
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.navigation.atomic
+concepts:
+  - motion
+  - line
+tags:
+  - motion
+  - line

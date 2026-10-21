@@ -1,0 +1,56 @@
+schemaVersion: 1
+
+id: vim-navigation-line-001
+slug: vim.navigation-line.basic-001
+
+title: "First non-blank"
+instruction: "Jump to the first non-blank character of the line."
+
+skillIds:
+  - vim.navigation.line
+
+mode: recall
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |2
+        return computeTotal(items);
+  cursor:
+    line: 1
+    column: 21
+  vimMode: normal
+
+objective:
+  type: cursor_at
+  line: 1
+  column: 5
+
+solutions:
+  - sequence: "^"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: false
+
+antiPatterns:
+  - excessive_hjkl
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "0 goes to column 0, but you want the first character that is not a space."
+  - afterMs: 8000
+    level: 2
+    text: "^ jumps to the first non-blank."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 5
+  transferTags: []

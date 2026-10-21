@@ -4,9 +4,11 @@ Web-first, gamified trainer for Linux basics, Vim/Neovim and (later) LazyVim.
 Source of truth: [`docs/PRD.md`](docs/PRD.md), [`AGENTS.md`](AGENTS.md),
 [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
 
-Current state: **Milestone 2** (Vim core) on top of the **Milestone 1** practice slice — see
-[`docs/architecture/m1-vertical-slice.md`](docs/architecture/m1-vertical-slice.md) and
-[`docs/architecture/m2-vim-core.md`](docs/architecture/m2-vim-core.md).
+Current state: **Milestone 3** (exercise platform) on top of the Vim core (M2) and the first
+practice slice (M1):
+[`m1-vertical-slice`](docs/architecture/m1-vertical-slice.md),
+[`m2-vim-core`](docs/architecture/m2-vim-core.md),
+[`m3-exercise-platform`](docs/architecture/m3-exercise-platform.md).
 
 ## Commands
 
@@ -18,14 +20,16 @@ pnpm dev               # practice screen at http://localhost:5173
 pnpm typecheck
 pnpm lint
 pnpm test              # unit + integration (Vitest)
-pnpm content:validate  # schema-validate content/exercises/*.yaml
+pnpm content:validate  # schemas + cross-references for content/skills and content/exercises
+pnpm content:test      # also run every declared solution through the Vim engine
 pnpm vim:oracle        # regenerate Vim oracle fixtures (needs vim + python3)
 pnpm test:e2e          # Playwright (starts the dev server itself)
 pnpm build
 ```
 
 Use `?exercise=<slug>` to open a specific exercise, e.g.
-`/?exercise=vim.ci-quotes.basic-001`.
+`/?exercise=vim.ci-quotes.basic-001`. Without it the first exercise opens, and "Next exercise"
+walks through the rest.
 
 ## Layout
 

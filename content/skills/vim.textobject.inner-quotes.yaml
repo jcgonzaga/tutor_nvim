@@ -1,0 +1,22 @@
+schemaVersion: 1
+
+id: vim-textobject-inner-quotes
+slug: vim.textobject.inner-quotes
+
+title: "Inside quotes"
+description: 'Operate on the text inside a pair of quotes with i" and a".'
+
+domain: vim
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.operator.change
+concepts:
+  - operator
+  - modifier
+  - text-object
+tags:
+  - text-object
+  - quotes

@@ -1,0 +1,18 @@
+schemaVersion: 1
+
+id: vim-mode-normal
+slug: vim.mode.normal
+
+title: "Normal mode"
+description: "Stay in NORMAL mode, where keys are commands, and get back to it with Esc."
+
+domain: vim
+tier: 1
+difficulty: 1
+enabled: true
+
+prerequisites: []
+concepts:
+  - mode
+tags:
+  - mode

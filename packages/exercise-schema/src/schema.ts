@@ -5,6 +5,7 @@ import {
   type VimMode,
 } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
+import { difficultySchema, idSchema, slugSchema, tagSchema } from "./primitives";
 
 /** Version of the exercise content format. Bump with an explicit migration. */
 export const EXERCISE_SCHEMA_VERSION = 1;
@@ -37,16 +38,7 @@ export const ANTI_PATTERN_IDS = [
   "repeated_escape",
 ] as const;
 
-/** Stable public identifier: `vim-ci-quotes-001`. */
-const idSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "must be kebab-case (a-z, 0-9, -)");
-
-/** Stable dotted identifier: `vim.ci-quotes.basic-001`. */
-const slugSchema = z
-  .string()
-  .regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)+$/,
-    "must be dot-separated lowercase segments, e.g. vim.operator.change",
-  );
+const vimModeSchema = z.enum(["normal", "insert"]);
 
 /** Content cursors are 1-based (line and column), as in Vim's ruler. */
 const contentCursorSchema = z.strictObject({
@@ -58,9 +50,25 @@ const initialStateSchema = z
   .strictObject({
     buffer: z.string(),
     cursor: contentCursorSchema.default({ line: 1, column: 1 }),
-    vimMode: z.enum(["normal", "insert"]).default("normal"),
+    vimMode: vimModeSchema.default("normal"),
+    /**
+     * Keys applied before the learner starts, keeping their undo history. Lets an
+     * exercise begin with something to undo or redo; it is not part of the attempt.
+     */
+    setupKeys: z.string().min(1).optional(),
   })
   .superRefine((state, ctx) => {
+    if (state.setupKeys !== undefined) {
+      try {
+        tokenizeKeySequence(state.setupKeys);
+      } catch (error) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["setupKeys"],
+          message: error instanceof Error ? error.message : "invalid key sequence",
+        });
+      }
+    }
     const lines = splitLines(state.buffer);
     const line = lines[state.cursor.line - 1];
     if (line === undefined) {
@@ -82,9 +90,46 @@ const initialStateSchema = z
     }
   });
 
-const objectiveSchema = z.discriminatedUnion("type", [
-  z.strictObject({ type: z.literal("buffer_equals"), target: z.string() }),
-]);
+/** Objective as authors write it (cursors 1-based). */
+export type RawObjective =
+  | { type: "buffer_equals"; target: string }
+  | { type: "cursor_at"; line: number; column: number }
+  | { type: "mode_equals"; mode: "normal" | "insert" }
+  | { type: "all"; goals: RawObjective[] };
+
+const objectiveSchema: z.ZodType<RawObjective> = z.lazy(() =>
+  z.discriminatedUnion("type", [
+    z.strictObject({ type: z.literal("buffer_equals"), target: z.string() }),
+    z.strictObject({
+      type: z.literal("cursor_at"),
+      line: z.number().int().min(1),
+      column: z.number().int().min(1),
+    }),
+    z.strictObject({ type: z.literal("mode_equals"), mode: vimModeSchema }),
+    z.strictObject({ type: z.literal("all"), goals: z.array(objectiveSchema).min(2) }),
+  ]),
+);
+
+/** Normalized objective: cursors are 0-based engine positions, buffers are split into lines. */
+export type Objective =
+  | { readonly type: "buffer_equals"; readonly targetLines: readonly string[] }
+  | { readonly type: "cursor_at"; readonly position: Position }
+  | { readonly type: "mode_equals"; readonly mode: VimMode }
+  | { readonly type: "all"; readonly goals: readonly Objective[] };
+
+function normalizeObjective(raw: RawObjective): Objective {
+  switch (raw.type) {
+    case "buffer_equals":
+      return { type: "buffer_equals", targetLines: splitLines(raw.target) };
+    case "cursor_at":
+      // Same normalization boundary as the initial cursor: content is 1-based.
+      return { type: "cursor_at", position: { line: raw.line - 1, column: raw.column - 1 } };
+    case "mode_equals":
+      return { type: "mode_equals", mode: raw.mode };
+    case "all":
+      return { type: "all", goals: raw.goals.map(normalizeObjective) };
+  }
+}
 
 const evaluationSchema = z.strictObject({
   requireFinalNormalMode: z.boolean().default(false),
@@ -113,14 +158,40 @@ const hintSchema = z.strictObject({
   text: z.string().min(1),
 });
 
+/** Hints reveal progressively: levels count 1, 2, 3... and never become available earlier than the previous one. */
+const hintsSchema = z.array(hintSchema).superRefine((hints, ctx) => {
+  hints.forEach((hint, index) => {
+    if (hint.level !== index + 1) {
+      ctx.addIssue({
+        code: "custom",
+        path: [index, "level"],
+        message: `hint levels must be 1, 2, 3... in order (expected ${index + 1})`,
+      });
+    }
+    const previous = hints[index - 1];
+    if (previous && hint.afterMs < previous.afterMs) {
+      ctx.addIssue({
+        code: "custom",
+        path: [index, "afterMs"],
+        message: "a hint cannot become available before the previous one",
+      });
+    }
+  });
+});
+
 const environmentSchema = z.strictObject({
   type: z.literal("simulator"),
   profile: z.string().min(1),
 });
 
 const metadataSchema = z.strictObject({
+  /** Language of the buffer, e.g. `javascript`. */
   language: z.string().min(1).optional(),
+  /** Where the situation happens, e.g. `config-file`; transfer exercises vary it. */
+  context: z.string().min(1).optional(),
   estimatedSeconds: z.number().int().positive().optional(),
+  /** Tags that make this exercise count as transfer evidence for its skills (M4). */
+  transferTags: z.array(tagSchema).default([]),
 });
 
 export const exerciseSchema = z
@@ -133,15 +204,20 @@ export const exerciseSchema = z
     instruction: z.string().min(1).optional(),
     skillIds: z.array(slugSchema).min(1),
     mode: z.enum(EXERCISE_MODES),
-    difficulty: z.number().int().min(1).max(5),
+    difficulty: difficultySchema,
     environment: environmentSchema.default({ type: "simulator", profile: "vim-basic-v1" }),
     initialState: initialStateSchema,
     objective: objectiveSchema,
     evaluation: evaluationSchema,
-    solutions: z.array(solutionSchema).min(1),
+    solutions: z
+      .array(solutionSchema)
+      .min(1)
+      .refine((solutions) => solutions.some((solution) => solution.classification === "optimal"), {
+        message: "declare at least one solution classified optimal (it is the efficiency baseline)",
+      }),
     antiPatterns: z.array(z.enum(ANTI_PATTERN_IDS)).default([]),
-    hints: z.array(hintSchema).default([]),
-    metadata: metadataSchema.default({}),
+    hints: hintsSchema.default([]),
+    metadata: metadataSchema.default({ transferTags: [] }),
   })
   .transform((exercise) => ({
     ...exercise,
@@ -154,11 +230,12 @@ export const exerciseSchema = z
         column: exercise.initialState.cursor.column - 1,
       } satisfies Position,
       vimMode: exercise.initialState.vimMode satisfies VimMode,
+      /** Canonical key tokens applied before the attempt starts. */
+      setupKeys: exercise.initialState.setupKeys
+        ? tokenizeKeySequence(exercise.initialState.setupKeys)
+        : [],
     },
-    objective: {
-      type: exercise.objective.type,
-      targetLines: splitLines(exercise.objective.target),
-    },
+    objective: normalizeObjective(exercise.objective),
     solutions: exercise.solutions.map((solution) => ({
       ...solution,
       /** Canonical key tokens, ready to compare with recorded input. */
@@ -171,4 +248,6 @@ export type ExerciseInput = z.input<typeof exerciseSchema>;
 /** Normalized exercise consumed by the engine, evaluation and UI. */
 export type Exercise = z.output<typeof exerciseSchema>;
 export type ExerciseSolution = Exercise["solutions"][number];
-export type ExerciseObjective = Exercise["objective"];
+export type ExerciseObjective = Objective;
+export type ExerciseHint = Exercise["hints"][number];
+export type AntiPatternId = (typeof ANTI_PATTERN_IDS)[number];

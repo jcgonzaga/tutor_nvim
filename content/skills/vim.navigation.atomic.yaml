@@ -1,0 +1,20 @@
+schemaVersion: 1
+
+id: vim-navigation-atomic
+slug: vim.navigation.atomic
+
+title: "Move with h j k l"
+description: "Move one character or line at a time with the home-row keys."
+
+domain: vim
+tier: 1
+difficulty: 1
+enabled: true
+
+prerequisites:
+  - vim.mode.normal
+concepts:
+  - motion
+tags:
+  - motion
+  - hjkl

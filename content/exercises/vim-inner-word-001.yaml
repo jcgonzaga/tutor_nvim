@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-inner-word-001
+slug: vim.inner-word.basic-001
+
+title: "Change the word under the cursor"
+instruction: 'Change "oldName" into "newName", with the cursor somewhere in the middle of the word.'
+
+skillIds:
+  - vim.textobject.inner-word
+  - vim.operator.change
+
+mode: recall
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const oldName = compute();
+  cursor:
+    line: 1
+    column: 10
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const newName = compute();
+
+solutions:
+  - sequence: "ciwnewName<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Think Change + Inside + Word."
+  - afterMs: 8000
+    level: 2
+    text: "ciw works from anywhere inside the word."
+
+metadata:
+  language: javascript
+  context: source-code
+  estimatedSeconds: 8
+  transferTags: []

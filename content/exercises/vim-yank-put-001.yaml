@@ -1,0 +1,62 @@
+schemaVersion: 1
+
+id: vim-yank-put-001
+slug: vim.yank-put.line-001
+
+title: "Duplicate a line"
+instruction: 'Duplicate the line "second".'
+
+skillIds:
+  - vim.operator.yank
+
+mode: imitate
+difficulty: 3
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    first
+    second
+    third
+  cursor:
+    line: 2
+    column: 3
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    first
+    second
+    second
+    third
+
+solutions:
+  - sequence: "yyp"
+    classification: optimal
+  - sequence: "yyP"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - arrow_keys
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "y copies, and doubling it copies the whole line."
+  - afterMs: 8000
+    level: 2
+    text: "p pastes after the current line."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 5
+  transferTags: []

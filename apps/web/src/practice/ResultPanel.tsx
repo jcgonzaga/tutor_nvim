@@ -1,26 +1,44 @@
 import { forwardRef } from "react";
 import type { AttemptEvaluation } from "@tutor-nvim/evaluation";
+import type { AntiPatternId } from "@tutor-nvim/exercise-schema";
 
 interface ResultPanelProps {
   readonly evaluation: AttemptEvaluation;
   readonly onRetry: () => void;
+  /** Link to the next exercise, when there is one. */
+  readonly nextHref: string | null;
 }
+
+/** Learner-facing wording for each anti-pattern; the detection itself lives in the evaluation package. */
+const ANTI_PATTERN_LABELS: Readonly<Record<AntiPatternId, string>> = {
+  repeated_x: "Repeated x: try a motion or operator that deletes more at once",
+  excessive_hjkl: "Many h/j/k/l presses: look for a faster motion",
+  arrow_keys: "Arrow keys: stay on the home row",
+  insert_mode_navigation: "Moving around in INSERT mode: leave it with Esc first",
+  repeated_escape: "Esc pressed repeatedly: once is enough",
+};
 
 function formatMs(ms: number | null): string {
   return ms === null ? "-" : `${Math.round(ms)} ms`;
 }
 
+const buttonClass =
+  "rounded border border-zinc-500 px-3 py-1 text-sm hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400";
+
 export const ResultPanel = forwardRef<HTMLButtonElement, ResultPanelProps>(function ResultPanel(
-  { evaluation, onRetry },
+  { evaluation, onRetry, nextHref },
   retryRef,
 ) {
-  const { success, strategy, metrics } = evaluation;
+  const { success, strategy, metrics, antiPatterns } = evaluation;
   const rows: ReadonlyArray<readonly [label: string, testId: string, value: string]> = [
     ["Strategy", "result-strategy", strategy],
     ["Keystrokes", "result-keystrokes", String(metrics.keystrokes)],
     ["First input", "result-first-input", formatMs(metrics.firstInputLatencyMs)],
     ["Duration", "result-duration", formatMs(metrics.totalDurationMs)],
     ["Efficiency", "result-efficiency", `${Math.round(metrics.efficiencyScore)}`],
+    ["Performance", "result-performance", `${Math.round(metrics.performanceScore)}`],
+    ["Errors", "result-errors", String(metrics.errors)],
+    ["Hints used", "result-hints", String(metrics.hintsUsed)],
   ];
 
   return (
@@ -41,14 +59,26 @@ export const ResultPanel = forwardRef<HTMLButtonElement, ResultPanelProps>(funct
           </div>
         ))}
       </dl>
-      <button
-        ref={retryRef}
-        type="button"
-        onClick={onRetry}
-        className="mt-4 rounded border border-zinc-500 px-3 py-1 text-sm hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400"
-      >
-        Try again
-      </button>
+      {antiPatterns.length > 0 ? (
+        <ul data-testid="result-anti-patterns" className="mt-3 space-y-1 text-sm">
+          {antiPatterns.map((hit) => (
+            <li key={hit.id}>
+              <span aria-hidden>⚠ </span>
+              {ANTI_PATTERN_LABELS[hit.id]}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="mt-4 flex gap-3">
+        <button ref={retryRef} type="button" onClick={onRetry} className={buttonClass}>
+          Try again
+        </button>
+        {nextHref ? (
+          <a href={nextHref} className={buttonClass}>
+            Next exercise
+          </a>
+        ) : null}
+      </div>
     </section>
   );
 });

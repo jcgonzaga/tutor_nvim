@@ -1,0 +1,22 @@
+schemaVersion: 1
+
+id: vim-textobject-inner-parentheses
+slug: vim.textobject.inner-parentheses
+
+title: "Inside parentheses"
+description: "Operate on what is between parentheses with i( and a(."
+
+domain: vim
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - vim.operator.change
+concepts:
+  - operator
+  - modifier
+  - text-object
+tags:
+  - text-object
+  - parentheses
