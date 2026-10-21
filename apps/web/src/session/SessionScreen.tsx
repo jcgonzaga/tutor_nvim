@@ -13,6 +13,7 @@ import {
   type Profile,
 } from "@tutor-nvim/pedagogy";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
+import { useCloud } from "../cloud/CloudProvider";
 import { localDateKey } from "../clock";
 import { exerciseIdsForSkill, exercises, findExercise, skills } from "../exercises";
 import { FeedbackPanel } from "../practice/FeedbackPanel";
@@ -56,7 +57,8 @@ const completeOptions = {
  * exercise is applied to the profile and saved before its feedback is even read.
  */
 export function SessionScreen({ navigate }: { readonly navigate: (route: Route) => void }) {
-  const { profile, clock, update } = useProfile();
+  const { profile, clock, update, getProfile } = useProfile();
+  const cloud = useCloud();
   const [held, setHeld] = useState<Held | null>(null);
   const today = localDateKey(clock.now());
   const active = activeSessionFor(profile, today);
@@ -65,6 +67,11 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
   // double-invoked effects in development cannot build two sessions.
   useEffect(() => {
     if (!profile.onboarding.completed) return;
+    const stale = getProfile().activeSession;
+    if (stale !== null && stale.run.date !== today) {
+      // A session left over from an earlier day closes as abandoned; the cloud hears about it too.
+      cloud.recordSession(getProfile(), stale, { finishedAt: clock.now(), abandoned: true });
+    }
     update((current) => {
       if (activeSessionFor(current, today) !== null) return current;
       const now = clock.now();
@@ -84,13 +91,19 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       });
       return startSession(stale, plan, now);
     });
-  }, [profile.onboarding.completed, today, clock, update]);
+  }, [profile.onboarding.completed, today, clock, update, getProfile, cloud]);
 
   if (active === null) return null;
   const run = active.run;
 
   function handleFinish(exercise: Exercise, finished: FinishedPractice) {
     const at = clock.now();
+    cloud.recordAttempt(
+      exercise,
+      { attempt: finished.attempt, success: finished.evaluation.success },
+      at,
+      getProfile().activeSession,
+    );
     let improved: readonly PersonalBestMetric[] = [];
     update((current: Profile) => {
       const applied = applyAttempt(current, skills, {
@@ -122,6 +135,13 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
         profile={profile}
         now={clock.now()}
         onDone={() => {
+          const closing = getProfile().activeSession;
+          if (closing !== null) {
+            cloud.recordSession(getProfile(), closing, {
+              finishedAt: clock.now(),
+              abandoned: false,
+            });
+          }
           update((current) => endSession(current, clock.now(), false));
           navigate({ name: "home" });
         }}

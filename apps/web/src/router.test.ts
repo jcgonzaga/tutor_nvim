@@ -13,6 +13,7 @@ describe("router", () => {
     expect(parseRoute("", "#/session")).toEqual({ name: "session" });
     expect(parseRoute("", "#/map")).toEqual({ name: "map" });
     expect(parseRoute("", "#/progress")).toEqual({ name: "progress" });
+    expect(parseRoute("", "#/account")).toEqual({ name: "account" });
   });
 
   it("keeps free practice on ?exercise=, ahead of the hash", () => {
@@ -37,6 +38,7 @@ describe("router", () => {
       { name: "session" },
       { name: "map" },
       { name: "progress" },
+      { name: "account" },
       { name: "skill", slug: "vim.textobject.inner-quotes" },
     ];
     for (const route of routes) {

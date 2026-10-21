@@ -1,4 +1,6 @@
 import { activeSessionFor, recommendNext, runProgress } from "@tutor-nvim/pedagogy";
+import { SyncStatusLine } from "../cloud/AccountScreen";
+import { useCloud } from "../cloud/CloudProvider";
 import { localDateKey } from "../clock";
 import { skills, skillTitle } from "../exercises";
 import { describeRecommendation } from "../format";
@@ -10,6 +12,7 @@ import { cardClass, linkClass, primaryButton } from "../ui/styles";
 /** Daily home (T-512): one obvious action, plus what the next session will focus on. */
 export function HomeScreen({ navigate }: { readonly navigate: (route: Route) => void }) {
   const { profile, clock } = useProfile();
+  const cloud = useCloud();
   const now = clock.now();
   const today = localDateKey(now);
   const active = activeSessionFor(profile, today);
@@ -52,7 +55,13 @@ export function HomeScreen({ navigate }: { readonly navigate: (route: Route) => 
         <a href="#/progress" className={linkClass}>
           Progress
         </a>
+        {cloud.enabled ? (
+          <a href="#/account" className={linkClass}>
+            {cloud.user ? "Account" : "Sign in"}
+          </a>
+        ) : null}
       </nav>
+      <SyncStatusLine />
     </Page>
   );
 }

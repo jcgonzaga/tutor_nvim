@@ -1,3 +1,4 @@
+import { AccountScreen } from "./cloud/AccountScreen";
 import { FreePractice } from "./FreePractice";
 import { HomeScreen } from "./home/HomeScreen";
 import { SkillDetailScreen } from "./map/SkillDetailScreen";
@@ -30,10 +31,13 @@ function Screen({ route, navigate }: { readonly route: Route; readonly navigate:
   // Everything but free practice starts with onboarding, once. The flow lives on its own route,
   // so it stays on screen (to show the estimate) after the profile counts as onboarded.
   useEffect(() => {
-    if (needsOnboarding && route.name !== "onboarding")
+    if (needsOnboarding && route.name !== "onboarding" && route.name !== "account") {
       navigate({ name: "onboarding" }, { replace: true });
+    }
   }, [needsOnboarding, route.name, navigate]);
 
+  // Signing in is allowed before onboarding: on a new device it brings the finished onboarding along.
+  if (route.name === "account") return <AccountScreen />;
   if (needsOnboarding || route.name === "onboarding") {
     return <OnboardingScreen navigate={navigate} />;
   }

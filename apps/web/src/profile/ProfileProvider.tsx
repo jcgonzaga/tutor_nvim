@@ -23,6 +23,8 @@ interface ProfileContextValue {
   readonly clock: Clock;
   /** Something the learner should know about: stored progress was unreadable, or saving failed. */
   readonly notice: StorageNotice;
+  /** The latest profile, including changes made earlier in the same event. */
+  readonly getProfile: () => Profile;
   /** Applies a pure profile transition and saves the result. */
   readonly update: (transition: (profile: Profile) => Profile) => Profile;
   readonly dismissNotice: () => void;
@@ -76,10 +78,11 @@ export function ProfileProvider({ storage, clock = systemClock, children }: Prof
     [storage],
   );
   const dismissNotice = useCallback(() => setNotice(null), []);
+  const getProfile = useCallback(() => latest.current, []);
 
   const value = useMemo(
-    () => ({ profile, clock, notice, update, dismissNotice }),
-    [profile, clock, notice, update, dismissNotice],
+    () => ({ profile, clock, notice, getProfile, update, dismissNotice }),
+    [profile, clock, notice, getProfile, update, dismissNotice],
   );
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 }

@@ -9,6 +9,7 @@ import {
   type ExperienceLevel,
   type Profile,
 } from "@tutor-nvim/pedagogy";
+import { useCloud } from "../cloud/CloudProvider";
 import { skills } from "../exercises";
 import { useProfile } from "../profile/ProfileProvider";
 import type { Navigate } from "../router";
@@ -35,6 +36,7 @@ const TITLES: Readonly<Record<Exclude<Step, "calibration">, string>> = {
  */
 export function OnboardingScreen({ navigate }: { readonly navigate: Navigate }) {
   const { profile, clock, update } = useProfile();
+  const cloud = useCloud();
   const [step, setStep] = useState<Step>("welcome");
   const [estimate, setEstimate] = useState<CalibrationResult | null>(null);
 
@@ -58,6 +60,12 @@ export function OnboardingScreen({ navigate }: { readonly navigate: Navigate }) 
       }
       return completeOnboarding(next, skills, result, at);
     });
+    // Queue the probes for the cloud account (a no-op when cloud sync is off), then sync: the
+    // server replays them and derives the placement from the calibration itself.
+    for (const probe of outcome?.probes ?? []) {
+      cloud.recordAttempt(probe.exercise, probe, at);
+    }
+    cloud.syncNow();
     setEstimate(result);
     setStep("estimate");
   }

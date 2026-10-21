@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AttemptEvaluation } from "@tutor-nvim/evaluation";
+import type { Attempt, AttemptEvaluation } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import {
   CALIBRATION_LADDER,
@@ -20,6 +20,9 @@ import { primaryButton } from "../ui/styles";
 export interface ProbeRecord {
   readonly exercise: Exercise;
   readonly metrics: AttemptEvaluation["metrics"];
+  /** The inputs, kept so the attempt can be uploaded and replayed by the server. */
+  readonly attempt: Attempt;
+  readonly success: boolean;
 }
 
 export interface CalibrationOutcome {
@@ -72,7 +75,12 @@ export function CalibrationStep({ experience, onDone }: CalibrationStepProps) {
               const nextState = recordRung(state, rung, passed);
               const nextProbes = [
                 ...probes,
-                { exercise: probe, metrics: finished.evaluation.metrics },
+                {
+                  exercise: probe,
+                  metrics: finished.evaluation.metrics,
+                  attempt: finished.attempt,
+                  success: finished.evaluation.success,
+                },
               ];
               setState(nextState);
               setProbes(nextProbes);
