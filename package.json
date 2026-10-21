@@ -24,6 +24,7 @@
     "@playwright/test": "1.56.1",
     "@tutor-nvim/evaluation": "workspace:*",
     "@tutor-nvim/exercise-schema": "workspace:*",
+    "@tutor-nvim/pedagogy": "workspace:*",
     "@tutor-nvim/vim-engine": "workspace:*",
     "@types/node": "^22.19.0",
     "eslint": "^9.39.0",

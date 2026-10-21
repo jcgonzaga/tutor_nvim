@@ -4,11 +4,12 @@ Web-first, gamified trainer for Linux basics, Vim/Neovim and (later) LazyVim.
 Source of truth: [`docs/PRD.md`](docs/PRD.md), [`AGENTS.md`](AGENTS.md),
 [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
 
-Current state: **Milestone 3** (exercise platform) on top of the Vim core (M2) and the first
-practice slice (M1):
+Current state: **Milestone 4** (pedagogy engine) on top of the exercise platform (M3), the Vim
+core (M2) and the first practice slice (M1):
 [`m1-vertical-slice`](docs/architecture/m1-vertical-slice.md),
 [`m2-vim-core`](docs/architecture/m2-vim-core.md),
-[`m3-exercise-platform`](docs/architecture/m3-exercise-platform.md).
+[`m3-exercise-platform`](docs/architecture/m3-exercise-platform.md),
+[`m4-pedagogy-engine`](docs/architecture/m4-pedagogy-engine.md).
 
 ## Commands
 
@@ -33,11 +34,12 @@ walks through the rest.
 
 ## Layout
 
-| Path                                        | Responsibility                                        |
-| ------------------------------------------- | ----------------------------------------------------- |
-| `packages/vim-engine`                       | Framework-free Vim simulator: `(state, key) -> state` |
-| `packages/exercise-schema`                  | Zod schemas, YAML parsing, normalization, validation  |
-| `packages/evaluation`                       | Attempt telemetry, goal check, strategy, metrics      |
-| `apps/web`                                  | React UI: renders state, captures keyboard            |
-| `content/exercises`                         | Declarative exercises (YAML)                          |
-| `packages/{pedagogy,shared,ui}`, `apps/api` | Reserved for later milestones (empty)                 |
+| Path                               | Responsibility                                        |
+| ---------------------------------- | ----------------------------------------------------- |
+| `packages/vim-engine`              | Framework-free Vim simulator: `(state, key) -> state` |
+| `packages/exercise-schema`         | Zod schemas, YAML parsing, normalization, validation  |
+| `packages/evaluation`              | Attempt telemetry, goal check, strategy, metrics      |
+| `packages/pedagogy`                | Mastery, unlocks, review scheduler, daily sessions    |
+| `apps/web`                         | React UI: renders state, captures keyboard            |
+| `content/exercises`                | Declarative exercises (YAML)                          |
+| `packages/{shared,ui}`, `apps/api` | Reserved for later milestones (empty)                 |

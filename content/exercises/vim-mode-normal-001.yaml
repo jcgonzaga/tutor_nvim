@@ -1,0 +1,54 @@
+schemaVersion: 1
+
+id: vim-mode-normal-001
+slug: vim.mode-normal.basic-001
+
+title: "Back to NORMAL mode"
+instruction: "You are typing in INSERT mode. Press Esc to go back to NORMAL mode."
+
+skillIds:
+  - vim.mode.normal
+
+mode: learn
+difficulty: 1
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    hello
+  cursor:
+    line: 1
+    column: 6
+  vimMode: insert
+
+objective:
+  type: mode_equals
+  mode: normal
+
+solutions:
+  - sequence: "<Esc>"
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_escape
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "NORMAL mode is where keys are commands. One key takes you there."
+  - afterMs: 8000
+    level: 2
+    text: "Press Esc once."
+
+metadata:
+  language: text
+  context: plain-text
+  estimatedSeconds: 4
+  transferTags: []

@@ -20,6 +20,9 @@ importers:
       '@tutor-nvim/exercise-schema':
         specifier: workspace:*
         version: link:packages/exercise-schema
+      '@tutor-nvim/pedagogy':
+        specifier: workspace:*
+        version: link:packages/pedagogy
       '@tutor-nvim/vim-engine':
         specifier: workspace:*
         version: link:packages/vim-engine
@@ -111,6 +114,12 @@ importers:
       zod:
         specifier: ^4.1.0
         version: 4.6.7
+
+  packages/pedagogy:
+    dependencies:
+      '@tutor-nvim/exercise-schema':
+        specifier: workspace:*
+        version: link:../exercise-schema
 
   packages/vim-engine: {}
 
