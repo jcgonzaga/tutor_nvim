@@ -13,20 +13,33 @@ import { useCloud } from "../cloud/CloudProvider";
 import { skills } from "../exercises";
 import { useProfile } from "../profile/ProfileProvider";
 import type { Navigate } from "../router";
-import { Page } from "../ui/Page";
 import { CalibrationStep, type CalibrationOutcome } from "./CalibrationStep";
 import { EstimateStep } from "./EstimateStep";
 import { ExperienceStep } from "./ExperienceStep";
 import { LayoutStep } from "./LayoutStep";
+import { OnboardingShell } from "./OnboardingShell";
 import { WelcomeStep } from "./WelcomeStep";
 
 type Step = "welcome" | "layout" | "experience" | "calibration" | "estimate";
 
 const TITLES: Readonly<Record<Exclude<Step, "calibration">, string>> = {
   welcome: "Welcome to Tutor NeoVim",
-  layout: "Your keyboard",
+  layout: "Which keyboard do you use?",
   experience: "Your experience",
   estimate: "Your starting point",
+};
+
+const LEADS: Readonly<Partial<Record<Step, string>>> = {
+  layout:
+    "Vim's commands are the same on every keyboard. What changes is where some keys sit, so we can teach you to press them with the right finger.",
+};
+
+const STEP_INDEX: Readonly<Record<Step, number>> = {
+  welcome: 0,
+  layout: 1,
+  experience: 2,
+  calibration: 3,
+  estimate: 4,
 };
 
 /**
@@ -82,7 +95,11 @@ export function OnboardingScreen({ navigate }: { readonly navigate: Navigate }) 
   }
 
   return (
-    <Page title={TITLES[step]} eyebrow="Setup">
+    <OnboardingShell
+      step={STEP_INDEX[step]}
+      title={TITLES[step]}
+      {...(LEADS[step] ? { lead: LEADS[step] } : {})}
+    >
       {step === "welcome" ? <WelcomeStep onNext={() => setStep("layout")} /> : null}
       {step === "layout" ? (
         <LayoutStep
@@ -108,6 +125,6 @@ export function OnboardingScreen({ navigate }: { readonly navigate: Navigate }) 
       {step === "estimate" ? (
         <EstimateStep calibration={estimate} onFinish={() => navigate({ name: "home" })} />
       ) : null}
-    </Page>
+    </OnboardingShell>
   );
 }

@@ -3,7 +3,7 @@ import { ghostComparison, masterRun, runOf } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import type { ComboResult, RunRecord, XpAward } from "@tutor-nvim/pedagogy";
 import type { FinishedPractice } from "../practice/PracticeScreen";
-import { secondaryButton } from "../ui/styles";
+import { quietButton } from "../ui/styles";
 import { GhostComparison } from "./GhostComparison";
 import { ReplayPanel, type ReplaySource } from "./ReplayPanel";
 import { RewardLine } from "./RewardLine";
@@ -49,7 +49,7 @@ export function FeedbackExtras({
       <GhostComparison rows={rows} />
       <button
         type="button"
-        className={secondaryButton}
+        className={quietButton}
         aria-expanded={replaying}
         onClick={() => setReplaying((current) => !current)}
       >

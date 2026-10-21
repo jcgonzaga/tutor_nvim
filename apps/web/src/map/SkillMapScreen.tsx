@@ -8,99 +8,88 @@ import {
 import { skills } from "../exercises";
 import { useProfile } from "../profile/ProfileProvider";
 import { Page } from "../ui/Page";
-import { cardClass, linkClass } from "../ui/styles";
+import { Segments } from "../ui/Segments";
+import { linkClass } from "../ui/styles";
 import { layoutSkillGraph } from "./layout";
 import { STAGE_DISPLAY } from "./stages";
 
-const NODE_W = 210;
-const NODE_H = 84;
-const GAP_X = 72;
-const GAP_Y = 24;
-const PAD = 8;
-
 const graph = layoutSkillGraph(skills);
-const slot = new Map(graph.nodes.map((node) => [node.slug, node]));
-const left = (column: number) => PAD + column * (NODE_W + GAP_X);
-const top = (row: number) => PAD + row * (NODE_H + GAP_Y);
-const width = PAD * 2 + graph.columns * NODE_W + Math.max(0, graph.columns - 1) * GAP_X;
-const height = PAD * 2 + graph.rows * NODE_H + Math.max(0, graph.rows - 1) * GAP_Y;
+const titles = new Map(skills.map((skill) => [skill.slug, skill.title]));
+/** Skills grouped by column, in layout order; a column holds what needs the same depth of prerequisites. */
+const columns = Array.from({ length: graph.columns }, (_, column) =>
+  graph.nodes
+    .filter((node) => node.column === column)
+    .sort((a, b) => a.row - b.row)
+    .map((node) => node.slug),
+);
 
-/** Skill map (T-521): the prerequisite graph from content, with each skill's state in text and icon. */
+/** Skill map (T-521): the prerequisite graph from content, with each skill's state in text and segments. */
 export function SkillMapScreen() {
   const { profile, clock } = useProfile();
   const now = clock.now();
   const stages = resolveStages(skills, profile.learner, DEFAULT_PEDAGOGY_CONFIG);
-  const titles = new Map(skills.map((skill) => [skill.slug, skill.title]));
 
   return (
-    <Page title="Skill map" eyebrow="Tutor NeoVim" wide>
-      <p className="text-zinc-300">
-        Skills unlock when what they build on is practiced. Select a skill for details.
-      </p>
-
-      <ul aria-label="Legend" className={`${cardClass} flex flex-wrap gap-x-6 gap-y-1 text-sm`}>
+    <Page
+      title="Skill map"
+      wide
+      lead={`${skills.length} skills. Each one unlocks when you practice the ones it builds on. Select a skill for details.`}
+    >
+      <ul aria-label="Legend" className="-mt-4 flex flex-wrap gap-x-5 gap-y-2.5 text-sm text-ink-2">
         {MASTERY_STAGES.map((stage) => (
-          <li key={stage}>
-            <span aria-hidden>{STAGE_DISPLAY[stage].icon} </span>
+          <li key={stage} className="flex items-center gap-2">
+            <Segments stage={stage} size="xs" />
             {STAGE_DISPLAY[stage].label}
           </li>
         ))}
       </ul>
 
       <div className="overflow-x-auto pb-2">
-        <div className="relative" style={{ width, height }} data-testid="skill-graph">
-          <svg width={width} height={height} aria-hidden className="absolute inset-0">
-            {graph.edges.map((edge) => {
-              const from = slot.get(edge.from);
-              const to = slot.get(edge.to);
-              if (!from || !to) return null;
-              const x1 = left(from.column) + NODE_W;
-              const y1 = top(from.row) + NODE_H / 2;
-              const x2 = left(to.column);
-              const y2 = top(to.row) + NODE_H / 2;
-              const mid = (x1 + x2) / 2;
-              return (
-                <path
-                  key={`${edge.from}>${edge.to}`}
-                  d={`M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2},${y2}`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  className="text-zinc-600"
-                />
-              );
-            })}
-          </svg>
-
-          {graph.nodes.map((node) => {
-            const stage = stages[node.slug] ?? "locked";
-            const display = STAGE_DISPLAY[stage];
-            const due = isDue(getUserSkill(profile.learner, node.slug), now);
-            return (
-              <a
-                key={node.slug}
-                href={`#/skill/${encodeURIComponent(node.slug)}`}
-                data-testid={`skill-node-${node.slug}`}
-                data-stage={stage}
-                style={{
-                  left: left(node.column),
-                  top: top(node.row),
-                  width: NODE_W,
-                  height: NODE_H,
-                }}
-                className={`absolute flex flex-col justify-between rounded border-2 p-2 text-sm hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400 ${display.nodeClass}`}
-              >
-                <span className="font-semibold leading-tight">{titles.get(node.slug)}</span>
-                <span className="flex items-center justify-between text-xs">
-                  <span>
-                    <span aria-hidden>{display.icon} </span>
-                    {display.label}
-                  </span>
-                  {due ? <span>Review due</span> : null}
+        <div
+          data-testid="skill-graph"
+          className="grid min-w-[896px] gap-3.5"
+          style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(168px, 1fr))` }}
+        >
+          {columns.map((slugs, column) => (
+            <section key={column} aria-label={`Step ${column + 1}`} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-0.5 border-b border-line px-0.5 pb-1.5">
+                <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-ink-3">
+                  Step {column + 1}
                 </span>
-              </a>
-            );
-          })}
+              </div>
+              {slugs.map((slug) => {
+                const stage = stages[slug] ?? "locked";
+                const due = isDue(getUserSkill(profile.learner, slug), now);
+                const locked = stage === "locked";
+                return (
+                  <a
+                    key={slug}
+                    href={`#/skill/${encodeURIComponent(slug)}`}
+                    data-testid={`skill-node-${slug}`}
+                    data-stage={stage}
+                    className={`flex flex-col gap-2.5 rounded-xl p-3.5 text-ink no-underline ${
+                      locked
+                        ? "border border-dashed border-line-strong text-ink-3 hover:bg-surface"
+                        : "border border-line bg-surface hover:bg-raised"
+                    }`}
+                  >
+                    <span className="text-base font-bold leading-[1.3]">{titles.get(slug)}</span>
+                    <span
+                      className={`flex items-center justify-between gap-2 text-[13px] ${
+                        locked ? "" : "text-ink-2"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        {locked ? <LockIcon /> : <Segments stage={stage} size="sm" />}
+                        {STAGE_DISPLAY[stage].label}
+                      </span>
+                      {due ? <span className="font-bold text-amber">Review due</span> : null}
+                    </span>
+                  </a>
+                );
+              })}
+            </section>
+          ))}
         </div>
       </div>
 
@@ -108,5 +97,24 @@ export function SkillMapScreen() {
         Back to today
       </a>
     </Page>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      aria-hidden
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="7" width="10" height="7" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 015 0v2" />
+    </svg>
   );
 }

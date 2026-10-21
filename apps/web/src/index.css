@@ -1,5 +1,79 @@
 @import "tailwindcss";
 
+/* Self-hosted (Latin only, which covers Spanish and English): no font CDN request, and practice works offline. */
+@import "@fontsource/atkinson-hyperlegible-next/latin-400.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-500.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-600.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-700.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-800.css";
+@import "@fontsource/jetbrains-mono/latin-400.css";
+@import "@fontsource/jetbrains-mono/latin-500.css";
+@import "@fontsource/jetbrains-mono/latin-700.css";
+
+/*
+ * Graphite and amber. The background goes quiet so the code is the only thing that glows, and the
+ * amber cursor guides the eye on every screen. Contrast against `canvas`: ink 16:1, ink-2 9.4:1,
+ * ink-3 5.5:1. Colour never carries a state alone: each one also has a shape, an icon or a word.
+ */
+@theme {
+  --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --color-canvas: #0f1113;
+  --color-sunken: #131619;
+  --color-surface: #16191c;
+  --color-panel: #1a1d21;
+  --color-raised: #1d2125;
+  --color-line: #2b3036;
+  --color-line-strong: #3a4048;
+  --color-line-faint: #22262b;
+  --color-dash: #4a515a;
+
+  --color-ink: #edeff2;
+  --color-ink-2: #b0b7c0;
+  --color-ink-3: #848c96;
+
+  --color-amber: #f4b740;
+  --color-amber-hi: #ffd27a;
+  --color-amber-ink: #17130a;
+
+  --color-azure: #7cc4ff;
+  --color-azure-deep: #4f96d1;
+
+  --color-ember: #e5683e;
+  --color-ember-ink: #ff9b78;
+  --color-ember-bg: #2a1810;
+  --color-ember-line: #5a2e1c;
+
+  --color-code-string: #d7b98a;
+}
+
 :root {
   color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* One visible focus ring everywhere, in the accent colour. */
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

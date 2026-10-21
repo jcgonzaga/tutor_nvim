@@ -17,7 +17,7 @@ export function SyncStatusLine() {
   const { enabled, user, status } = useCloud();
   if (!enabled) return null;
   return (
-    <p data-testid="sync-status" data-status={status} className="text-sm text-zinc-400">
+    <p data-testid="sync-status" data-status={status} className="text-[15px] text-ink-3">
       {user
         ? `${user.email} · ${STATUS_TEXT[status]}`
         : "Sign in to keep your progress across devices."}
@@ -55,7 +55,7 @@ export function AccountScreen() {
   if (!cloud.enabled) {
     return (
       <Page title="Account">
-        <p className="text-zinc-300">
+        <p className="text-ink-2">
           Accounts are not set up in this version. Your progress is saved on this device.
         </p>
         <a href="#/" className={linkClass}>
@@ -68,15 +68,15 @@ export function AccountScreen() {
   if (cloud.user) {
     return (
       <Page title="Account" eyebrow="Tutor NeoVim">
-        <section className={`${cardClass} space-y-3`}>
+        <section className={`${cardClass} flex max-w-[560px] flex-col gap-4`}>
           <p data-testid="account-email">{cloud.user.email}</p>
           <SyncStatusLine />
           {cloud.message ? (
-            <p role="status" className="text-sm text-amber-200">
+            <p role="status" className="text-[15px] text-ink-2">
               {cloud.message}
             </p>
           ) : null}
-          <p className="text-sm text-zinc-400">
+          <p className="text-[15px] text-ink-3">
             Your skills, reviews and mastery follow your account. XP, streak and records stay on
             this device for now.
           </p>
@@ -98,22 +98,22 @@ export function AccountScreen() {
 
   return (
     <Page title={mode === "sign-in" ? "Sign in" : "Create an account"} eyebrow="Tutor NeoVim">
-      <p className="text-zinc-300">
+      <p className="text-ink-2">
         An account keeps your progress across devices. You can keep practicing without one.
       </p>
-      <form onSubmit={submit} className={`${cardClass} space-y-4`}>
+      <form onSubmit={submit} className={`${cardClass} flex max-w-[560px] flex-col gap-5`}>
         {mode === "sign-up" ? (
-          <label className="block text-sm">
+          <label className="block text-[15px] font-semibold text-ink-2">
             Name
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
-              className="mt-1 w-full rounded border border-zinc-600 bg-zinc-950 px-3 py-2 focus:outline-2 focus:outline-sky-400"
+              className="mt-1.5 block min-h-12 w-full rounded-lg border border-line-strong bg-raised px-3.5 py-2 text-ink"
             />
           </label>
         ) : null}
-        <label className="block text-sm">
+        <label className="block text-[15px] font-semibold text-ink-2">
           Email
           <input
             type="email"
@@ -121,10 +121,10 @@ export function AccountScreen() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
-            className="mt-1 w-full rounded border border-zinc-600 bg-zinc-950 px-3 py-2 focus:outline-2 focus:outline-sky-400"
+            className="mt-1.5 block min-h-12 w-full rounded-lg border border-line-strong bg-raised px-3.5 py-2 text-ink"
           />
         </label>
-        <label className="block text-sm">
+        <label className="block text-[15px] font-semibold text-ink-2">
           Password
           <input
             type="password"
@@ -133,11 +133,11 @@ export function AccountScreen() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-            className="mt-1 w-full rounded border border-zinc-600 bg-zinc-950 px-3 py-2 focus:outline-2 focus:outline-sky-400"
+            className="mt-1.5 block min-h-12 w-full rounded-lg border border-line-strong bg-raised px-3.5 py-2 text-ink"
           />
         </label>
         {error ? (
-          <p role="alert" data-testid="account-error" className="text-sm text-red-300">
+          <p role="alert" data-testid="account-error" className="text-[15px] text-ember-ink">
             <span aria-hidden>✗ </span>
             {error}
           </p>

@@ -1,5 +1,5 @@
 import { useProfile } from "./profile/ProfileProvider";
-import { secondaryButton } from "./ui/styles";
+import { quietButton } from "./ui/styles";
 
 const MESSAGES = {
   unreadable:
@@ -15,13 +15,13 @@ export function NoticeBanner() {
     <div
       role="alert"
       data-testid="storage-notice"
-      className="flex items-center justify-between gap-4 border-b border-amber-500 bg-amber-950 px-6 py-2 text-sm text-amber-100"
+      className="flex items-center justify-between gap-4 border-b border-amber bg-panel px-8 py-3 text-[15px] text-ink"
     >
       <p>
         <span aria-hidden>⚠ </span>
         {MESSAGES[notice]}
       </p>
-      <button type="button" onClick={dismissNotice} className={secondaryButton}>
+      <button type="button" onClick={dismissNotice} className={quietButton}>
         Dismiss
       </button>
     </div>

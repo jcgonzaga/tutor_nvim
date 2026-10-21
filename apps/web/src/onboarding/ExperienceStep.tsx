@@ -19,28 +19,33 @@ interface ExperienceStepProps {
 export function ExperienceStep({ initial, onCalibrate, onSkip, onBack }: ExperienceStepProps) {
   const [experience, setExperience] = useState<ExperienceLevel>(initial ?? "never");
   return (
-    <div className="space-y-5">
-      <fieldset className="space-y-2">
-        <legend className="text-zinc-300">How much Vim do you know?</legend>
+    <div className="flex max-w-[720px] flex-col gap-6">
+      <fieldset className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
+        <legend className="mb-3 text-lg text-ink-2">How much Vim do you know?</legend>
         {EXPERIENCE_LEVELS.map((level) => (
-          <label key={level} className="flex items-center gap-2">
+          <label
+            key={level}
+            className={`flex min-h-14 cursor-pointer items-center gap-3.5 rounded-xl border-2 px-5 py-3 text-[17px] ${
+              experience === level ? "border-amber bg-panel" : "border-line bg-surface"
+            }`}
+          >
             <input
               type="radio"
               name="experience"
               value={level}
               checked={experience === level}
               onChange={() => setExperience(level)}
-              className="size-4 accent-sky-400"
+              className="size-[22px] flex-none accent-amber"
             />
             {LABELS[level]}
           </label>
         ))}
       </fieldset>
-      <p className="text-sm text-zinc-400">
+      <p className="text-[15px] text-ink-3">
         This only decides where the short check starts. It never unlocks anything on its own: what
         you show in the check does.
       </p>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={onBack} className={secondaryButton}>
           Back
         </button>

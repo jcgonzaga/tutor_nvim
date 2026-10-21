@@ -208,8 +208,14 @@ test.describe("M5 local product", () => {
     for (const node of await nodes.all()) {
       await expect(node).toContainText(/Locked|Learning|Practicing|Fluent|Mastered/);
     }
-    // Keyboard only: tab to the first node and open it.
-    await page.keyboard.press("Tab");
+    // Keyboard only: tab past the navigation to the first node and open it.
+    for (
+      let i = 0;
+      i < 12 && !(await nodes.first().evaluate((el) => el === document.activeElement));
+      i++
+    ) {
+      await page.keyboard.press("Tab");
+    }
     await expect(nodes.first()).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.getByTestId("skill-stage")).toBeVisible();

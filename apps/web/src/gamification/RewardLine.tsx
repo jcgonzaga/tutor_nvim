@@ -15,21 +15,16 @@ export function RewardLine({ award, combo }: RewardLineProps) {
         <span data-testid="reward-xp" className="font-semibold">
           {award.total > 0 ? `+${award.total} XP` : "+0 XP"}
         </span>
-        {combo ? (
-          <span data-testid="reward-combo">
-            <span aria-hidden>{combo.change.kind === "reset" ? "↺ " : "⚡ "}</span>
-            {describeCombo(combo)}
-          </span>
-        ) : null}
+        {combo ? <span data-testid="reward-combo">{describeCombo(combo)}</span> : null}
       </p>
       {award.total > 0 ? (
-        <p data-testid="reward-parts" className="text-zinc-400">
+        <p data-testid="reward-parts" className="text-ink-3">
           {describeParts(award).join(" · ")}
           {award.repeatFactor < 1 ? " · repeated today: reduced" : ""}
           {award.capped ? " · daily XP limit reached" : ""}
         </p>
       ) : (
-        <p className="text-zinc-400">
+        <p className="text-ink-3">
           XP rewards solved exercises. Mastery is separate: it only grows with practice.
         </p>
       )}

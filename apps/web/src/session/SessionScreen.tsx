@@ -32,6 +32,7 @@ import { PracticeScreen, type FinishedPractice } from "../practice/PracticeScree
 import { useProfile } from "../profile/ProfileProvider";
 import type { Route } from "../router";
 import { Page } from "../ui/Page";
+import { KeyHint } from "../ui/Kbd";
 import { primaryButton, secondaryButton } from "../ui/styles";
 import { SessionSummaryView } from "./SessionSummaryView";
 
@@ -278,13 +279,14 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
           }
         >
           {held && held.improved.length > 0 ? (
-            <p data-testid="personal-best" className="mr-auto self-center text-sm">
-              <span aria-hidden>🏆 </span>
+            <p data-testid="personal-best" className="mr-auto self-center text-base text-amber">
+              <span aria-hidden>★ </span>
               New personal best: {held.improved.map((metric) => METRIC_LABELS[metric]).join(", ")}
             </p>
           ) : null}
-          <button type="button" className={primaryButton} onClick={() => setHeld(null)}>
+          <button type="button" className={`${primaryButton} !pr-3`} onClick={() => setHeld(null)}>
             {isRunFinished(run) ? "Finish" : "Continue"}
+            <KeyHint>Enter</KeyHint>
           </button>
         </FeedbackPanel>
       )}

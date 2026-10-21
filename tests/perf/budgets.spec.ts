@@ -112,7 +112,7 @@ test.describe("T-902 performance budgets (production build)", () => {
       if (await page.getByRole("button", { name: "Finish" }).isVisible()) break;
       const ms = await page.evaluate(async () => {
         const button = Array.from(document.querySelectorAll("button")).find((b) =>
-          /^(Continue|Finish)$/.test(b.textContent?.trim() ?? ""),
+          /^(Continue|Finish)/.test(b.textContent?.trim() ?? ""),
         );
         if (!button) throw new Error("no continue button");
         const previous = document.querySelector("#instruction")?.textContent;

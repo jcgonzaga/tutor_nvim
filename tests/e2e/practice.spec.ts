@@ -56,7 +56,7 @@ test.describe("M1 vertical practice slice", () => {
     await openChallenge(page);
     await page.keyboard.press("ArrowLeft");
 
-    await expect(page.getByText("✕ <Left> not accepted")).toBeVisible();
+    await expect(page.getByText("<Left> not accepted")).toBeVisible();
     await expect(page.getByTestId("buffer")).toHaveText('const mode = "development";');
     await expect(page.getByTestId("vim-mode")).toHaveText("NORMAL");
   });

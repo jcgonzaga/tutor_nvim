@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { buildReplay } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import { EditorView } from "../practice/EditorView";
-import { secondaryButton } from "../ui/styles";
+import { quietButton } from "../ui/styles";
 
 export interface ReplaySource {
   readonly id: string;
@@ -71,7 +71,7 @@ export function ReplayPanel({
     <section
       aria-label="Replay"
       data-testid="replay"
-      className="space-y-3 border-t border-zinc-700 pt-3"
+      className="space-y-3 border-t border-line pt-4"
     >
       {sources.length > 1 ? (
         <fieldset className="flex flex-wrap gap-4 text-sm">
@@ -83,7 +83,7 @@ export function ReplayPanel({
                 name="replay-source"
                 checked={option.id === source.id}
                 onChange={() => choose(option.id)}
-                className="size-4 accent-sky-400"
+                className="size-4 accent-amber"
               />
               {option.label}
             </label>
@@ -91,10 +91,10 @@ export function ReplayPanel({
         </fieldset>
       ) : null}
 
-      <div className="rounded border border-zinc-700 bg-zinc-950 p-3" aria-hidden>
-        <EditorView lines={frame.lines} cursor={frame.cursor} mode={frame.mode} />
+      <div className="overflow-hidden rounded-xl border border-line bg-canvas" aria-hidden>
+        <EditorView lines={frame.lines} cursor={frame.cursor} mode={frame.mode} minRows={2} />
       </div>
-      <p className="font-mono text-xs text-zinc-400" aria-hidden>
+      <p className="font-mono text-xs text-ink-3" aria-hidden>
         {frame.mode.toUpperCase()}
       </p>
 
@@ -110,7 +110,7 @@ export function ReplayPanel({
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          className={secondaryButton}
+          className={quietButton}
           onClick={() => setPosition(0)}
           disabled={position === 0}
         >
@@ -118,7 +118,7 @@ export function ReplayPanel({
         </button>
         <button
           type="button"
-          className={secondaryButton}
+          className={quietButton}
           onClick={() => setPosition((current) => Math.max(0, current - 1))}
           disabled={position === 0}
         >
@@ -126,7 +126,7 @@ export function ReplayPanel({
         </button>
         <button
           type="button"
-          className={secondaryButton}
+          className={quietButton}
           onClick={() => setPosition((current) => Math.min(last, current + 1))}
           disabled={position >= last}
         >
@@ -135,7 +135,7 @@ export function ReplayPanel({
         {reducedMotion ? null : (
           <button
             type="button"
-            className={secondaryButton}
+            className={quietButton}
             onClick={() => {
               if (position >= last) {
                 setPosition(0);

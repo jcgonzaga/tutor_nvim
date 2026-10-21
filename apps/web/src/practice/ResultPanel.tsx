@@ -22,7 +22,7 @@ function formatMs(ms: number | null): string {
 }
 
 const buttonClass =
-  "rounded border border-zinc-500 px-3 py-1 text-sm hover:bg-zinc-800 focus:outline-2 focus:outline-offset-2 focus:outline-sky-400";
+  "inline-flex min-h-11 items-center rounded-lg border border-line-strong px-4 text-base font-semibold text-ink no-underline hover:bg-raised";
 
 export function ResultPanel({ evaluation, onRetry, nextHref }: ResultPanelProps) {
   const { success, strategy, metrics, antiPatterns } = evaluation;
@@ -42,7 +42,7 @@ export function ResultPanel({ evaluation, onRetry, nextHref }: ResultPanelProps)
       role="status"
       aria-live="polite"
       data-testid="result"
-      className="rounded border border-zinc-700 bg-zinc-900 p-4"
+      className="rounded-2xl border border-line bg-surface p-8"
     >
       <h2 data-testid="result-outcome" className="text-lg font-semibold tracking-wide">
         {success ? "SUCCESS" : "NOT SOLVED"}
@@ -50,7 +50,7 @@ export function ResultPanel({ evaluation, onRetry, nextHref }: ResultPanelProps)
       <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 font-mono text-sm">
         {rows.map(([label, testId, value]) => (
           <div key={testId} className="contents">
-            <dt className="text-zinc-400">{label}</dt>
+            <dt className="text-ink-3">{label}</dt>
             <dd data-testid={testId}>{value}</dd>
           </div>
         ))}
