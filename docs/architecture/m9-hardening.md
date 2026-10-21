@@ -93,4 +93,4 @@ See [`docs/deployment.md`](../deployment.md).
   environment; the production boot was verified on a real Postgres with a production-only install.
 - Fastify 5.12 logs a deprecation warning for `requestIdLogLabel` (it moved under `logController`,
   which is not in its published types yet). It still works; revisit on the next Fastify upgrade.
-- Hosting is not chosen, so CI builds the release artifacts but does not publish them.
+- Hosting is Vercel (decided after M9); the Vercel configs are in place but the first deploy has not been run from this environment.

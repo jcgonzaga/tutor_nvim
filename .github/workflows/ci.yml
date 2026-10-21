@@ -136,5 +136,13 @@ jobs:
         with:
           name: web-dist
           path: apps/web/dist
+      # Vercel instances start often, so they do not migrate (MIGRATE_ON_START=false): the schema
+      # changes once per release, here, before the new code is promoted.
+      - name: Apply database migrations
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "DATABASE_URL secret not set: skipping"; exit 0; fi
+          pnpm --filter @tutor-nvim/api db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Build the API image
         run: docker build -f apps/api/Dockerfile -t tutor-nvim-api:${{ github.sha }} .

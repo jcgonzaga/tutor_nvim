@@ -10,7 +10,7 @@ import { syncContent } from "./db/syncContent";
 const config = loadConfig();
 const bundle = loadContentBundle();
 const handle = config.DATABASE_URL
-  ? await connectPostgres(config.DATABASE_URL)
+  ? await connectPostgres(config.DATABASE_URL, { migrate: config.MIGRATE_ON_START })
   : await connectPglite();
 await syncContent(handle.db, bundle);
 

@@ -11,8 +11,31 @@ only after every gate passed on `main`:
 The product works without the API (progress stays in the browser). Deploying the API adds accounts
 and sync; it is never in the keypress path (AGENTS.md section 25).
 
-Publishing is provider-specific and is **not** wired in CI yet: the release job builds the artifacts
-and stops. Choosing the hosts is a product decision (see "Open decisions").
+Hosting decision: **Vercel** for both the web app and the API, Neon for Postgres and auth. Deploys
+come from Vercel's Git integration (two projects on this repository); CI's `release` job gates what
+is on `main` and applies the database migrations. The Docker image stays as the portable,
+verified way to run the API anywhere else.
+
+## Vercel
+
+Create two projects from the same repository (Root Directory, "include files outside the root
+directory" on):
+
+| Project | Root Directory | Config                                            | Notes                                        |
+| ------- | -------------- | ------------------------------------------------- | -------------------------------------------- |
+| web     | `apps/web`     | [`apps/web/vercel.json`](../apps/web/vercel.json) | Static; hashed assets cached for a year      |
+| api     | `apps/api`     | [`apps/api/vercel.json`](../apps/api/vercel.json) | Fastify entry `src/server.ts`, Fluid compute |
+
+Set the variables from the tables below in each project (web: `VITE_*` at build time; api: runtime).
+For the API also set `MIGRATE_ON_START=false` and add the `DATABASE_URL` secret to the GitHub
+repository so the release job migrates before promotion. Use Neon's **pooled** connection string.
+
+**Not verified.** The web build is the same one CI and the performance budgets run. The API on
+Vercel could not be deployed from the build environment (no Vercel account or network access), so
+its first deploy is the test: check `/api/ready`, then sign in once. Points to watch, in order:
+the function finds `content/` (the `includeFiles` line), cold start time (content validation and
+sync run at boot), and the `pg` pool size under concurrency (`max: 10` per instance; Neon pooling
+absorbs it). If Vercel is a poor fit for the API, the Dockerfile route below needs no code change.
 
 ## API
 
@@ -93,7 +116,7 @@ long cache lifetimes on `assets/*` (hashed names).
 
 ## Open decisions
 
-1. Hosting for the static web app and the API container (any works; nothing in the code depends on it).
+1. ~~Hosting~~ decided: Vercel (see above).
 2. Analytics collector: `VITE_ANALYTICS_URL` accepts any endpoint that takes the JSON envelope in
    `apps/web/src/analytics/events.ts`. No vendor SDK was added.
-3. Whether analytics should stay opt-in (current, privacy-first) or be opt-out with a banner.
+3. ~~Analytics consent~~ decided: stays opt-in (off until the learner turns it on).

@@ -19,6 +19,14 @@ const envSchema = z
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
       .default("info"),
+    /**
+     * Apply pending migrations on start. Turn off where instances start often (serverless) and run
+     * `db:migrate` once per release instead.
+     */
+    MIGRATE_ON_START: z
+      .enum(["true", "false"])
+      .default("true")
+      .transform((value) => value === "true"),
     /** Requests per minute per client for the whole API. */
     RATE_LIMIT_MAX: z.coerce.number().int().positive().default(300),
   })

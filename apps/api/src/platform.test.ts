@@ -17,6 +17,16 @@ describe("configuration", () => {
     expect(() => loadConfig({ AUTH_MODE: "neon" })).toThrow(/NEON_AUTH_BASE_URL/);
   });
 
+  it("applies migrations on start unless told otherwise (serverless runs them once per release)", () => {
+    expect(loadConfig({ AUTH_MODE: "fake" }).MIGRATE_ON_START).toBe(true);
+    expect(loadConfig({ AUTH_MODE: "fake", MIGRATE_ON_START: "false" }).MIGRATE_ON_START).toBe(
+      false,
+    );
+    expect(() => loadConfig({ AUTH_MODE: "fake", MIGRATE_ON_START: "no" })).toThrow(
+      /MIGRATE_ON_START/,
+    );
+  });
+
   it("makes it impossible to ship fake auth or an in-memory database to production", () => {
     expect(() =>
       loadConfig({ NODE_ENV: "production", AUTH_MODE: "fake", DATABASE_URL: "postgres://x" }),

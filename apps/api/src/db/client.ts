@@ -20,13 +20,16 @@ export interface DbHandle {
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
 /** Postgres over the network (Neon or any Postgres), with migrations applied. */
-export async function connectPostgres(connectionString: string): Promise<DbHandle> {
+export async function connectPostgres(
+  connectionString: string,
+  options: { readonly migrate?: boolean } = {},
+): Promise<DbHandle> {
   const pool = new pg.Pool({ connectionString, max: 10 });
   // An idle connection the server drops (Neon suspends and recycles them) emits `error` on the pool.
   // Unhandled, that would crash the process; the pool simply opens a new connection when needed.
   pool.on("error", () => undefined);
   const db = drizzlePg(pool, { schema });
-  await migratePg(db, { migrationsFolder });
+  if (options.migrate ?? true) await migratePg(db, { migrationsFolder });
   return { db, close: () => pool.end() };
 }
 
