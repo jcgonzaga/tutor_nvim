@@ -1,0 +1,17 @@
+{
+  "name": "@tutor-nvim/exercise-schema",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tutor-nvim/vim-engine": "workspace:*",
+    "yaml": "^2.8.0",
+    "zod": "^4.1.0"
+  }
+}

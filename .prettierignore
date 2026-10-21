@@ -1,0 +1,10 @@
+node_modules
+dist
+pnpm-lock.yaml
+playwright-report
+test-results
+
+# Canonical source-of-truth documents are kept verbatim.
+AGENTS.md
+IMPLEMENTATION_PLAN.md
+docs/PRD.md

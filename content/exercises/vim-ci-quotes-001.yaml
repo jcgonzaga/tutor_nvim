@@ -1,0 +1,57 @@
+schemaVersion: 1
+
+id: vim-ci-quotes-001
+slug: vim.ci-quotes.basic-001
+
+title: Change inside quotes
+instruction: Change only the text inside the quotes to "production".
+
+skillIds:
+  - vim.operator.change
+  - vim.textobject.inner-quotes
+
+mode: recall
+
+difficulty: 2
+
+environment:
+  type: simulator
+  profile: vim-basic-v1
+
+# Cursor positions in content are 1-based (line, column), as in Vim's ruler.
+initialState:
+  buffer: |
+    const mode = "development";
+  cursor:
+    line: 1
+    column: 18
+  vimMode: normal
+
+objective:
+  type: buffer_equals
+  target: |
+    const mode = "production";
+
+solutions:
+  - sequence: 'ci"production<Esc>'
+    classification: optimal
+
+evaluation:
+  requireFinalNormalMode: true
+
+antiPatterns:
+  - repeated_x
+  - arrow_keys
+  - insert_mode_navigation
+
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Think Change + Inside."
+  - afterMs: 8000
+    level: 2
+    text: 'Which text object represents "?'
+
+metadata:
+  language: javascript
+  estimatedSeconds: 8
