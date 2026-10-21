@@ -49,8 +49,10 @@ export function finalizeRange(lines: readonly string[], raw: RawRange): Region {
     return { kind: "line", startLine: raw.start.line, endLine: raw.end.line, anchor: raw.start };
   }
 
-  const { start } = raw;
-  let end = raw.end;
+  // Text objects may report their ends in either order; Vim swaps them.
+  const swapped = comparePositions(raw.start, raw.end) > 0;
+  const start = swapped ? raw.end : raw.start;
+  let end = swapped ? raw.start : raw.end;
   let inclusive = raw.inclusive;
 
   if (!inclusive && end.column === 0 && end.line > start.line) {
@@ -83,6 +85,11 @@ export function regionContents(lines: readonly string[], region: Region): Regist
   return { text: parts.join("\n"), linewise: false };
 }
 
-export function isEmptyRegion(region: Region): boolean {
-  return region.kind === "char" && comparePositions(region.start, region.end) === 0;
+/**
+ * Vim's "empty region" (`oap->empty`): a charwise, exclusive range whose ends
+ * coincide. An inclusive range on an empty line is not empty to Vim, even
+ * though it covers no characters.
+ */
+export function isEmptyRange(raw: RawRange): boolean {
+  return !raw.linewise && !raw.inclusive && comparePositions(raw.start, raw.end) === 0;
 }

@@ -180,7 +180,9 @@ function blockObject(open: string, close: string, include: boolean): TextObjectF
     }
     if (charAt(lines, pos) === open) pos.column++;
 
-    const openPos = findBracket(lines, pos, open, close, true);
+    // Outside any block, Vim 9.1 selects the next one ahead (possibly on a later line).
+    const openPos =
+      findBracket(lines, pos, open, close, true) ?? findBracket(lines, pos, open, close, false);
     if (openPos === null) return null;
     const closePos = findBracket(lines, openPos, close, open, false);
     if (closePos === null) return null;

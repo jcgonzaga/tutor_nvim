@@ -2,6 +2,7 @@ import {
   bufferFromLines,
   firstNonBlankColumn,
   insertText,
+  leadingBlanks,
   normalizeCursor,
   readLine,
   replaceRange,
@@ -19,10 +20,11 @@ import {
 import {
   currentLineRange,
   finalizeRange,
-  isEmptyRegion,
+  isEmptyRange,
   rawRangeFromMotion,
   regionContents,
   type RawRange,
+  type Region,
 } from "./regions";
 import { TEXT_OBJECTS } from "./text-objects";
 import type {
@@ -149,8 +151,8 @@ function motionEnv(state: VimState, operator: Operator | null): MotionEnv {
 // --- undo ----------------------------------------------------------------------------------------
 
 /** Records a finished change; `cursor` is where Vim notes the cursor for undo/redo. */
-function commit(state: VimState, before: TextBuffer, cursor: Position): VimState {
-  if (sameLines(before, state.buffer)) return state;
+function commit(state: VimState, before: TextBuffer, cursor: Position, force = false): VimState {
+  if (!force && sameLines(before, state.buffer)) return state;
   const entry: UndoEntry = { before, after: state.buffer, cursor };
   return { ...state, undoStack: [...state.undoStack, entry], redoStack: [] };
 }
@@ -166,7 +168,11 @@ function restoredCursor(from: TextBuffer, target: TextBuffer, recorded: Position
   let line = firstDifferingLine(from, target) ?? recorded.line;
   if (recorded.line + 1 === line && line > 0) line--;
 
-  if (line >= target.lines.length) return normalizeCursor(target, { line: target.lines.length - 1, column: 0 }, "normal");
+  if (line >= target.lines.length) {
+    // The change was past the end (e.g. the last line was removed): land on the new last line.
+    const last = target.lines.length - 1;
+    return { line: last, column: firstNonBlankColumn(target.lines[last] ?? "") };
+  }
   const column = recorded.line === line ? recorded.column : firstNonBlankColumn(target.lines[line] ?? "");
   return normalizeCursor(target, { line, column }, "normal");
 }
@@ -220,7 +226,7 @@ function stepInsert(state: VimState, input: KeyInput): Step {
   if (isEscape(input)) {
     const session = state.insertSession;
     const settled = session
-      ? commit(state, session.before, session.cursor ?? state.cursor)
+      ? commit(state, session.before, session.cursor ?? state.cursor, session.touched === true)
       : state;
     const cursor = { line: state.cursor.line, column: Math.max(state.cursor.column - 1, 0) };
     return done(
@@ -244,14 +250,27 @@ function stepInsert(state: VimState, input: KeyInput): Step {
 
 // --- operators -----------------------------------------------------------------------------------
 
+/**
+ * A multi-line charwise delete that starts in the indent and ends with only
+ * blanks left on its last line deletes whole lines (Vim's `op_delete`).
+ */
+function promoteToLines(lines: readonly string[], region: Region): Region {
+  if (region.kind !== "char" || region.start.line === region.end.line) return region;
+  const rest = (lines[region.end.line] ?? "").slice(region.end.column);
+  const startsInIndent = leadingBlanks(lines[region.start.line] ?? "") >= region.start.column;
+  if (!/^[ \t]*$/.test(rest) || !startsInIndent) return region;
+  return { kind: "line", startLine: region.start.line, endLine: region.end.line, anchor: region.start };
+}
+
 function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step {
   const lines = state.buffer.lines;
-  const region = finalizeRange(lines, raw);
+  const finalized = finalizeRange(lines, raw);
+  const region = operator === "delete" ? promoteToLines(lines, finalized) : finalized;
   const contents = regionContents(lines, region);
-  const empty = isEmptyRegion(region);
+  const before = state.buffer;
 
   if (operator === "yank") {
-    if (empty) return done(state);
+    // Yanking nothing still empties the register, as in Vim.
     const target = region.kind === "line" ? region.anchor : region.start;
     return done({
       ...withCursor(state, normalizeCursor(state.buffer, target, "normal")),
@@ -259,11 +278,27 @@ function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step
     });
   }
 
-  const register = empty ? state.register : contents;
-  const before = state.buffer;
+  // Vim's "empty region": an exclusive range with no characters. Nothing is deleted or
+  // registered, but the cursor still goes to the start of the range.
+  if (isEmptyRange(raw)) {
+    // Vim still takes an undo snapshot, so `u` right after is a visible no-op.
+    const at = normalizeCursor(state.buffer, region.kind === "line" ? region.anchor : region.start, operator === "change" ? "insert" : "normal");
+    return operator === "change"
+      ? done(enterInsert(state, state.buffer, at, { before, cursor: at, touched: true }), true)
+      : done(commit(withCursor(state, at), before, at, true), true);
+  }
+
+  // Deleting characters from an empty line is a silent no-op that leaves the register alone.
+  const nothingToDelete =
+    region.kind === "char" && region.start.line === region.end.line && (lines[region.start.line] ?? "") === "";
+  const register = operator === "delete" && nothingToDelete ? state.register : contents;
+  // For linewise changes Vim records the original column, capped at the first non-blank.
+  const lineUndoCursor = (startLine: number): Position => ({
+    line: startLine,
+    column: Math.min(state.cursor.column, firstNonBlankColumn(lines[startLine] ?? "")),
+  });
 
   if (region.kind === "line") {
-    const removed = [...lines.slice(0, region.startLine), ...lines.slice(region.endLine + 1)];
     if (operator === "change") {
       const buffer = bufferFromLines([
         ...lines.slice(0, region.startLine),
@@ -273,30 +308,25 @@ function applyOperator(state: VimState, operator: Operator, raw: RawRange): Step
       return done(
         enterInsert({ ...state, register }, buffer, { line: region.startLine, column: 0 }, {
           before,
-          cursor: region.anchor,
+          cursor: lineUndoCursor(region.startLine),
+          touched: true,
         }),
         true,
       );
     }
-    const buffer = bufferFromLines(removed);
+    const buffer = bufferFromLines([...lines.slice(0, region.startLine), ...lines.slice(region.endLine + 1)]);
     const line = Math.min(region.startLine, buffer.lines.length - 1);
     const cursor = { line, column: firstNonBlankColumn(buffer.lines[line] ?? "") };
     return done(
-      commit({ ...withCursor(state, cursor), buffer, register }, before, region.anchor),
+      commit({ ...withCursor(state, cursor), buffer, register }, before, lineUndoCursor(region.startLine)),
       true,
     );
-  }
-
-  if (empty) {
-    return operator === "change"
-      ? done(enterInsert(state, state.buffer, region.start, { before, cursor: region.start }), true)
-      : done(state, true);
   }
 
   const { buffer } = replaceRange(state.buffer, region.start, region.end, "");
   if (operator === "change") {
     return done(
-      enterInsert({ ...state, register }, buffer, region.start, { before, cursor: region.start }),
+      enterInsert({ ...state, register }, buffer, region.start, { before, cursor: region.start, touched: true }),
       true,
     );
   }
@@ -321,9 +351,11 @@ function put(state: VimState, before: boolean): Step {
 
   const insertAt = { line, column: before || lineText(state) === "" ? column : column + 1 };
   const result = insertText(state.buffer, insertAt, register.text);
-  const cursor = register.text.includes("\n")
-    ? insertAt
-    : { line, column: result.end.column - 1 };
+  const cursor = normalizeCursor(
+    result.buffer,
+    register.text.includes("\n") ? insertAt : { line, column: result.end.column - 1 },
+    "normal",
+  );
   return done(commit({ ...withCursor(state, cursor), buffer: result.buffer }, state.buffer, state.cursor), true);
 }
 

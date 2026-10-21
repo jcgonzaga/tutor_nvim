@@ -93,6 +93,8 @@ export interface InsertSession {
   readonly before: TextBuffer;
   /** `null` until the first modification, which records the cursor at that moment. */
   readonly cursor: Position | null;
+  /** The opening command already took its undo snapshot (`c` always does, even if it deleted nothing). */
+  readonly touched?: boolean;
 }
 
 /** Keys of the last repeatable change (for `.`) and of the one being typed. */
