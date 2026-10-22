@@ -3,12 +3,12 @@ import { createNeonVerifier } from "./auth/neon";
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
 import { productionLoggerOptions } from "./observability";
-import { loadContentBundle } from "./content";
+import { loadRuntimeContent } from "./content";
 import { connectPglite, connectPostgres } from "./db/client";
 import { syncContent } from "./db/syncContent";
 
 const config = loadConfig();
-const bundle = loadContentBundle();
+const bundle = loadRuntimeContent();
 const handle = config.DATABASE_URL
   ? await connectPostgres(config.DATABASE_URL, { migrate: config.MIGRATE_ON_START })
   : await connectPglite();

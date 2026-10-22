@@ -21,10 +21,10 @@ verified way to run the API anywhere else.
 Create two projects from the same repository (Root Directory, "include files outside the root
 directory" on):
 
-| Project | Root Directory | Config                                            | Notes                                        |
-| ------- | -------------- | ------------------------------------------------- | -------------------------------------------- |
-| web     | `apps/web`     | [`apps/web/vercel.json`](../apps/web/vercel.json) | Static; hashed assets cached for a year      |
-| api     | `apps/api`     | [`apps/api/vercel.json`](../apps/api/vercel.json) | Fastify entry `src/server.ts`, Fluid compute |
+| Project | Root Directory | Config                                            | Notes                                                                                                          |
+| ------- | -------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| web     | `apps/web`     | [`apps/web/vercel.json`](../apps/web/vercel.json) | Static; hashed assets cached for a year                                                                        |
+| api     | `apps/api`     | [`apps/api/vercel.json`](../apps/api/vercel.json) | Fastify entry `src/server.ts`; content is embedded in the code (`pnpm content:embed` after editing `content/`) |
 
 Set the variables from the tables below in each project (web: `VITE_*` at build time; api: runtime).
 For the API also set `MIGRATE_ON_START=false` and add the `DATABASE_URL` secret to the GitHub
@@ -33,7 +33,7 @@ repository so the release job migrates before promotion. Use Neon's **pooled** c
 **Not verified.** The web build is the same one CI and the performance budgets run. The API on
 Vercel could not be deployed from the build environment (no Vercel account or network access), so
 its first deploy is the test: check `/api/ready`, then sign in once. Points to watch, in order:
-the function finds `content/` (the `includeFiles` line), cold start time (content validation and
+cold start time (content validation and
 sync run at boot), and the `pg` pool size under concurrency (`max: 10` per instance; Neon pooling
 absorbs it). If Vercel is a poor fit for the API, the Dockerfile route below needs no code change.
 

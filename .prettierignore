@@ -1,6 +1,7 @@
 node_modules
 dist
 pnpm-lock.yaml
+apps/api/src/content.embedded.ts
 playwright-report
 test-results
 
