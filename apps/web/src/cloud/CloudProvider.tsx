@@ -15,7 +15,7 @@ import { localDateKey } from "../clock";
 import { useProfile } from "../profile/ProfileProvider";
 import type { KeyValueStorage } from "../storage/profileStore";
 import { createCloudApi } from "./api";
-import type { AuthClient, AuthUser } from "./auth";
+import { AuthError, type AuthClient, type AuthUser } from "./auth";
 import type { CloudConfig } from "./config";
 import { enqueueAttempt, enqueueSession, loadOutbox, saveOutbox, type Outbox } from "./outbox";
 import { sessionIdOf, toAttemptSubmission, toSessionSubmission } from "./submission";
@@ -23,12 +23,21 @@ import { runSync } from "./sync";
 
 export type SyncStatus = "signed-out" | "idle" | "syncing" | "synced" | "offline" | "error";
 
+/**
+ * Something to tell the learner about the last sync. It carries data, not text, so the screen can
+ * word it in the chosen language; `error` holds the server's own wording, which stays as it came.
+ */
+export type CloudNotice =
+  | { readonly kind: "skipped"; readonly count: number }
+  | { readonly kind: "expired" }
+  | { readonly kind: "error"; readonly detail: string };
+
 interface CloudContextValue {
   /** False when no API is configured: the app is purely local and shows nothing about the cloud. */
   readonly enabled: boolean;
   readonly user: AuthUser | null;
   readonly status: SyncStatus;
-  readonly message: string | null;
+  readonly message: CloudNotice | null;
   /** True once the auth client has said who (if anyone) is signed in. */
   readonly ready: boolean;
   signIn(email: string, password: string): Promise<void>;
@@ -102,7 +111,7 @@ function ActiveCloud({
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<SyncStatus>("signed-out");
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<CloudNotice | null>(null);
 
   const outbox = useRef<Outbox>(loadOutbox(storage));
   const running = useRef(false);
@@ -163,21 +172,17 @@ function ActiveCloud({
         });
         if (outcome.status === "synced") {
           setStatus("synced");
-          setMessage(
-            outcome.rejected > 0
-              ? `${outcome.rejected} attempt(s) could not be saved and were skipped.`
-              : null,
-          );
+          setMessage(outcome.rejected > 0 ? { kind: "skipped", count: outcome.rejected } : null);
         } else if (outcome.status === "signed-out") {
           setStatus("signed-out");
           setUser(null);
-          setMessage("Your sign-in expired. Sign in again to keep syncing.");
+          setMessage({ kind: "expired" });
         } else if (outcome.status === "offline") {
           setStatus("offline");
           setMessage(null);
         } else {
           setStatus("error");
-          setMessage(outcome.message);
+          setMessage({ kind: "error", detail: outcome.message });
         }
       } while (again.current);
       running.current = false;
@@ -217,11 +222,11 @@ function ActiveCloud({
       message,
       ready,
       async signIn(email, password) {
-        if (!auth) throw new Error("Sign-in is not available yet");
+        if (!auth) throw new AuthError("Sign-in is not available yet", "unavailable");
         setUser(await auth.signIn(email, password));
       },
       async signUp(email, password, name) {
-        if (!auth) throw new Error("Sign-in is not available yet");
+        if (!auth) throw new AuthError("Sign-in is not available yet", "unavailable");
         setUser(await auth.signUp(email, password, name));
       },
       async signOut() {

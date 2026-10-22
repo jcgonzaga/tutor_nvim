@@ -1,16 +1,10 @@
-import type { SessionBlock, SessionRun } from "@tutor-nvim/pedagogy";
+import type { SessionRun } from "@tutor-nvim/pedagogy";
 import { SESSION_BLOCKS } from "@tutor-nvim/pedagogy";
-
-const BLOCK_LABEL: Readonly<Record<SessionBlock, { name: string; hint: string }>> = {
-  warmup: { name: "Warm-up", hint: "What you already know" },
-  reviews: { name: "Reviews", hint: "Due now" },
-  learn: { name: "Learn", hint: "Something new" },
-  mixed: { name: "Mix", hint: "Choose between similar" },
-  challenge: { name: "Challenge", hint: "A new context" },
-};
+import { useT } from "../i18n/I18nProvider";
 
 /** The shape of the session in progress: one bar per block, the one being played in amber. */
 export function SessionBlocks({ run }: { readonly run: SessionRun }) {
+  const t = useT();
   const counts = SESSION_BLOCKS.map((block) => ({
     block,
     total: run.plan[block].length,
@@ -19,9 +13,9 @@ export function SessionBlocks({ run }: { readonly run: SessionRun }) {
   const current = run.pending[0]?.block ?? null;
 
   return (
-    <ol aria-label="Session blocks" className="flex flex-wrap gap-1.5">
+    <ol aria-label={t.home.blocks.aria} className="flex flex-wrap gap-1.5">
       {counts.map(({ block, total, left }) => {
-        const label = BLOCK_LABEL[block];
+        const label = t.home.blocks[block];
         const isCurrent = block === current;
         const done = left === 0;
         return (
@@ -38,10 +32,12 @@ export function SessionBlocks({ run }: { readonly run: SessionRun }) {
             <span className="flex flex-col gap-0.5">
               <strong className={`text-[15px] ${isCurrent ? "text-amber" : ""}`}>
                 {label.name}
-                <span className="sr-only">{done ? " (done)" : isCurrent ? " (now)" : ""}</span>
+                <span className="sr-only">
+                  {done ? t.home.blocks.srDone : isCurrent ? t.home.blocks.srNow : ""}
+                </span>
               </strong>
               <span className="text-sm text-ink-3">
-                {done ? "Done" : `${left} to go`} · {label.hint}
+                {done ? t.home.blocks.done : t.home.blocks.left(left)} · {label.hint}
               </span>
             </span>
           </li>

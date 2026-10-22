@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { buildReplay } from "@tutor-nvim/evaluation";
 import type { VimExercise } from "@tutor-nvim/exercise-schema";
+import { useT } from "../i18n/I18nProvider";
 import { EditorView } from "../practice/EditorView";
 import { quietButton } from "../ui/styles";
 
@@ -41,6 +42,7 @@ export function ReplayPanel({
   readonly exercise: VimExercise;
   readonly sources: readonly ReplaySource[];
 }) {
+  const words = useT().gamification.replay;
   const [sourceId, setSourceId] = useState(sources[0]?.id ?? "");
   const source = sources.find((candidate) => candidate.id === sourceId) ?? sources[0];
   const frames = useMemo(() => (source ? buildReplay(exercise, source) : []), [exercise, source]);
@@ -69,13 +71,13 @@ export function ReplayPanel({
 
   return (
     <section
-      aria-label="Replay"
+      aria-label={words.label}
       data-testid="replay"
       className="space-y-3 border-t border-line pt-4"
     >
       {sources.length > 1 ? (
         <fieldset className="flex flex-wrap gap-4 text-sm">
-          <legend className="sr-only">Which run to replay</legend>
+          <legend className="sr-only">{words.whichRun}</legend>
           {sources.map((option) => (
             <label key={option.id} className="flex items-center gap-2">
               <input
@@ -100,11 +102,9 @@ export function ReplayPanel({
 
       <p role="status" aria-live="polite" data-testid="replay-status" className="text-sm">
         {position === 0
-          ? `Start. ${frames.length - 1} keys.`
-          : `Step ${frame.index} of ${last}: ${frame.key}${frame.accepted ? "" : " (not accepted)"}.`}{" "}
-        <span className="sr-only">
-          Mode {frame.mode}. Text: {frame.lines.join(" / ")}
-        </span>
+          ? words.start(frames.length - 1)
+          : words.step(frame.index, last, frame.key ?? "", frame.accepted)}{" "}
+        <span className="sr-only">{words.modeAndText(frame.mode, frame.lines.join(" / "))}</span>
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -114,7 +114,7 @@ export function ReplayPanel({
           onClick={() => setPosition(0)}
           disabled={position === 0}
         >
-          Start
+          {words.startButton}
         </button>
         <button
           type="button"
@@ -122,7 +122,7 @@ export function ReplayPanel({
           onClick={() => setPosition((current) => Math.max(0, current - 1))}
           disabled={position === 0}
         >
-          Back
+          {words.back}
         </button>
         <button
           type="button"
@@ -130,7 +130,7 @@ export function ReplayPanel({
           onClick={() => setPosition((current) => Math.min(last, current + 1))}
           disabled={position >= last}
         >
-          Step
+          {words.stepButton}
         </button>
         {reducedMotion ? null : (
           <button
@@ -145,7 +145,7 @@ export function ReplayPanel({
               }
             }}
           >
-            {isPlaying ? "Pause" : "Play"}
+            {isPlaying ? words.pause : words.play}
           </button>
         )}
       </div>

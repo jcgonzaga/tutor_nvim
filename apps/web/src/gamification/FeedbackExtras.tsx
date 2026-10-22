@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ghostComparison, masterRun, runOf } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import type { ComboResult, RunRecord, XpAward } from "@tutor-nvim/pedagogy";
+import { useT } from "../i18n/I18nProvider";
 import type { FinishedPractice } from "../practice/PracticeScreen";
 import { quietButton } from "../ui/styles";
 import { GhostComparison } from "./GhostComparison";
@@ -25,19 +26,20 @@ export function FeedbackExtras({
   combo,
   previousBest,
 }: FeedbackExtrasProps) {
+  const words = useT().gamification.replay;
   const [replaying, setReplaying] = useState(false);
   const you = runOf(finished.attempt);
   const rows = ghostComparison(exercise, you, previousBest);
 
   const sources: ReplaySource[] = [
-    { id: "you", label: "Your run", keys: you.keys, times: you.times },
+    { id: "you", label: words.sources.you, keys: you.keys, times: you.times },
   ];
   const master = masterRun(exercise);
-  if (master) sources.push({ id: "master", label: "Master", keys: master.keys });
+  if (master) sources.push({ id: "master", label: words.sources.master, keys: master.keys });
   if (previousBest && previousBest.keys.join("") !== you.keys.join("")) {
     sources.push({
       id: "best",
-      label: "Your best",
+      label: words.sources.best,
       keys: previousBest.keys,
       times: previousBest.times,
     });
@@ -55,7 +57,7 @@ export function FeedbackExtras({
             aria-expanded={replaying}
             onClick={() => setReplaying((current) => !current)}
           >
-            {replaying ? "Hide replay" : "Replay"}
+            {replaying ? words.hide : words.show}
           </button>
           {replaying ? <ReplayPanel exercise={exercise} sources={sources} /> : null}
         </>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  lessonsToShow,
   activeSessionFor,
   buildDailySession,
   completeSessionItem,
@@ -13,6 +14,7 @@ import {
   type ComboResult,
   type FinishedAttemptResult,
   type PersonalBestMetric,
+  type SessionBlock,
   type Profile,
   type RunRecord,
   type XpAward,
@@ -23,6 +25,7 @@ import { eventsForAttempt, eventsForCompletedSession } from "../analytics/derive
 import { useCloud } from "../cloud/CloudProvider";
 import { localDateKey } from "../clock";
 import { exerciseIdsForSkill, exercises, findExercise, skills } from "../exercises";
+import { useContent, useT } from "../i18n/I18nProvider";
 import { FeedbackPanel } from "../practice/FeedbackPanel";
 import { FeedbackExtras } from "../gamification/FeedbackExtras";
 import { rewardInputFor } from "../gamification/rewards";
@@ -34,22 +37,8 @@ import type { Route } from "../router";
 import { Page } from "../ui/Page";
 import { KeyHint } from "../ui/Kbd";
 import { primaryButton, secondaryButton } from "../ui/styles";
+import { LessonView } from "../teaching/LessonView";
 import { SessionSummaryView } from "./SessionSummaryView";
-
-const BLOCK_LABELS = {
-  warmup: "Warm-up",
-  reviews: "Review",
-  learn: "Learn",
-  mixed: "Mixed practice",
-  challenge: "Challenge",
-} as const;
-
-const METRIC_LABELS: Readonly<Record<PersonalBestMetric, string>> = {
-  time: "speed",
-  efficiency: "efficiency",
-  performance: "score",
-  reaction: "reaction time",
-};
 
 /** The exercise whose feedback is on screen. The run has already moved on; the screen has not. */
 interface Held {
@@ -62,6 +51,7 @@ interface Held {
   readonly previousBest: RunRecord | null;
 }
 
+// Ids and structure only (no visible text), so the source-language lookups are enough here.
 const completeOptions = {
   exerciseIdsForSkill,
   skillsOf: (exerciseId: string) => findExercise(exerciseId)?.skillIds ?? [],
@@ -73,10 +63,12 @@ const completeOptions = {
  * exercise is applied to the profile and saved before its feedback is even read.
  */
 export function SessionScreen({ navigate }: { readonly navigate: (route: Route) => void }) {
+  const t = useT();
+  const content = useContent();
   const { profile, clock, update, getProfile } = useProfile();
   const cloud = useCloud();
   const analytics = useAnalytics();
-  const { prefs } = usePrefs();
+  const { prefs, markLessonSeen } = usePrefs();
   const [held, setHeld] = useState<Held | null>(null);
   const today = localDateKey(clock.now());
   const active = activeSessionFor(profile, today);
@@ -221,11 +213,11 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
   }
 
   const item = currentItem(run);
-  const exercise = held?.exercise ?? (item ? findExercise(item.exerciseId) : undefined);
+  const exercise = held?.exercise ?? (item ? content.findExercise(item.exerciseId) : undefined);
   if (!exercise) {
     return (
-      <Page title="Session">
-        <p>This session refers to an exercise that no longer exists.</p>
+      <Page title={t.session.missingExercise.title}>
+        <p>{t.session.missingExercise.text}</p>
         <button
           type="button"
           className={secondaryButton}
@@ -234,12 +226,37 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
             navigate({ name: "home" });
           }}
         >
-          Close session
+          {t.session.missingExercise.close}
         </button>
       </Page>
     );
   }
 
+  // Theory first, once per skill (ADR-0005): before the first exercise that trains a skill the
+  // learner is still learning, never while a result is on screen. Skipping counts as seen.
+  const lessonSkill = held
+    ? undefined
+    : content.findSkill(
+        lessonsToShow({
+          skillIds: exercise.skillIds,
+          hasLesson: (slug) => (content.findSkill(slug)?.lesson.length ?? 0) > 0,
+          seen: prefs.seenLessons,
+          learner: profile.learner,
+        })[0] ?? "",
+      );
+  if (lessonSkill) {
+    return (
+      <LessonView
+        key={lessonSkill.slug}
+        skill={lessonSkill}
+        onDone={() => markLessonSeen(lessonSkill.slug)}
+      />
+    );
+  }
+
+  // The run keeps the plan's block names; the shared vocabulary says "review", not "reviews".
+  const blockLabel = (block: SessionBlock): string =>
+    t.common.sessionBlocks[block === "reviews" ? "review" : block];
   const { done, total } = runProgress(run);
   const shownIndex = held?.index ?? done;
   const block = held ? run.completed[held.index]?.block : item?.block;
@@ -249,9 +266,9 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
     <PracticeScreen
       key={`${shownIndex}:${exercise.id}`}
       exercise={exercise}
-      eyebrow={`${block ? BLOCK_LABELS[block] : "Session"}${repeat ? " · again" : ""}`}
-      progress={`${Math.min(shownIndex + 1, total)} of ${total}`}
-      giveUpLabel="I don't know this"
+      eyebrow={`${block ? blockLabel(block) : t.session.eyebrowFallback}${repeat ? t.session.repeatSuffix : ""}`}
+      progress={t.session.progress(Math.min(shownIndex + 1, total), total)}
+      giveUpLabel={t.session.giveUp}
       combo={active.combo.current}
       onStart={() =>
         analytics.track({
@@ -266,6 +283,7 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
       renderResult={(finished) => (
         <FeedbackPanel
           finished={finished}
+          exercise={exercise}
           extras={
             held ? (
               <FeedbackExtras
@@ -281,11 +299,13 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
           {held && held.improved.length > 0 ? (
             <p data-testid="personal-best" className="mr-auto self-center text-base text-amber">
               <span aria-hidden>★ </span>
-              New personal best: {held.improved.map((metric) => METRIC_LABELS[metric]).join(", ")}
+              {t.session.newPersonalBest(
+                held.improved.map((metric) => t.session.metrics[metric]).join(", "),
+              )}
             </p>
           ) : null}
           <button type="button" className={`${primaryButton} !pr-3`} onClick={() => setHeld(null)}>
-            {isRunFinished(run) ? "Finish" : "Continue"}
+            {isRunFinished(run) ? t.session.finish : t.session.continue}
             <KeyHint>Enter</KeyHint>
           </button>
         </FeedbackPanel>

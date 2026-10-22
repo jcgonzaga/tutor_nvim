@@ -2,7 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { AnalyticsProvider } from "./analytics/AnalyticsProvider";
 import { App } from "./App";
+import { I18nProvider, catalogs } from "./i18n/I18nProvider";
 import { PrefsProvider } from "./prefs/PrefsProvider";
+import { loadPrefs } from "./prefs/prefs";
 import { ErrorBoundary } from "./monitoring/ErrorBoundary";
 import {
   createErrorReporter,
@@ -41,18 +43,20 @@ const cloudConfig = readCloudConfig(import.meta.env);
 
 createRoot(root).render(
   <StrictMode>
-    <ErrorBoundary reporter={reporter}>
+    <ErrorBoundary reporter={reporter} messages={catalogs[loadPrefs(storage).language].app}>
       <PrefsProvider storage={storage}>
-        <AnalyticsProvider
-          url={import.meta.env.VITE_ANALYTICS_URL ?? null}
-          build={import.meta.env.VITE_BUILD_ID ?? import.meta.env.MODE}
-        >
-          <ProfileProvider storage={storage}>
-            <CloudProvider config={cloudConfig} storage={storage} loadAuth={loadAuthClient}>
-              <App />
-            </CloudProvider>
-          </ProfileProvider>
-        </AnalyticsProvider>
+        <I18nProvider>
+          <AnalyticsProvider
+            url={import.meta.env.VITE_ANALYTICS_URL ?? null}
+            build={import.meta.env.VITE_BUILD_ID ?? import.meta.env.MODE}
+          >
+            <ProfileProvider storage={storage}>
+              <CloudProvider config={cloudConfig} storage={storage} loadAuth={loadAuthClient}>
+                <App />
+              </CloudProvider>
+            </ProfileProvider>
+          </AnalyticsProvider>
+        </I18nProvider>
       </PrefsProvider>
     </ErrorBoundary>
   </StrictMode>,

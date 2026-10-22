@@ -1,16 +1,7 @@
 import { currentStreak, levelFor, type GamificationState } from "@tutor-nvim/pedagogy";
-import { findExercise } from "../exercises";
+import { useContent, useT } from "../i18n/I18nProvider";
 import { cardClass, sectionLabelClass } from "../ui/styles";
 import { describeStreak } from "./messages";
-
-const METRICS = {
-  time: "speed",
-  efficiency: "efficiency",
-  performance: "score",
-  reaction: "reaction time",
-} as const;
-
-const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 
 const DAY_MS = 86_400_000;
 /** `YYYY-MM-DD` as a UTC midnight, so adding whole days never meets a DST change. */
@@ -41,9 +32,14 @@ function Check() {
 
 /** Streak, level and the latest record, for the home screen (PRD 37). Words first, symbols second. */
 export function StatsCard({ game, today, completedDays }: StatsCardProps) {
+  const t = useT();
+  const words = t.gamification;
+  const content = useContent();
   const level = levelFor(game.xp);
   const recent = game.recentBests[game.recentBests.length - 1];
-  const recentTitle = recent ? (findExercise(recent.exerciseId)?.title ?? recent.exerciseId) : null;
+  const recentTitle = recent
+    ? (content.findExercise(recent.exerciseId)?.title ?? recent.exerciseId)
+    : null;
   const streak = currentStreak(game.streak, today);
   const week = weekOf(today);
 
@@ -51,7 +47,7 @@ export function StatsCard({ game, today, completedDays }: StatsCardProps) {
     <>
       <section aria-labelledby="streak-heading" className={`${cardClass} flex flex-col gap-4`}>
         <h2 id="streak-heading" className={sectionLabelClass}>
-          Streak
+          {words.stats.streakHeading}
         </h2>
         <div data-testid="stats-streak" data-streak={streak} className="flex flex-col gap-2">
           <p className="flex items-baseline gap-2.5">
@@ -61,10 +57,10 @@ export function StatsCard({ game, today, completedDays }: StatsCardProps) {
             >
               {streak}
             </span>
-            <span className="text-ink-2">{describeStreak(game, today)}</span>
+            <span className="text-ink-2">{describeStreak(game, today, words)}</span>
           </p>
         </div>
-        <ol aria-label="This week" className="grid grid-cols-7 gap-1.5 text-center">
+        <ol aria-label={words.stats.thisWeek} className="grid grid-cols-7 gap-1.5 text-center">
           {week.map((day, index) => {
             const done = completedDays.has(day);
             const isToday = day === today;
@@ -83,46 +79,44 @@ export function StatsCard({ game, today, completedDays }: StatsCardProps) {
                   {done ? <Check /> : null}
                 </span>
                 <span className={`text-[13px] ${isToday ? "font-bold text-amber" : "text-ink-3"}`}>
-                  {isToday ? "Today" : WEEKDAYS[index]}
-                  <span className="sr-only">{done ? ", session done" : ""}</span>
+                  {isToday ? words.stats.today : words.stats.weekdays[index]}
+                  <span className="sr-only">{done ? words.stats.sessionDone : ""}</span>
                 </span>
               </li>
             );
           })}
         </ol>
-        <p className="text-[15px] text-ink-2">
-          A missed day does not break your streak: you have one day of margin.
-        </p>
+        <p className="text-[15px] text-ink-2">{words.stats.margin}</p>
       </section>
 
-      <section aria-label="Your level" className={`${cardClass} flex flex-col gap-3`}>
+      <section aria-label={words.stats.levelLabel} className={`${cardClass} flex flex-col gap-3`}>
         <p className="flex flex-wrap items-baseline justify-between gap-x-4 text-[15px]">
           <span data-testid="stats-level" className="font-bold">
-            Level {level.level}
+            {words.stats.level(level.level)}
           </span>
           <span data-testid="stats-xp" className="font-mono text-sm text-ink-3">
-            {game.xp} XP · {level.into}/{level.needed} to level {level.level + 1}
+            {words.stats.xpProgress(game.xp, level.into, level.needed, level.level + 1)}
           </span>
         </p>
         <progress
           value={level.into}
           max={level.needed}
-          aria-label={`Level ${level.level} progress`}
+          aria-label={words.stats.levelProgress(level.level)}
           className="h-1.5 w-full overflow-hidden rounded-full accent-amber [&::-moz-progress-bar]:bg-amber [&::-webkit-progress-bar]:bg-line [&::-webkit-progress-value]:bg-amber"
         />
-        <p className="border-t border-line pt-3 text-sm text-ink-3">
-          XP measures what you practice. Mastery measures what you can really do.
-        </p>
+        <p className="border-t border-line pt-3 text-sm text-ink-3">{words.stats.xpVsMastery}</p>
       </section>
 
       {recent && recentTitle ? (
         <section aria-labelledby="pb-heading" className={`${cardClass} flex flex-col gap-2`}>
           <h2 id="pb-heading" className={sectionLabelClass}>
-            Recent personal best
+            {words.stats.recentBestHeading}
           </h2>
           <p data-testid="stats-recent-best" className="text-ink-2">
-            Recent personal best: {recentTitle} (
-            {recent.metrics.map((metric) => METRICS[metric]).join(", ")})
+            {words.stats.recentBest(
+              recentTitle,
+              recent.metrics.map((metric) => words.stats.metrics[metric]).join(", "),
+            )}
           </p>
         </section>
       ) : null}

@@ -1,15 +1,10 @@
+import { useT } from "./i18n/I18nProvider";
 import { useProfile } from "./profile/ProfileProvider";
 import { quietButton } from "./ui/styles";
 
-const MESSAGES = {
-  unreadable:
-    "Your saved progress could not be read, so a fresh profile was started. The old data was kept as a backup in this browser.",
-  unsaved:
-    "This browser is not letting the app save. You can keep practicing, but progress will be lost when you close the tab.",
-} as const;
-
 export function NoticeBanner() {
   const { notice, dismissNotice } = useProfile();
+  const t = useT().app.notices;
   if (notice === null) return null;
   return (
     <div
@@ -19,10 +14,10 @@ export function NoticeBanner() {
     >
       <p>
         <span aria-hidden>⚠ </span>
-        {MESSAGES[notice]}
+        {t[notice]}
       </p>
       <button type="button" onClick={dismissNotice} className={quietButton}>
-        Dismiss
+        {t.dismiss}
       </button>
     </div>
   );

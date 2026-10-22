@@ -15,7 +15,7 @@ export function createFakeAuth(storage: KeyValueStorage): AuthClient {
     return email ? { id: email, email } : null;
   };
   const signIn = async (email: string) => {
-    if (!email.includes("@")) throw new AuthError("Enter a valid email");
+    if (!email.includes("@")) throw new AuthError("Enter a valid email", "invalidEmail");
     storage.setItem(KEY, email);
     return { id: email, email };
   };

@@ -1,3 +1,5 @@
+import { useT } from "../i18n/I18nProvider";
+import { LanguageSelect } from "../ui/LanguageSelect";
 import { Page } from "../ui/Page";
 import { cardClass, linkClass } from "../ui/styles";
 import { playCue } from "./sound";
@@ -6,9 +8,11 @@ import { usePrefs } from "./PrefsProvider";
 /** Preferences for this browser (T-901, T-903). Everything here is off until the learner turns it on. */
 export function SettingsScreen({ analyticsAvailable }: { readonly analyticsAvailable: boolean }) {
   const { prefs, setSound, setAnalytics } = usePrefs();
+  const t = useT();
   return (
-    <Page title="Settings" eyebrow="Tutor NeoVim">
+    <Page title={t.settings.title} eyebrow={t.settings.eyebrow}>
       <section className={`${cardClass} flex max-w-[760px] flex-col gap-6`}>
+        <LanguageSelect />
         <div className="space-y-1">
           <label className="flex items-center gap-3">
             <input
@@ -20,12 +24,9 @@ export function SettingsScreen({ analyticsAvailable }: { readonly analyticsAvail
               }}
               className="size-[22px] accent-amber"
             />
-            <span className="text-lg font-semibold">Sound</span>
+            <span className="text-lg font-semibold">{t.settings.sound.label}</span>
           </label>
-          <p className="pl-[34px] text-[15px] text-ink-3">
-            Short tones when you finish an exercise. Nothing depends on them: every result is also
-            shown on screen. Off by default.
-          </p>
+          <p className="pl-[34px] text-[15px] text-ink-3">{t.settings.sound.help}</p>
         </div>
 
         {analyticsAvailable ? (
@@ -37,19 +38,14 @@ export function SettingsScreen({ analyticsAvailable }: { readonly analyticsAvail
                 onChange={(event) => setAnalytics(event.target.checked)}
                 className="size-[22px] accent-amber"
               />
-              <span className="text-lg font-semibold">Share anonymous usage data</span>
+              <span className="text-lg font-semibold">{t.settings.analytics.label}</span>
             </label>
-            <p className="pl-[34px] text-[15px] text-ink-3">
-              Helps improve the exercises. It sends which exercises and skills were started, solved
-              or failed, hints used, and timings, under a random id for this browser. It never sends
-              what you type, your text, your name or your e-mail. Off by default; turn it off any
-              time.
-            </p>
+            <p className="pl-[34px] text-[15px] text-ink-3">{t.settings.analytics.help}</p>
           </div>
         ) : null}
       </section>
       <a href="#/" className={linkClass}>
-        Back to today
+        {t.settings.back}
       </a>
     </Page>
   );

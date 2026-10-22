@@ -1,8 +1,15 @@
 import { Component, type ReactNode } from "react";
+import { en } from "../i18n/en";
+import type { Messages } from "../i18n/messages";
 import type { ErrorReporter } from "./errorReporter";
 
 interface ErrorBoundaryProps {
   readonly reporter: ErrorReporter;
+  /**
+   * Text of the fallback screen. This component sits above the providers, so it cannot read the
+   * language from context: whoever mounts it passes the slice for the stored language.
+   */
+  readonly messages?: Messages["app"];
   readonly children: ReactNode;
 }
 
@@ -24,17 +31,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, { failed: boole
 
   override render(): ReactNode {
     if (!this.state.failed) return this.props.children;
+    const t = (this.props.messages ?? en.app).errorBoundary;
     return (
       <main
         role="alert"
         className="flex min-h-screen items-center justify-center bg-canvas p-8 text-ink"
       >
         <div className="max-w-md space-y-4">
-          <h1 className="text-[32px] font-bold">Something went wrong</h1>
-          <p className="text-ink-2">
-            The app hit an unexpected problem. Your progress is saved on this device, and the error
-            has been reported without any of your data.
-          </p>
+          <h1 className="text-[32px] font-bold">{t.title}</h1>
+          <p className="text-ink-2">{t.body}</p>
           <div className="flex gap-3">
             <button
               type="button"
@@ -42,14 +47,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, { failed: boole
               onClick={() => window.location.reload()}
               className="inline-flex min-h-12 items-center rounded-xl bg-amber px-5 text-base font-bold text-amber-ink hover:bg-amber-hi"
             >
-              Reload
+              {t.reload}
             </button>
             <a
               href="#/"
               onClick={() => window.setTimeout(() => window.location.reload(), 0)}
               className="inline-flex min-h-12 items-center rounded-xl border border-line-strong px-5 text-base font-semibold text-ink no-underline hover:bg-raised"
             >
-              Back to today
+              {t.backToToday}
             </a>
           </div>
         </div>

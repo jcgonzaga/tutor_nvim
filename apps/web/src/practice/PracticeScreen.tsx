@@ -8,6 +8,7 @@ import {
   type Feedback,
 } from "@tutor-nvim/evaluation";
 import type { Exercise } from "@tutor-nvim/exercise-schema";
+import { useT } from "../i18n/I18nProvider";
 import { shouldPreventDefault, toKeyInput } from "../input/keyboard";
 import { EditorView } from "./EditorView";
 import { TerminalView } from "./TerminalView";
@@ -52,7 +53,7 @@ interface PracticeScreenProps {
  */
 export function PracticeScreen({
   exercise,
-  eyebrow = "Challenge",
+  eyebrow,
   progress,
   onFinish,
   giveUpLabel,
@@ -62,6 +63,7 @@ export function PracticeScreen({
   combo = 0,
   nextSlug = null,
 }: PracticeScreenProps) {
+  const t = useT();
   const { attempt, evaluation, hints, sendInput, requestHint, giveUp, reset } =
     usePracticeAttempt(exercise);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -138,8 +140,8 @@ export function PracticeScreen({
   const lastEvent = events[events.length - 1];
   const finishedPractice: FinishedPractice | null =
     evaluation && feedback ? { attempt, evaluation, feedback } : null;
-  // "3 of 12" draws a thin bar next to the text; any other wording is shown as it is.
-  const counted = progress ? /^(\d+) of (\d+)$/.exec(progress) : null;
+  // "3 of 12" (in any language) draws a thin bar next to the text; any other wording is shown as it is.
+  const counted = progress ? /^(\d+)\D+(\d+)$/.exec(progress) : null;
   const fraction = counted
     ? Math.min(1, Number(counted[1]) / Math.max(1, Number(counted[2])))
     : null;
@@ -163,7 +165,7 @@ export function PracticeScreen({
           >
             <path d="M4 4l8 8M12 4l-8 8" />
           </svg>
-          Exit
+          {t.practice.exit}
         </a>
         {progress ? (
           <div className="flex items-center gap-3 text-sm text-ink-2">
@@ -179,7 +181,9 @@ export function PracticeScreen({
 
       <main className="mx-auto flex w-full max-w-[1000px] flex-1 flex-col gap-7 px-8 pb-12 pt-8">
         <header className="flex flex-col gap-3.5">
-          <p className="text-[15px] font-bold tracking-[0.04em] text-amber">{eyebrow}</p>
+          <p className="text-[15px] font-bold tracking-[0.04em] text-amber">
+            {eyebrow ?? t.practice.defaultEyebrow}
+          </p>
           <h1 id="instruction" className="text-balance text-[32px] font-bold leading-tight">
             {exercise.instruction}
           </h1>
@@ -191,7 +195,7 @@ export function PracticeScreen({
               ref={editorRef}
               role="application"
               aria-label={
-                attempt.kind === "shell" ? "Shell practice terminal" : "Vim practice editor"
+                attempt.kind === "shell" ? t.practice.terminalLabel : t.practice.editorLabel
               }
               aria-describedby="instruction"
               tabIndex={0}
@@ -226,7 +230,7 @@ export function PracticeScreen({
                     <ModePill mode={attempt.state.mode} pending={attempt.state.pending !== null} />
                     <output
                       data-testid="pending-command"
-                      aria-label="pending command"
+                      aria-label={t.practice.pendingCommand}
                       aria-live="off"
                       className="text-ink"
                     >
@@ -250,24 +254,24 @@ export function PracticeScreen({
                     >
                       <path d="M4 4l8 8M12 4l-8 8" />
                     </svg>
-                    {`${lastEvent.logicalKey} not accepted`}
+                    {t.practice.notAccepted(lastEvent.logicalKey)}
                   </span>
                 ) : null}
                 {attempt.kind === "vim" ? (
-                  <span aria-label="cursor position">{`${attempt.state.cursor.line + 1}:${attempt.state.cursor.column + 1}`}</span>
+                  <span
+                    aria-label={t.practice.cursorPosition}
+                  >{`${attempt.state.cursor.line + 1}:${attempt.state.cursor.column + 1}`}</span>
                 ) : null}
                 {combo > 0 ? (
                   <span data-testid="combo">
-                    Combo <strong className="text-ink">×{combo}</strong>
+                    {t.practice.combo} <strong className="text-ink">×{combo}</strong>
                   </span>
                 ) : null}
-                <span data-testid="keystroke-count">{events.length} keys</span>
+                <span data-testid="keystroke-count">{t.practice.keys(events.length)}</span>
               </div>
             </div>
           </div>
-          <p className="text-sm text-ink-3 group-focus-within:invisible">
-            Click the editor, or press Tab until it is focused, to start typing.
-          </p>
+          <p className="text-sm text-ink-3 group-focus-within:invisible">{t.practice.focusHint}</p>
         </div>
 
         {!finished && (exercise.hints.length > 0 || giveUpLabel) ? (
@@ -297,7 +301,7 @@ export function PracticeScreen({
                     <circle cx="11" cy="15.8" r="1.1" fill="#b0b7c0" />
                   </svg>
                   <span>
-                    <span className="text-ink-3">Hint {hint.level}: </span>
+                    <span className="text-ink-3">{t.practice.hintLabel(hint.level)}</span>
                     {hint.text}
                   </span>
                 </li>
@@ -311,7 +315,7 @@ export function PracticeScreen({
                   disabled={!hintReady}
                   className={quietButton}
                 >
-                  {hintReady ? "Show hint" : "Hint available soon"}
+                  {hintReady ? t.practice.showHint : t.practice.hintSoon}
                 </button>
               ) : null}
               {giveUpLabel ? (
@@ -330,6 +334,7 @@ export function PracticeScreen({
             ) : (
               <ResultPanel
                 evaluation={finishedPractice.evaluation}
+                exercise={exercise}
                 onRetry={reset}
                 nextHref={nextSlug ? `?exercise=${encodeURIComponent(nextSlug)}` : null}
               />

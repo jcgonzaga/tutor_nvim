@@ -10,6 +10,7 @@ import {
   type Profile,
 } from "@tutor-nvim/pedagogy";
 import { useCloud } from "../cloud/CloudProvider";
+import { useT } from "../i18n/I18nProvider";
 import { skills } from "../exercises";
 import { useProfile } from "../profile/ProfileProvider";
 import type { Navigate } from "../router";
@@ -21,18 +22,6 @@ import { OnboardingShell } from "./OnboardingShell";
 import { WelcomeStep } from "./WelcomeStep";
 
 type Step = "welcome" | "layout" | "experience" | "calibration" | "estimate";
-
-const TITLES: Readonly<Record<Exclude<Step, "calibration">, string>> = {
-  welcome: "Welcome to Tutor NeoVim",
-  layout: "Which keyboard do you use?",
-  experience: "Your experience",
-  estimate: "Your starting point",
-};
-
-const LEADS: Readonly<Partial<Record<Step, string>>> = {
-  layout:
-    "Vim's commands are the same on every keyboard. What changes is where some keys sit, so we can teach you to press them with the right finger.",
-};
 
 const STEP_INDEX: Readonly<Record<Step, number>> = {
   welcome: 0,
@@ -50,6 +39,7 @@ const STEP_INDEX: Readonly<Record<Step, number>> = {
 export function OnboardingScreen({ navigate }: { readonly navigate: Navigate }) {
   const { profile, clock, update } = useProfile();
   const cloud = useCloud();
+  const t = useT().onboarding;
   const [step, setStep] = useState<Step>("welcome");
   const [estimate, setEstimate] = useState<CalibrationResult | null>(null);
 
@@ -97,8 +87,8 @@ export function OnboardingScreen({ navigate }: { readonly navigate: Navigate }) 
   return (
     <OnboardingShell
       step={STEP_INDEX[step]}
-      title={TITLES[step]}
-      {...(LEADS[step] ? { lead: LEADS[step] } : {})}
+      title={t.titles[step]}
+      {...(step === "layout" ? { lead: t.layoutLead } : {})}
     >
       {step === "welcome" ? <WelcomeStep onNext={() => setStep("layout")} /> : null}
       {step === "layout" ? (

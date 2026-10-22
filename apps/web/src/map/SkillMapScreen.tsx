@@ -6,15 +6,14 @@ import {
   resolveStages,
 } from "@tutor-nvim/pedagogy";
 import { skills } from "../exercises";
+import { useContent, useT } from "../i18n/I18nProvider";
 import { useProfile } from "../profile/ProfileProvider";
 import { Page } from "../ui/Page";
 import { Segments } from "../ui/Segments";
 import { linkClass } from "../ui/styles";
 import { layoutSkillGraph } from "./layout";
-import { STAGE_DISPLAY } from "./stages";
 
 const graph = layoutSkillGraph(skills);
-const titles = new Map(skills.map((skill) => [skill.slug, skill.title]));
 /** Skills grouped by column, in layout order; a column holds what needs the same depth of prerequisites. */
 const columns = Array.from({ length: graph.columns }, (_, column) =>
   graph.nodes
@@ -26,20 +25,21 @@ const columns = Array.from({ length: graph.columns }, (_, column) =>
 /** Skill map (T-521): the prerequisite graph from content, with each skill's state in text and segments. */
 export function SkillMapScreen() {
   const { profile, clock } = useProfile();
+  const t = useT();
+  const { skillTitle } = useContent();
   const now = clock.now();
   const stages = resolveStages(skills, profile.learner, DEFAULT_PEDAGOGY_CONFIG);
 
   return (
-    <Page
-      title="Skill map"
-      wide
-      lead={`${skills.length} skills. Each one unlocks when you practice the ones it builds on. Select a skill for details.`}
-    >
-      <ul aria-label="Legend" className="-mt-4 flex flex-wrap gap-x-5 gap-y-2.5 text-sm text-ink-2">
+    <Page title={t.map.title} wide lead={t.map.lead(skills.length)}>
+      <ul
+        aria-label={t.map.legend}
+        className="-mt-4 flex flex-wrap gap-x-5 gap-y-2.5 text-sm text-ink-2"
+      >
         {MASTERY_STAGES.map((stage) => (
           <li key={stage} className="flex items-center gap-2">
             <Segments stage={stage} size="xs" />
-            {STAGE_DISPLAY[stage].label}
+            {t.common.stages[stage]}
           </li>
         ))}
       </ul>
@@ -51,10 +51,14 @@ export function SkillMapScreen() {
           style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(168px, 1fr))` }}
         >
           {columns.map((slugs, column) => (
-            <section key={column} aria-label={`Step ${column + 1}`} className="flex flex-col gap-3">
+            <section
+              key={column}
+              aria-label={t.map.step(column + 1)}
+              className="flex flex-col gap-3"
+            >
               <div className="flex flex-col gap-0.5 border-b border-line px-0.5 pb-1.5">
                 <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-ink-3">
-                  Step {column + 1}
+                  {t.map.step(column + 1)}
                 </span>
               </div>
               {slugs.map((slug) => {
@@ -73,7 +77,7 @@ export function SkillMapScreen() {
                         : "border border-line bg-surface hover:bg-raised"
                     }`}
                   >
-                    <span className="text-base font-bold leading-[1.3]">{titles.get(slug)}</span>
+                    <span className="text-base font-bold leading-[1.3]">{skillTitle(slug)}</span>
                     <span
                       className={`flex items-center justify-between gap-2 text-[13px] ${
                         locked ? "" : "text-ink-2"
@@ -81,9 +85,9 @@ export function SkillMapScreen() {
                     >
                       <span className="flex items-center gap-2">
                         {locked ? <LockIcon /> : <Segments stage={stage} size="sm" />}
-                        {STAGE_DISPLAY[stage].label}
+                        {t.common.stages[stage]}
                       </span>
-                      {due ? <span className="font-bold text-amber">Review due</span> : null}
+                      {due ? <span className="font-bold text-amber">{t.map.reviewDue}</span> : null}
                     </span>
                   </a>
                 );
@@ -94,7 +98,7 @@ export function SkillMapScreen() {
       </div>
 
       <a href="#/" className={linkClass}>
-        Back to today
+        {t.map.backToToday}
       </a>
     </Page>
   );

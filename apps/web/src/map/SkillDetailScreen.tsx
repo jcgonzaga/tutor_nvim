@@ -4,34 +4,31 @@ import {
   masteryBlockers,
   resolveStages,
 } from "@tutor-nvim/pedagogy";
-import { findSkill, skills, skillTitle } from "../exercises";
 import { formatWhen } from "../format";
+import { useContent, useT } from "../i18n/I18nProvider";
 import { useProfile } from "../profile/ProfileProvider";
 import { Page } from "../ui/Page";
+import { LessonCards } from "../teaching/LessonCards";
 import { Segments } from "../ui/Segments";
 import { cardClass, linkClass, sectionLabelClass } from "../ui/styles";
-import { STAGE_DISPLAY } from "./stages";
+import { describeBlocker } from "./blockers";
 
 /** What the learner has shown for one skill. Each dimension is a number, a bar and a word. */
-const DIMENSIONS = [
-  ["accuracy", "Accuracy"],
-  ["strategy", "Strategy"],
-  ["fluency", "Fluency"],
-  ["retention", "Retention"],
-  ["transfer", "Transfer"],
-] as const;
+const DIMENSIONS = ["accuracy", "strategy", "fluency", "retention", "transfer"] as const;
 
 const pill =
   "rounded-full border border-line px-2.5 py-1 text-sm text-ink-2 no-underline hover:text-ink";
 
 export function SkillDetailScreen({ slug }: { readonly slug: string }) {
   const { profile, clock } = useProfile();
+  const t = useT();
+  const { findSkill, skills, skillTitle } = useContent();
   const skill = findSkill(slug);
   if (!skill) {
     return (
-      <Page title="Skill not found">
+      <Page title={t.map.detail.notFound}>
         <a href="#/map" className={linkClass}>
-          Back to the skill map
+          {t.map.detail.backToMap}
         </a>
       </Page>
     );
@@ -40,14 +37,13 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
   const now = clock.now();
   const stages = resolveStages(skills, profile.learner, DEFAULT_PEDAGOGY_CONFIG);
   const stage = stages[slug] ?? "locked";
-  const display = STAGE_DISPLAY[stage];
   const state = getUserSkill(profile.learner, slug);
   const blockers = masteryBlockers(state, DEFAULT_PEDAGOGY_CONFIG);
   const dependents = skills.filter((other) => other.prerequisites.includes(slug));
   const placed = profile.learner.placed?.includes(slug) === true;
 
   return (
-    <Page title={skill.title} eyebrow="Skill" lead={skill.description}>
+    <Page title={skill.title} eyebrow={t.map.detail.eyebrow} lead={skill.description}>
       <div className="-mt-2 flex max-w-[760px] flex-col gap-6">
         <div className={`${cardClass} flex items-center justify-between gap-4 !p-4 !bg-raised`}>
           <p
@@ -56,37 +52,34 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
             className="flex items-center gap-2.5 text-base font-bold"
           >
             <Segments stage={stage} size="md" />
-            {display.label}
+            {t.common.stages[stage]}
           </p>
           {stage === "locked" ? null : (
             <p className="flex items-baseline gap-1">
               <span data-testid="skill-mastery" className="text-[32px] font-extrabold leading-none">
                 {Math.round(state.mastery)}
               </span>
-              <span className="text-[15px] text-ink-3">/ 100</span>
+              <span className="text-[15px] text-ink-3">{t.map.detail.masteryOutOf}</span>
             </p>
           )}
         </div>
 
         {stage === "locked" ? (
           <p data-testid="skill-locked-reason" className="text-ink-2">
-            Locked until you practice: {skill.prerequisites.map(skillTitle).join(", ")}.
+            {t.map.detail.lockedReason(skill.prerequisites.map(skillTitle).join(", "))}
           </p>
         ) : (
           <>
             {placed && state.attemptCount === 0 ? (
-              <p className="text-[15px] text-ink-3">
-                The starting check placed you past this skill. It has no evidence yet, so practice
-                it to make it count.
-              </p>
+              <p className="text-[15px] text-ink-3">{t.map.detail.placedNote}</p>
             ) : null}
             <dl className={`${cardClass} flex flex-col gap-3 text-[15px]`}>
-              {DIMENSIONS.map(([key, label]) => (
+              {DIMENSIONS.map((key) => (
                 <div
                   key={key}
                   className="grid grid-cols-[112px_minmax(0,1fr)_32px] items-center gap-3"
                 >
-                  <dt className="text-ink-2">{label}</dt>
+                  <dt className="text-ink-2">{t.map.detail.dimensions[key]}</dt>
                   <dd className="m-0 h-1.5 overflow-hidden rounded-[3px] bg-line">
                     <span
                       className="block h-full bg-amber"
@@ -101,13 +94,13 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
             </dl>
 
             <dl className={`${cardClass} grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-[15px]`}>
-              <dt className="text-ink-2">Attempts</dt>
+              <dt className="text-ink-2">{t.map.detail.attempts}</dt>
               <dd data-testid="skill-attempts">{state.attemptCount}</dd>
-              <dt className="text-ink-2">Next review</dt>
+              <dt className="text-ink-2">{t.map.detail.nextReview}</dt>
               <dd data-testid="skill-next-review">
                 {state.nextReviewAt === null
-                  ? "Not scheduled yet"
-                  : formatWhen(state.nextReviewAt, now)}
+                  ? t.map.detail.notScheduled
+                  : formatWhen(state.nextReviewAt, now, t.common)}
               </dd>
             </dl>
 
@@ -117,7 +110,7 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
                 className="flex flex-col gap-3 border-t border-line pt-5"
               >
                 <h2 id="blockers-heading" className="text-base font-bold">
-                  To master it
+                  {t.map.detail.toMaster}
                 </h2>
                 <ul data-testid="skill-blockers" className="flex flex-col gap-2.5 text-[15px]">
                   {blockers.map((blocker) => (
@@ -132,22 +125,30 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
                       >
                         <circle cx="10" cy="10" r="8.2" stroke="#848c96" strokeWidth="1.6" />
                       </svg>
-                      <span>{blocker}</span>
+                      <span>{describeBlocker(blocker, t.map.detail.blockerCriteria)}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="text-sm text-ink-3">
-                  Mastery needs a successful review after time away and the skill in another
-                  context: repeating it today is not enough.
-                </p>
+                <p className="text-sm text-ink-3">{t.map.detail.masteryNote}</p>
               </section>
             ) : null}
           </>
         )}
 
+        {skill.lesson.length > 0 ? (
+          <details data-testid="skill-theory" className={`${cardClass} !p-0`}>
+            <summary className="cursor-pointer px-5 py-4 text-base font-bold hover:text-amber">
+              {t.teaching.skillPage.show}
+            </summary>
+            <div className="px-5 pb-5">
+              <LessonCards skill={skill} />
+            </div>
+          </details>
+        ) : null}
+
         {skill.prerequisites.length > 0 ? (
           <div className="flex flex-col gap-2 text-sm text-ink-3">
-            <span className={sectionLabelClass}>Requires</span>
+            <span className={sectionLabelClass}>{t.map.detail.requires}</span>
             <span className="flex flex-wrap gap-2">
               {skill.prerequisites.map((id) => (
                 <a key={id} href={`#/skill/${encodeURIComponent(id)}`} className={pill}>
@@ -159,7 +160,7 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
         ) : null}
         {dependents.length > 0 ? (
           <div className="flex flex-col gap-2 text-sm text-ink-3">
-            <span className={sectionLabelClass}>Leads to</span>
+            <span className={sectionLabelClass}>{t.map.detail.leadsTo}</span>
             <span className="flex flex-wrap gap-2">
               {dependents.map((other) => (
                 <a
@@ -175,7 +176,7 @@ export function SkillDetailScreen({ slug }: { readonly slug: string }) {
         ) : null}
 
         <a href="#/map" className={linkClass}>
-          Back to the skill map
+          {t.map.detail.backToMap}
         </a>
       </div>
     </Page>

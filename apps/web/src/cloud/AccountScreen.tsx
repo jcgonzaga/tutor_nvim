@@ -1,33 +1,31 @@
 import { useState, type FormEvent } from "react";
+import { useT } from "../i18n/I18nProvider";
 import { Page } from "../ui/Page";
 import { cardClass, linkClass, primaryButton, secondaryButton } from "../ui/styles";
 import { AuthError } from "./auth";
-import { useCloud, type SyncStatus } from "./CloudProvider";
-
-const STATUS_TEXT: Readonly<Record<SyncStatus, string>> = {
-  "signed-out": "Not syncing",
-  idle: "Waiting to sync",
-  syncing: "Syncing…",
-  synced: "Everything is saved to your account",
-  offline: "Offline: progress is saved on this device and will upload when you are back online",
-  error: "Could not sync. Your progress is safe on this device; it will retry",
-};
+import { useCloud, type CloudNotice } from "./CloudProvider";
 
 export function SyncStatusLine() {
   const { enabled, user, status } = useCloud();
+  const t = useT();
   if (!enabled) return null;
   return (
     <p data-testid="sync-status" data-status={status} className="text-[15px] text-ink-3">
-      {user
-        ? `${user.email} · ${STATUS_TEXT[status]}`
-        : "Sign in to keep your progress across devices."}
+      {user ? `${user.email} · ${t.cloud.status[status]}` : t.cloud.signedOutLine}
     </p>
   );
+}
+
+function noticeText(notice: CloudNotice, t: ReturnType<typeof useT>): string {
+  if (notice.kind === "skipped") return t.cloud.notices.skipped(notice.count);
+  if (notice.kind === "expired") return t.cloud.notices.expired;
+  return notice.detail;
 }
 
 /** Optional account (T-602): signing in never gates practice, it only adds cross-device progress. */
 export function AccountScreen() {
   const cloud = useCloud();
+  const t = useT();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,12 +39,14 @@ export function AccountScreen() {
     setBusy(true);
     try {
       if (mode === "sign-in") await cloud.signIn(email, password);
-      else await cloud.signUp(email, password, name || email.split("@")[0] || "Learner");
+      else await cloud.signUp(email, password, name || email.split("@")[0] || t.cloud.defaultName);
       window.location.hash = "#/";
     } catch (failure) {
-      setError(
-        failure instanceof AuthError ? failure.message : "Could not reach the sign-in service",
-      );
+      if (failure instanceof AuthError) {
+        setError(failure.code ? t.cloud.errors[failure.code] : failure.message);
+      } else {
+        setError(t.cloud.errors.unreachable);
+      }
     } finally {
       setBusy(false);
     }
@@ -54,12 +54,10 @@ export function AccountScreen() {
 
   if (!cloud.enabled) {
     return (
-      <Page title="Account">
-        <p className="text-ink-2">
-          Accounts are not set up in this version. Your progress is saved on this device.
-        </p>
+      <Page title={t.cloud.title}>
+        <p className="text-ink-2">{t.cloud.notConfigured}</p>
         <a href="#/" className={linkClass}>
-          Back to today
+          {t.cloud.back}
         </a>
       </Page>
     );
@@ -67,44 +65,42 @@ export function AccountScreen() {
 
   if (cloud.user) {
     return (
-      <Page title="Account" eyebrow="Tutor NeoVim">
+      <Page title={t.cloud.title} eyebrow={t.common.appName}>
         <section className={`${cardClass} flex max-w-[560px] flex-col gap-4`}>
           <p data-testid="account-email">{cloud.user.email}</p>
           <SyncStatusLine />
           {cloud.message ? (
             <p role="status" className="text-[15px] text-ink-2">
-              {cloud.message}
+              {noticeText(cloud.message, t)}
             </p>
           ) : null}
-          <p className="text-[15px] text-ink-3">
-            Your skills, reviews and mastery follow your account. XP, streak and records stay on
-            this device for now.
-          </p>
+          <p className="text-[15px] text-ink-3">{t.cloud.scope}</p>
           <div className="flex gap-3">
             <button type="button" className={secondaryButton} onClick={cloud.syncNow}>
-              Sync now
+              {t.cloud.syncNow}
             </button>
             <button type="button" className={secondaryButton} onClick={() => void cloud.signOut()}>
-              Sign out
+              {t.cloud.signOut}
             </button>
           </div>
         </section>
         <a href="#/" className={linkClass}>
-          Back to today
+          {t.cloud.back}
         </a>
       </Page>
     );
   }
 
   return (
-    <Page title={mode === "sign-in" ? "Sign in" : "Create an account"} eyebrow="Tutor NeoVim">
-      <p className="text-ink-2">
-        An account keeps your progress across devices. You can keep practicing without one.
-      </p>
+    <Page
+      title={mode === "sign-in" ? t.cloud.signInTitle : t.cloud.signUpTitle}
+      eyebrow={t.common.appName}
+    >
+      <p className="text-ink-2">{t.cloud.intro}</p>
       <form onSubmit={submit} className={`${cardClass} flex max-w-[560px] flex-col gap-5`}>
         {mode === "sign-up" ? (
           <label className="block text-[15px] font-semibold text-ink-2">
-            Name
+            {t.cloud.fields.name}
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -114,7 +110,7 @@ export function AccountScreen() {
           </label>
         ) : null}
         <label className="block text-[15px] font-semibold text-ink-2">
-          Email
+          {t.cloud.fields.email}
           <input
             type="email"
             required
@@ -125,7 +121,7 @@ export function AccountScreen() {
           />
         </label>
         <label className="block text-[15px] font-semibold text-ink-2">
-          Password
+          {t.cloud.fields.password}
           <input
             type="password"
             required
@@ -144,19 +140,19 @@ export function AccountScreen() {
         ) : null}
         <div className="flex flex-wrap gap-3">
           <button type="submit" disabled={busy || !cloud.ready} className={primaryButton}>
-            {mode === "sign-in" ? "Sign in" : "Create account"}
+            {mode === "sign-in" ? t.cloud.signIn : t.cloud.signUp}
           </button>
           <button
             type="button"
             className={secondaryButton}
             onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
           >
-            {mode === "sign-in" ? "I need an account" : "I already have an account"}
+            {mode === "sign-in" ? t.cloud.needAccount : t.cloud.haveAccount}
           </button>
         </div>
       </form>
       <a href="#/" className={linkClass}>
-        Back to today
+        {t.cloud.back}
       </a>
     </Page>
   );

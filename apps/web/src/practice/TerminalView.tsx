@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useT } from "../i18n/I18nProvider";
 import { promptOf, type ShellState } from "@tutor-nvim/shell-engine";
 
 /**
@@ -7,6 +8,7 @@ import { promptOf, type ShellState } from "@tutor-nvim/shell-engine";
  * transcript is a live log, so each command's output is announced when it appears.
  */
 export function TerminalView({ state }: { readonly state: ShellState }) {
+  const t = useT();
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
     end.current?.scrollIntoView({ block: "nearest" });
@@ -17,7 +19,7 @@ export function TerminalView({ state }: { readonly state: ShellState }) {
       data-testid="terminal"
       className="max-h-[420px] min-h-[220px] overflow-y-auto px-6 py-5 font-mono text-[20px] leading-8"
     >
-      <div role="log" aria-label="Terminal output" aria-live="polite">
+      <div role="log" aria-label={t.practice.terminalOutput} aria-live="polite">
         {state.transcript.map((entry, index) => (
           <div key={index}>
             <div className="whitespace-pre-wrap break-all">

@@ -1,11 +1,22 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { KeyValueStorage } from "../storage/profileStore";
-import { loadPrefs, savePrefs, withAnalytics, type Prefs } from "./prefs";
+import type { Locale } from "@tutor-nvim/exercise-schema";
+import {
+  loadPrefs,
+  savePrefs,
+  withAnalytics,
+  withLanguage,
+  withLessonSeen,
+  type Prefs,
+} from "./prefs";
 
 interface PrefsContextValue {
   readonly prefs: Prefs;
   setSound(on: boolean): void;
   setAnalytics(on: boolean): void;
+  setLanguage(language: Locale): void;
+  /** Records that a skill's theory cards were shown, so they do not appear again. */
+  markLessonSeen(skillId: string): void;
 }
 
 const PrefsContext = createContext<PrefsContextValue | null>(null);
@@ -36,6 +47,8 @@ export function PrefsProvider({
       setSound: (on) => apply((current) => ({ ...current, sound: on })),
       setAnalytics: (on) =>
         apply((current) => withAnalytics(current, on, () => crypto.randomUUID())),
+      setLanguage: (language) => apply((current) => withLanguage(current, language)),
+      markLessonSeen: (skillId) => apply((current) => withLessonSeen(current, skillId)),
     }),
     [prefs, apply],
   );

@@ -6,6 +6,7 @@ import {
   recordCompletedDay,
   updateCombo,
 } from "@tutor-nvim/pedagogy";
+import { es } from "../i18n/es";
 import { describeCombo, describeParts, describeStreak } from "./messages";
 
 const good = { success: true, strategy: "optimal", maxHintLevel: 0, antiPatterns: 0 } as const;
@@ -83,5 +84,43 @@ describe("XP wording", () => {
       combo: 1,
     });
     expect(describeParts(award)).toEqual(["Solved +10", "Perfect run +5", "Review done +6"]);
+  });
+});
+
+describe("Spanish wording", () => {
+  const words = es.gamification;
+
+  it("words the streak with racha", () => {
+    const live = {
+      ...EMPTY_GAMIFICATION,
+      streak: ["2026-10-20", "2026-10-21"].reduce(
+        (state, day) => recordCompletedDay(state, day),
+        EMPTY_GAMIFICATION.streak,
+      ),
+    };
+    expect(describeStreak(EMPTY_GAMIFICATION, "2026-10-21", words)).toBe(
+      "Termina una sesión para empezar una racha.",
+    );
+    expect(describeStreak(live, "2026-10-21", words)).toBe("Racha de 2 días");
+    expect(describeStreak(live, "2026-10-30", words)).toContain("2 días");
+  });
+
+  it("words the combo and the XP parts", () => {
+    expect(describeCombo(updateCombo(EMPTY_COMBO, good), words)).toBe("Combo ×1");
+    expect(
+      describeCombo(updateCombo({ current: 4, best: 4 }, { ...good, success: false }), words),
+    ).toBe("Combo reiniciado: un nuevo comienzo");
+    const award = awardAttemptXp({
+      success: true,
+      feedback: "perfect",
+      hintsUsed: 0,
+      scheduledReview: false,
+      transferEvidence: false,
+      personalBests: 1,
+      priorCompletionsToday: 0,
+      xpToday: 0,
+      combo: 1,
+    });
+    expect(describeParts(award, words)).toContain("Mejor marca +" + award.parts[2]?.amount);
   });
 });

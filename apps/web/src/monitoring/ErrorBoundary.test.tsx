@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { es } from "../i18n/es";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { installGlobalErrorHandlers, type ErrorReporter } from "./errorReporter";
 
@@ -40,6 +41,21 @@ describe("ErrorBoundary (T-906)", () => {
     expect(report).toHaveBeenCalledTimes(1);
     expect(report.mock.calls[0]?.[1]).toBe("react");
     expect((report.mock.calls[0]?.[0] as Error).message).toBe("render failed");
+  });
+});
+
+describe("ErrorBoundary language", () => {
+  it("speaks the language of the messages it is given", () => {
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    render(
+      <ErrorBoundary reporter={{ report: vi.fn() }} messages={es.app}>
+        <Bomb />
+      </ErrorBoundary>,
+    );
+    quiet.mockRestore();
+    expect(screen.getByRole("alert").textContent).toContain("Algo salió mal");
+    expect(screen.getByRole("button", { name: "Recargar" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Volver a hoy" })).toBeTruthy();
   });
 });
 

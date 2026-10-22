@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from "react";
 import { KEYBOARD_LAYOUTS, type KeyboardLayout } from "@tutor-nvim/pedagogy";
-import { LAYOUT_LABELS, detectLayout } from "../input/layout";
+import { useT } from "../i18n/I18nProvider";
+import { detectLayout } from "../input/layout";
 import { primaryButton, secondaryButton } from "../ui/styles";
 
 interface LayoutStepProps {
@@ -9,37 +10,20 @@ interface LayoutStepProps {
   readonly onBack: () => void;
 }
 
-/** Where the keys Vim leans on sit on each layout; the highlighted ones are the ones that move. */
+/**
+ * Where the keys Vim leans on sit on each layout; the highlighted ones are the ones that move.
+ * The keys are not translated; the notes and how to press them come from the catalog.
+ */
 const LAYOUT_HELP: Readonly<
-  Record<
-    KeyboardLayout,
-    {
-      readonly note: string;
-      readonly row: readonly string[];
-      readonly highlight: readonly string[];
-      readonly how: readonly (readonly [key: string, text: string])[];
-    }
-  >
+  Record<KeyboardLayout, { readonly row: readonly string[]; readonly highlight: readonly string[] }>
 > = {
   "es-iso": {
-    note: "The usual Spanish layout",
     row: ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ñ"],
     highlight: ["Ñ"],
-    how: [
-      ['"', "Shift + 2"],
-      [";", "Shift + ,"],
-      ["(", "Shift + 8"],
-    ],
   },
   "us-ansi": {
-    note: "The one most Vim tutorials assume",
     row: ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"],
     highlight: [";", "'"],
-    how: [
-      ['"', "Shift + ' (right of ;)"],
-      [";", "One key, no Shift"],
-      ["(", "Shift + 9"],
-    ],
   },
 };
 
@@ -48,6 +32,7 @@ const LAYOUT_HELP: Readonly<
  * (`KeyboardEvent.code`), and the radio group is the always-available alternative.
  */
 export function LayoutStep({ initial, onNext, onBack }: LayoutStepProps) {
+  const t = useT().onboarding.layout;
   const [layout, setLayout] = useState<KeyboardLayout>(initial);
   const [detected, setDetected] = useState<KeyboardLayout | null>(null);
   const [tried, setTried] = useState(false);
@@ -72,25 +57,27 @@ export function LayoutStep({ initial, onNext, onBack }: LayoutStepProps) {
         className="flex flex-col gap-1.5 rounded-2xl border border-dashed border-line-strong p-5"
       >
         <p id="detect-label" className="text-base">
-          Click here and type a double quote:{" "}
+          {t.detectPrompt}{" "}
           <kbd className="rounded-md border border-line-strong bg-raised px-2 py-0.5 font-mono">
             "
           </kbd>
         </p>
         <p role="status" data-testid="layout-detected" className="text-[15px] text-ink-2">
-          {detected
-            ? `Detected: ${LAYOUT_LABELS[detected]}`
-            : tried
-              ? "Could not tell from that key. Pick your layout below."
-              : "Waiting for a key press (optional)."}
+          {detected ? t.detected(t.names[detected]) : tried ? t.notDetected : t.waiting}
         </p>
       </div>
 
       <fieldset className="m-0 min-w-0 border-0 p-0">
-        <legend className="sr-only">Keyboard layout</legend>
+        <legend className="sr-only">{t.legend}</legend>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(400px,100%),1fr))] gap-5">
           {KEYBOARD_LAYOUTS.map((option) => {
             const help = LAYOUT_HELP[option];
+            const copy = t.options[option];
+            const how: readonly (readonly [key: string, text: string])[] = [
+              ['"', copy.quote],
+              [";", copy.semicolon],
+              ["(", copy.paren],
+            ];
             const on = layout === option;
             return (
               <label
@@ -109,8 +96,8 @@ export function LayoutStep({ initial, onNext, onBack }: LayoutStepProps) {
                     className="mt-1 size-[22px] flex-none accent-amber"
                   />
                   <span className="flex flex-col gap-0.5">
-                    <strong className="text-[21px]">{LAYOUT_LABELS[option]}</strong>
-                    <span className="text-[15px] text-ink-2">{help.note}</span>
+                    <strong className="text-[21px]">{t.names[option]}</strong>
+                    <span className="text-[15px] text-ink-2">{copy.note}</span>
                   </span>
                 </span>
                 <span aria-hidden className="flex flex-wrap gap-1">
@@ -128,8 +115,8 @@ export function LayoutStep({ initial, onNext, onBack }: LayoutStepProps) {
                   ))}
                 </span>
                 <span className="flex flex-col gap-2.5 border-t border-line pt-4">
-                  <span className="text-sm font-bold text-ink-3">How you type</span>
-                  {help.how.map(([key, text]) => (
+                  <span className="text-sm font-bold text-ink-3">{t.howYouType}</span>
+                  {how.map(([key, text]) => (
                     <span
                       key={key}
                       className="grid grid-cols-[40px_minmax(0,1fr)] items-center gap-3"
@@ -145,17 +132,14 @@ export function LayoutStep({ initial, onNext, onBack }: LayoutStepProps) {
         </div>
       </fieldset>
 
-      <p className="text-[15px] text-ink-3">
-        You can change this any time. Your level is not decided here: a one-minute check measures
-        it.
-      </p>
+      <p className="text-[15px] text-ink-3">{t.changeLater}</p>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button type="button" onClick={onBack} className={secondaryButton}>
-          Back
+          {t.back}
         </button>
         <button type="button" onClick={() => onNext(layout)} className={primaryButton}>
-          Continue
+          {t.next}
         </button>
       </div>
     </div>

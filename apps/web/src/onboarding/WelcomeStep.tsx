@@ -1,26 +1,25 @@
 import { useCloud } from "../cloud/CloudProvider";
+import { useT } from "../i18n/I18nProvider";
 import { KeyHint } from "../ui/Kbd";
+import { LanguageSelect } from "../ui/LanguageSelect";
 import { linkClass, primaryButton } from "../ui/styles";
 
 export function WelcomeStep({ onNext }: { readonly onNext: () => void }) {
   const cloud = useCloud();
+  const t = useT().onboarding.welcome;
   return (
     <div className="flex max-w-[720px] flex-col gap-6">
-      <p className="text-lg text-ink-2">
-        You will learn Vim by doing: short exercises on a real keyboard, a few minutes a day. Two
-        quick questions and a short check set where you start.
-      </p>
-      <p className="text-[15px] text-ink-3">
-        Everything stays on this device. No account is needed.
-      </p>
+      <p className="text-lg text-ink-2">{t.intro}</p>
+      <p className="text-[15px] text-ink-3">{t.local}</p>
+      <LanguageSelect />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
         <button type="button" autoFocus onClick={onNext} className={`${primaryButton} !pr-3`}>
-          Get started
+          {t.getStarted}
           <KeyHint>Enter</KeyHint>
         </button>
         {cloud.enabled && !cloud.user ? (
           <a href="#/account" className={linkClass}>
-            I already have an account
+            {t.haveAccount}
           </a>
         ) : null}
       </div>

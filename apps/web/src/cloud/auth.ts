@@ -3,8 +3,22 @@ export interface AuthUser {
   readonly email: string;
 }
 
+/**
+ * The app's own sign-in problems. Text written by the auth server cannot be translated, so it
+ * travels as `message` with no code; the app's fallbacks carry a code the screen maps to the
+ * catalog (the English `message` stays for logs and tests).
+ */
+export type AuthErrorCode = "unavailable" | "invalidEmail" | "signInFailed" | "noSession";
+
 /** A sign-in problem the learner can act on ("wrong password"), not a crash. */
-export class AuthError extends Error {}
+export class AuthError extends Error {
+  readonly code: AuthErrorCode | undefined;
+
+  constructor(message: string, code?: AuthErrorCode) {
+    super(message);
+    this.code = code;
+  }
+}
 
 /**
  * The web app's only view of authentication. Neon Auth is behind it in production and a stand-in

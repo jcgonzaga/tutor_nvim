@@ -1,0 +1,78 @@
+/** English text of the gamification area (XP, combo, streak, personal bests, replay). */
+export const gamification = {
+  xpKinds: {
+    completion: "Solved",
+    perfect: "Perfect run",
+    "scheduled-review": "Review done",
+    transfer: "New context",
+    "personal-best": "Personal best",
+    "daily-completion": "Daily session",
+  },
+  combo: {
+    increased: (n: number) => `Combo ×${n}`,
+    kept: (n: number) => `Combo ×${n} kept`,
+    notStarted: "Combo not started",
+    resetFailed: "Combo reset: a fresh start",
+    resetStrongHint: "Combo reset by a strong hint: a fresh start",
+    resetAntiPattern: "Combo reset by an anti-pattern: a fresh start",
+  },
+  streak: {
+    days: (n: number) => (n === 1 ? "1-day streak" : `${n}-day streak`),
+    welcomeBack: (longest: number) =>
+      `Welcome back. Your longest streak was ${longest} ${longest === 1 ? "day" : "days"}; a new one starts with today's session.`,
+    start: "Finish a session to start a streak.",
+  },
+  stats: {
+    streakHeading: "Streak",
+    thisWeek: "This week",
+    today: "Today",
+    weekdays: ["M", "T", "W", "T", "F", "S", "S"],
+    sessionDone: ", session done",
+    margin: "A missed day does not break your streak: you have one day of margin.",
+    levelLabel: "Your level",
+    level: (n: number) => `Level ${n}`,
+    xpProgress: (xp: number, into: number, needed: number, next: number) =>
+      `${xp} XP · ${into}/${needed} to level ${next}`,
+    levelProgress: (n: number) => `Level ${n} progress`,
+    xpVsMastery: "XP measures what you practice. Mastery measures what you can really do.",
+    recentBestHeading: "Recent personal best",
+    recentBest: (title: string, metrics: string) => `Recent personal best: ${title} (${metrics})`,
+    metrics: {
+      time: "speed",
+      efficiency: "efficiency",
+      performance: "score",
+      reaction: "reaction time",
+    },
+  },
+  reward: {
+    xp: (n: number) => `+${n} XP`,
+    repeated: " · repeated today: reduced",
+    capped: " · daily XP limit reached",
+    noXp: "XP rewards solved exercises. Mastery is separate: it only grows with practice.",
+  },
+  ghost: {
+    compare: "Compare",
+    run: "Run",
+    keys: "Keys",
+    keystrokes: "Keystrokes",
+    time: "Time",
+    nothing: "(nothing)",
+    labels: { YOU: "YOU", MASTER: "MASTER", "YOUR BEST": "YOUR BEST" },
+  },
+  replay: {
+    show: "Replay",
+    hide: "Hide replay",
+    label: "Replay",
+    whichRun: "Which run to replay",
+    sources: { you: "Your run", master: "Master", best: "Your best" },
+    start: (keys: number) => `Start. ${keys} ${keys === 1 ? "key" : "keys"}.`,
+    step: (index: number, last: number, key: string, accepted: boolean) =>
+      `Step ${index} of ${last}: ${key}${accepted ? "" : " (not accepted)"}.`,
+    modeAndText: (mode: string, text: string) => `Mode ${mode}. Text: ${text}`,
+    startButton: "Start",
+    back: "Back",
+    stepButton: "Step",
+    play: "Play",
+    pause: "Pause",
+  },
+};

@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@tutor-nvim/exercise-schema";
 import { z } from "zod";
 import type { KeyValueStorage } from "../storage/profileStore";
 
@@ -13,15 +14,28 @@ export interface Prefs {
   readonly analytics: boolean;
   /** Random, per browser, created when analytics is first allowed; unrelated to any account. */
   readonly installId: string | null;
+  /** Language of the interface and the exercise text (ADR-0005). Spanish unless chosen otherwise. */
+  readonly language: Locale;
+  /** Skills whose theory cards were already shown here: they appear once (ADR-0005). */
+  readonly seenLessons: readonly string[];
 }
 
-export const DEFAULT_PREFS: Prefs = { sound: false, analytics: false, installId: null };
+export const DEFAULT_PREFS: Prefs = {
+  sound: false,
+  analytics: false,
+  installId: null,
+  language: DEFAULT_LOCALE,
+  seenLessons: [],
+};
 export const PREFS_KEY = "tutor-nvim:prefs";
 
 const prefsSchema = z.object({
   sound: z.boolean(),
   analytics: z.boolean(),
   installId: z.string().min(8).max(100).nullable(),
+  // Preferences saved before these existed still load: the missing fields take their defaults.
+  language: z.enum(LOCALES).default(DEFAULT_LOCALE),
+  seenLessons: z.array(z.string().min(1).max(100)).max(500).default([]),
 });
 
 export function loadPrefs(storage: KeyValueStorage): Prefs {
@@ -48,4 +62,13 @@ export function savePrefs(storage: KeyValueStorage, prefs: Prefs): boolean {
 export function withAnalytics(prefs: Prefs, allowed: boolean, newId: () => string): Prefs {
   if (!allowed) return { ...prefs, analytics: false, installId: null };
   return { ...prefs, analytics: true, installId: prefs.installId ?? newId() };
+}
+
+export const withLanguage = (prefs: Prefs, language: Locale): Prefs => ({ ...prefs, language });
+
+/** Remembers that a skill's theory was shown. Idempotent. */
+export function withLessonSeen(prefs: Prefs, skillId: string): Prefs {
+  return prefs.seenLessons.includes(skillId)
+    ? prefs
+    : { ...prefs, seenLessons: [...prefs.seenLessons, skillId] };
 }

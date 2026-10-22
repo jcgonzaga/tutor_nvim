@@ -1,18 +1,11 @@
 import type { ReactNode } from "react";
 import type { FeedbackKind } from "@tutor-nvim/evaluation";
+import type { Exercise } from "@tutor-nvim/exercise-schema";
+import { AttemptExplanation } from "../teaching/AttemptExplanation";
 import type { FinishedPractice } from "./PracticeScreen";
+import { useT } from "../i18n/I18nProvider";
 import { Kbd } from "../ui/Kbd";
 import { sectionLabelClass } from "../ui/styles";
-
-/** Icon plus words: the outcome is never carried by color alone. */
-const HEADLINES: Readonly<Record<FeedbackKind, { text: string; detail: string }>> = {
-  perfect: { text: "Perfect", detail: "Best strategy, no errors, no hints." },
-  completed: { text: "Completed", detail: "Solved. There is a cleaner way." },
-  failed: {
-    text: "Not solved",
-    detail: "That is useful information: it will come back for review.",
-  },
-};
 
 function Icon({ kind }: { readonly kind: FeedbackKind }) {
   if (kind === "perfect") {
@@ -75,6 +68,8 @@ function Keys({ text, state }: { readonly text: string; readonly state: "plain" 
 
 interface FeedbackPanelProps {
   readonly finished: FinishedPractice;
+  /** The (localized) exercise: with it, a poor attempt is explained below the keys (ADR-0005). */
+  readonly exercise?: Exercise;
   /** XP, comparison and replay (sessions only). */
   readonly extras?: ReactNode;
   /** Next-step controls (Continue, Try again...). */
@@ -82,9 +77,10 @@ interface FeedbackPanelProps {
 }
 
 /** Per-exercise feedback (T-514): perfect / completed / failed, plus what to try next time. */
-export function FeedbackPanel({ finished, extras, children }: FeedbackPanelProps) {
+export function FeedbackPanel({ finished, exercise, extras, children }: FeedbackPanelProps) {
+  const t = useT().practice.feedback;
   const { feedback, evaluation } = finished;
-  const headline = HEADLINES[feedback.kind];
+  const headline = t[feedback.kind];
   return (
     <section
       role="status"
@@ -96,7 +92,7 @@ export function FeedbackPanel({ finished, extras, children }: FeedbackPanelProps
         <Icon kind={feedback.kind} />
         <div>
           <h2 className="text-[40px] font-extrabold leading-none tracking-[-0.03em]">
-            <span data-testid="feedback-kind">{headline.text}</span>
+            <span data-testid="feedback-kind">{headline.title}</span>
           </h2>
           <p className="mt-1.5 text-base text-ink-2">{headline.detail}</p>
         </div>
@@ -104,18 +100,18 @@ export function FeedbackPanel({ finished, extras, children }: FeedbackPanelProps
 
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))]">
         <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-canvas/40 p-5">
-          <dt className={sectionLabelClass}>You typed</dt>
+          <dt className={sectionLabelClass}>{t.youTyped}</dt>
           <dd data-testid="feedback-your-keys" className="sr-only">
-            {feedback.yourKeys || "(nothing)"}
+            {feedback.yourKeys || t.nothing}
           </dd>
           <dd className="m-0" aria-hidden>
-            {feedback.yourKeys ? <Keys text={feedback.yourKeys} state="plain" /> : "(nothing)"}
+            {feedback.yourKeys ? <Keys text={feedback.yourKeys} state="plain" /> : t.nothing}
           </dd>
         </div>
         {feedback.betterKeys ? (
           <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-panel p-5">
             <dt className="text-[15px] font-bold text-amber">
-              {feedback.kind === "failed" ? "One way" : "Better way"}
+              {feedback.kind === "failed" ? t.oneWay : t.betterWay}
             </dt>
             <dd data-testid="feedback-better-keys" className="sr-only">
               {feedback.betterKeys}
@@ -126,7 +122,7 @@ export function FeedbackPanel({ finished, extras, children }: FeedbackPanelProps
           </div>
         ) : null}
         <div className="flex flex-col gap-1 rounded-xl border border-line bg-canvas/40 p-5">
-          <dt className={sectionLabelClass}>Score</dt>
+          <dt className={sectionLabelClass}>{t.score}</dt>
           <dd
             data-testid="feedback-performance"
             className="m-0 text-[32px] font-extrabold leading-tight"
@@ -137,11 +133,9 @@ export function FeedbackPanel({ finished, extras, children }: FeedbackPanelProps
       </dl>
 
       {feedback.hintsUsed > 0 ? (
-        <p className="text-base text-ink-2">
-          {feedback.hintsUsed === 1 ? "1 hint used" : `${feedback.hintsUsed} hints used`}: it counts
-          less toward mastery.
-        </p>
+        <p className="text-base text-ink-2">{t.hintsUsed(feedback.hintsUsed)}</p>
       ) : null}
+      {exercise ? <AttemptExplanation exercise={exercise} evaluation={evaluation} /> : null}
       {extras}
       <div className="flex flex-wrap items-center gap-3">{children}</div>
     </section>

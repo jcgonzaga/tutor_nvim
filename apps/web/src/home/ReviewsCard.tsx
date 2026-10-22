@@ -1,5 +1,7 @@
 import { DAY_MS, type LearnerState } from "@tutor-nvim/pedagogy";
-import { skillTitle } from "../exercises";
+import { useContent, useT } from "../i18n/I18nProvider";
+import { en } from "../i18n/en";
+import type { Messages } from "../i18n/messages";
 import { cardClass } from "../ui/styles";
 
 interface Bucket {
@@ -9,7 +11,11 @@ interface Bucket {
 }
 
 /** Skills with a scheduled review, grouped by when it falls due. Empty groups are left out. */
-export function reviewBuckets(learner: LearnerState, now: number): Bucket[] {
+export function reviewBuckets(
+  learner: LearnerState,
+  now: number,
+  words: Messages["home"]["reviews"]["buckets"] = en.home.reviews.buckets,
+): Bucket[] {
   const groups = {
     today: [] as string[],
     tomorrow: [] as string[],
@@ -27,10 +33,10 @@ export function reviewBuckets(learner: LearnerState, now: number): Bucket[] {
     else groups.later.push(id);
   }
   return [
-    { label: "Today", skills: groups.today, urgent: true },
-    { label: "Tomorrow", skills: groups.tomorrow, urgent: false },
-    { label: "This week", skills: groups.week, urgent: false },
-    { label: "Later", skills: groups.later, urgent: false },
+    { label: words.today, skills: groups.today, urgent: true },
+    { label: words.tomorrow, skills: groups.tomorrow, urgent: false },
+    { label: words.week, skills: groups.week, urgent: false },
+    { label: words.later, skills: groups.later, urgent: false },
   ].filter((bucket) => bucket.skills.length > 0);
 }
 
@@ -41,7 +47,9 @@ export function ReviewsCard({
   readonly learner: LearnerState;
   readonly now: number;
 }) {
-  const buckets = reviewBuckets(learner, now);
+  const t = useT();
+  const { skillTitle } = useContent();
+  const buckets = reviewBuckets(learner, now, t.home.reviews.buckets);
   return (
     <section
       aria-labelledby="reviews-heading"
@@ -49,13 +57,13 @@ export function ReviewsCard({
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <h2 id="reviews-heading" className="text-xl font-bold">
-          Scheduled reviews
+          {t.home.reviews.title}
         </h2>
-        <span className="text-[15px] text-ink-3">They return just before you would forget</span>
+        <span className="text-[15px] text-ink-3">{t.home.reviews.subtitle}</span>
       </div>
       {buckets.length === 0 ? (
         <p data-testid="reviews-empty" className="text-ink-2">
-          Nothing is scheduled yet. Reviews appear after you practice a skill.
+          {t.home.reviews.empty}
         </p>
       ) : (
         <ol className="grid grid-cols-[repeat(auto-fit,minmax(min(190px,100%),1fr))] gap-3">

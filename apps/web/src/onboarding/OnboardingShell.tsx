@@ -1,13 +1,9 @@
 import type { ReactNode } from "react";
+import { useT } from "../i18n/I18nProvider";
 import { eyebrowClass } from "../ui/styles";
 
-export const ONBOARDING_STEPS = [
-  "Welcome",
-  "Keyboard",
-  "Experience",
-  "Check",
-  "Starting point",
-] as const;
+/** The steps in order; their visible names come from the catalog (`onboarding.steps`). */
+export const ONBOARDING_STEPS = ["welcome", "keyboard", "experience", "check", "start"] as const;
 
 interface OnboardingShellProps {
   /** Zero-based index into `ONBOARDING_STEPS`. */
@@ -37,20 +33,24 @@ function Check() {
 
 /** Frame of the setup flow: brand, where you are in five steps, and one idea per screen. */
 export function OnboardingShell({ step, title, lead, children }: OnboardingShellProps) {
+  const t = useT();
   return (
     <div className="flex min-h-screen flex-col bg-canvas text-ink">
       <header className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 px-8 py-5">
         <span className="flex items-center gap-3">
           <span aria-hidden className="h-6 w-3 rounded-[2px] bg-amber" />
-          <span className="text-[19px] font-bold">Tutor NeoVim</span>
+          <span className="text-[19px] font-bold">{t.common.appName}</span>
         </span>
-        <ol aria-label="Steps" className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-3">
-          {ONBOARDING_STEPS.map((name, index) => {
+        <ol
+          aria-label={t.onboarding.shell.stepsLabel}
+          className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-3"
+        >
+          {ONBOARDING_STEPS.map((id, index) => {
             const done = index < step;
             const current = index === step;
             return (
               <li
-                key={name}
+                key={id}
                 {...(current ? { "aria-current": "step" as const } : {})}
                 className={`flex items-center gap-2 ${
                   current ? "font-bold text-amber" : done ? "text-ink-2" : ""
@@ -66,20 +66,20 @@ export function OnboardingShell({ step, title, lead, children }: OnboardingShell
                     }`}
                   />
                 )}
-                {name}
-                {done ? <span className="sr-only"> (done)</span> : null}
+                {t.onboarding.steps[id]}
+                {done ? <span className="sr-only"> {t.onboarding.shell.done}</span> : null}
               </li>
             );
           })}
         </ol>
         <span className="text-sm text-ink-3">
-          Step {step + 1} of {ONBOARDING_STEPS.length}
+          {t.onboarding.shell.stepOf(step + 1, ONBOARDING_STEPS.length)}
         </span>
       </header>
 
       <main className="mx-auto flex w-full max-w-[1040px] flex-1 flex-col gap-8 px-8 pb-10 pt-8">
         <div className="flex max-w-[720px] flex-col gap-2.5">
-          <p className={eyebrowClass}>Setup</p>
+          <p className={eyebrowClass}>{t.onboarding.shell.eyebrow}</p>
           <h1 className="text-balance text-[40px] font-bold leading-[1.15] tracking-[-0.02em]">
             {title}
           </h1>

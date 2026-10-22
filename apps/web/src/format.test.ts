@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { describeRecommendation, formatWhen } from "./format";
+import { es } from "./i18n/es";
 
 const NOW = 1_000_000_000;
 const title = (id: string) => id.toUpperCase();
@@ -41,6 +42,23 @@ describe("describeRecommendation", () => {
     ).toBe("Next review: X in 1 day.");
     expect(describeRecommendation({ kind: "all-caught-up" }, title, NOW)).toBe(
       "You are all caught up.",
+    );
+  });
+});
+
+describe("in Spanish", () => {
+  it("reads naturally at each scale and pluralizes", () => {
+    expect(formatWhen(NOW - 5, NOW, es.common)).toBe("ahora");
+    expect(formatWhen(NOW + 60 * 60_000, NOW, es.common)).toBe("en 1 hora");
+    expect(formatWhen(NOW + 2 * 86_400_000, NOW, es.common)).toBe("en 2 días");
+  });
+
+  it("describes what comes next", () => {
+    expect(
+      describeRecommendation({ kind: "review-due", skillIds: ["a", "b"] }, title, NOW, es.common),
+    ).toBe("2 habilidades por repasar: A, B.");
+    expect(describeRecommendation({ kind: "all-caught-up" }, title, NOW, es.common)).toBe(
+      "Estás al día.",
     );
   });
 });

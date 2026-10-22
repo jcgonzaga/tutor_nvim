@@ -36,10 +36,12 @@ export function createBetterAuthClient(baseUrl: string, fetchImpl: Fetch = fetch
     const json = (await response.json().catch(() => null)) as
       (SessionBody & { message?: unknown }) | null;
     if (!response.ok) {
-      throw new AuthError(typeof json?.message === "string" ? json.message : "Could not sign in");
+      throw typeof json?.message === "string"
+        ? new AuthError(json.message)
+        : new AuthError("Could not sign in", "signInFailed");
     }
     const user = toUser(json) ?? (await currentUser());
-    if (!user) throw new AuthError("Signed in, but no session was returned");
+    if (!user) throw new AuthError("Signed in, but no session was returned", "noSession");
     return user;
   }
 

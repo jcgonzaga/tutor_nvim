@@ -11,7 +11,7 @@ import {
   type CalibrationState,
   type ExperienceLevel,
 } from "@tutor-nvim/pedagogy";
-import { exercises, skills } from "../exercises";
+import { useContent, useT } from "../i18n/I18nProvider";
 import { FeedbackPanel } from "../practice/FeedbackPanel";
 import { PracticeScreen } from "../practice/PracticeScreen";
 import { primaryButton } from "../ui/styles";
@@ -41,6 +41,8 @@ interface CalibrationStepProps {
  * leaving halfway (or reloading) neither double-counts attempts nor leaves a half-estimate.
  */
 export function CalibrationStep({ experience, onDone }: CalibrationStepProps) {
+  const t = useT().onboarding.calibration;
+  const content = useContent();
   const [state, setState] = useState(() => startCalibration(experience));
   const [probes, setProbes] = useState<readonly ProbeRecord[]>([]);
 
@@ -48,12 +50,16 @@ export function CalibrationStep({ experience, onDone }: CalibrationStepProps) {
   const probe =
     rung === null
       ? null
-      : pickCalibrationExercise(skills, exercises, CALIBRATION_LADDER[rung]?.skillId ?? "");
+      : pickCalibrationExercise(
+          content.skills,
+          content.exercises,
+          CALIBRATION_LADDER[rung]?.skillId ?? "",
+        );
   // A rung without content cannot be asked, so the check ends with what it already knows.
   if (rung === null || probe === null) {
     return (
       <button type="button" onClick={() => onDone({ state, probes })} className={primaryButton}>
-        See your starting point
+        {t.seeStart}
       </button>
     );
   }
@@ -62,9 +68,9 @@ export function CalibrationStep({ experience, onDone }: CalibrationStepProps) {
     <PracticeScreen
       key={rung}
       exercise={probe}
-      eyebrow="Quick check"
-      progress={`Check ${probes.length + 1}`}
-      giveUpLabel="I don't know this yet"
+      eyebrow={t.eyebrow}
+      progress={t.progress(probes.length + 1)}
+      giveUpLabel={t.giveUp}
       renderResult={(finished) => (
         <FeedbackPanel finished={finished}>
           <button
@@ -87,7 +93,7 @@ export function CalibrationStep({ experience, onDone }: CalibrationStepProps) {
               if (isCalibrationDone(nextState)) onDone({ state: nextState, probes: nextProbes });
             }}
           >
-            Continue
+            {t.next}
           </button>
         </FeedbackPanel>
       )}
