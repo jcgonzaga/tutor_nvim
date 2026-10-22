@@ -1,0 +1,7 @@
+id: vim-find-char-equals-001
+title: "Encuentra el signo igual"
+instruction: "Salta al signo =."
+hints:
+  - "Un comando encuentra un carácter en la línea."
+  - "f="
+explanation: "f= salta al siguiente = de la línea, así que te saltas export y API_KEY sin contar. Nombrar el carácter es más rápido y menos propenso a errores que pulsar l catorce veces."

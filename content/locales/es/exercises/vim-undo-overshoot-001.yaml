@@ -1,0 +1,7 @@
+id: vim-undo-overshoot-001
+title: "Deshiciste de más"
+instruction: "Deshiciste un paso de más. Vuelve a cd."
+hints:
+  - "El deshacer fue más atrás de cd."
+  - "Ctrl+r avanza un paso."
+explanation: "Las tres x quitaron a, b y c. Las dos pulsaciones de u devolvieron c y b, que es un paso de más: bcd. <C-r> rehace el último cambio deshecho, vuelve a quitar b y deja cd. Deshacer y rehacer recorren el mismo historial, así que puedes corregir un exceso."

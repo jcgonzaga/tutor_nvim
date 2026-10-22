@@ -1,0 +1,7 @@
+id: shell-search-grep-n-001
+title: "Con números de línea"
+instruction: "Escribe grep -n API_URL app.js para encontrar las líneas con su número."
+hints:
+  - "-n añade el número de línea."
+  - "grep -n API_URL app.js"
+explanation: "-n pone el número de línea antes de cada coincidencia, como número:texto. En app.js, la línea 1 es const API_URL y la línea 2 es console.log(API_URL), así que salen las dos, y la primera empieza por 1:const API_URL."

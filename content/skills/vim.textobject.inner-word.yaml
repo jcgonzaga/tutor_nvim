@@ -19,3 +19,13 @@ concepts:
 tags:
   - text-object
   - word
+
+lesson:
+  - title: "A whole word, from anywhere"
+    body: "iw is the whole word under the cursor, whether the cursor is on its first letter, its middle or its last. Use it to replace or delete a word without walking to its start first."
+    keys: "iw"
+  - title: "Operator plus iw"
+    body: "ciw changes the whole word and diw deletes it. Plain cw or dw only act from the cursor to the end of the word, so from the middle they leave the beginning behind."
+    keys: "ciw"
+  - title: "What counts as a word"
+    body: "Letters, digits and underscores make a word. Punctuation next to it, like quotes, parentheses or dots, is not part of it. So very_long is one word, but user.name is three."

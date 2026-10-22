@@ -1,0 +1,7 @@
+id: vim-ci-quotes-003
+title: "Cambia dentro de comillas (Lua)"
+instruction: 'Cambia solo el texto dentro de las comillas por "gruvbox".'
+hints:
+  - "La misma habilidad, otro lenguaje: Cambiar + Dentro + comillas."
+  - "El cursor ya está dentro de la cadena."
+explanation: 'El cursor ya está dentro de tokyonight, así que ci" vacía las comillas y entra en modo INSERT. No necesitas ir al inicio de la palabra: las comillas que rodean al cursor definen el texto. Las comillas se quedan, así que solo cambia el nombre.'

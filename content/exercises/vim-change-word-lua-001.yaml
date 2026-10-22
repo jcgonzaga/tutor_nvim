@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "Same operator, another language: the cursor is on the first letter of speed, so cw replaces speed with velocity and leaves the = and the 10 alone. Vim motions do not depend on the language, only on where words start and end."

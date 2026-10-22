@@ -54,3 +54,5 @@ metadata:
   context: prose
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "t, moves to the character just before the next comma, the o of hello. f, would land on the comma itself. Use t when you want to stop next to a character instead of on it."

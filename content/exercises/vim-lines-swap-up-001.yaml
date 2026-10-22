@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:lua
+
+explanation: "dd removes second and keeps it in a register. P then puts it above the cursor line, so it ends up above first. After dd the cursor is already on first here, so the k does nothing; in a longer file you would need it to move up first. With p you would get the original order back."

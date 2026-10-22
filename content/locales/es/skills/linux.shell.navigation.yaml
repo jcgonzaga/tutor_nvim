@@ -1,0 +1,10 @@
+id: linux-shell-navigation
+title: "Orientarte en el sistema"
+description: "Sabe dónde estás y muévete entre carpetas con pwd, ls y cd."
+lesson:
+  - title: "Saber siempre dónde estás"
+    body: "La shell trabaja dentro de una carpeta, el directorio actual. pwd lo muestra, y la mayoría de comandos actúan sobre los archivos de esa carpeta."
+  - title: "Mirar alrededor y moverte"
+    body: "ls lista lo que hay dentro de una carpeta y cd carpeta entra en ella. Una ruta puede tener varios pasos, como uno/dos."
+  - title: "Archivos ocultos y tu carpeta personal"
+    body: "Los nombres que empiezan por punto están ocultos, y ls -a los muestra. cd sin nada detrás te lleva directo a tu carpeta personal."

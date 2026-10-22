@@ -1,0 +1,7 @@
+id: vim-change-word-js-001
+title: "Renombra una variable"
+instruction: "Renombra count a total."
+hints:
+  - "Cambiar + palabra."
+  - "cw, escribe el nombre nuevo, Esc."
+explanation: "El cursor está en la primera letra de count, así que cw reemplaza la palabra entera por total en un solo comando. dw borra la palabra y el espacio que le sigue, así que harían falta dw, itotal y un espacio para llegar al mismo resultado: más teclas sin ningún beneficio."

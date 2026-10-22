@@ -1,0 +1,7 @@
+id: vim-mode-normal-001
+title: "De vuelta al modo NORMAL"
+instruction: "Estás escribiendo en modo INSERT. Pulsa Esc para volver al modo NORMAL."
+hints:
+  - "El modo NORMAL es donde las teclas son comandos. Una sola tecla te lleva allí."
+  - "Pulsa Esc una vez."
+explanation: "En modo INSERT cada tecla que pulsas se convierte en texto, así que ningún comando puede ejecutarse. Esc sale del modo INSERT y vuelve al modo NORMAL, donde las teclas son comandos. Una pulsación basta."

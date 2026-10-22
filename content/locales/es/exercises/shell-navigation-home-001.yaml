@@ -1,0 +1,7 @@
+id: shell-navigation-home-001
+title: "De vuelta a casa"
+instruction: "Vuelve a tu carpeta personal desde donde estás."
+hints:
+  - "cd sin nada detrás tiene un destino propio."
+  - "Escribe solo cd."
+explanation: "cd sin argumentos siempre va a tu carpeta personal, estés donde estés, así que un comando basta. cd ~ y cd /home/user también funcionan. Repetir cd .. sube un nivel cada vez y desde logs/old/2023 necesita tres comandos."

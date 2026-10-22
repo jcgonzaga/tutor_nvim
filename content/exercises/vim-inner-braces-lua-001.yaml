@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: 'di{ deletes what is inside the braces around the cursor, whatever the cursor position within them and however many items there are, leaving {}. It is the same idea as di" and di(, just with another pair.'

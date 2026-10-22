@@ -1,0 +1,7 @@
+id: vim-inner-parens-nested-outer-001
+title: "Anidados: la llamada exterior"
+instruction: "Reemplaza todos los argumentos de foo por 0. El cursor está en el 2."
+hints:
+  - "Aquí el cursor solo está dentro de los paréntesis exteriores."
+  - "ci("
+explanation: "El cursor está en el 2, que está dentro de foo( ) pero no de bar( ). El par más interno que lo rodea es el de foo, así que ci( reemplaza bar(1), 2 por completo con 0. Las mismas teclas que en el ejercicio anterior: la posición del cursor decide qué paréntesis cuentan."

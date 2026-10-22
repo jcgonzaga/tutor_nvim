@@ -54,3 +54,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:javascript
+
+explanation: "The cursor is on the second semicolon, so a single x removes it. A second x would delete the semicolon you want to keep, which is why one press is the whole answer."

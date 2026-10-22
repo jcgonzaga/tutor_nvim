@@ -1,0 +1,7 @@
+id: vim-mode-insert-001
+title: "Inserta antes del cursor"
+instruction: 'Inserta "Hello, " delante de la palabra y vuelve al modo NORMAL.'
+hints:
+  - "i empieza a insertar antes del cursor."
+  - "Escribe el texto y pulsa Esc para volver al modo NORMAL."
+explanation: "El cursor está sobre la w de world, al inicio de la línea, así que i inserta justo antes. Todo lo que escribes después de i entra en el buffer, coma y espacio incluidos, hasta que Esc te devuelve al modo NORMAL. El objetivo exige acabar en modo NORMAL, así que la Esc final forma parte de la respuesta."

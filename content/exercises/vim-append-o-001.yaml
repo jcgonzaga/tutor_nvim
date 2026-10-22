@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:python
+
+explanation: "o opens a new empty line below the current one and enters INSERT mode, wherever the cursor is in the line. Then you type the new line and press Esc. Going to the end of the line and pressing Enter takes more keys for the same result."

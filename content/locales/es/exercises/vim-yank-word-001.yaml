@@ -1,0 +1,7 @@
+id: vim-yank-word-001
+title: "Copia una palabra y pégala"
+instruction: "Haz que diga hello hello world copiando la primera palabra."
+hints:
+  - "y copia (yank) igual que d borra. P pega antes del cursor."
+  - "yw, y luego P."
+explanation: "yw copia desde el cursor hasta el inicio de la palabra siguiente, es decir, hello y su espacio. P lo pega antes del cursor, delante del hello original, con lo que queda hello hello world. p pegaría después de la h y daría hhello ello world."

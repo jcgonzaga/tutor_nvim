@@ -44,3 +44,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "ls with no argument lists the contents of the current directory. Here you are in notes, so it prints todo.txt, ideas.txt and the archive folder. Add a path to list somewhere else."

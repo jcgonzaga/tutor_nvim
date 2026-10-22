@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:typescript
+
+explanation: "ciwnew<Esc> changes the word under the cursor to new. Then ww reaches the next old (the comma is a word of its own) and . repeats the whole change, ciw plus the text plus Esc, in one key. ciw works from anywhere in the word, so the dot needs no exact position."

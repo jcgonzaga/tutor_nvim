@@ -1,0 +1,7 @@
+id: vim-navigation-atomic-grid-001
+title: "Recorre código con h j k l"
+instruction: "Mueve el cursor a la r de return."
+hints:
+  - "Primero abajo hasta la última línea, luego a la derecha."
+  - "Cuatro líneas abajo y luego cuatro caracteres a la derecha."
+explanation: "return está en la última línea, tras cuatro espacios de sangría. Pulsa j cuatro veces para llegar a la línea 5 y luego l cuatro veces para cruzar los cuatro espacios y caer sobre la r. El cursor empieza en la columna 1, así que cuenta la sangría."

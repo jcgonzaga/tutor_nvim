@@ -1,0 +1,10 @@
+id: vim-undo
+title: "Deshacer y rehacer"
+description: "Deshaz un cambio con u y rehazlo con Ctrl-r."
+lesson:
+  - title: "Deshacer y rehacer"
+    body: "u deshace el último cambio y Ctrl-r rehace lo que deshiciste. Editar es seguro: puedes probar algo y volver atrás."
+  - title: "Un cambio es un paso"
+    body: "Un cambio es un comando como dw, o todo lo que escribiste en una sola estancia en modo INSERT, de i a Esc. Una u lo deshace todo. Pulsa u otra vez para retroceder otro paso."
+  - title: "¿Te pasaste? Rehaz"
+    body: "Si pulsas u una vez de más, <C-r> te devuelve el cambio. Puedes avanzar y retroceder por el historial hasta que el texto quede como quieres."

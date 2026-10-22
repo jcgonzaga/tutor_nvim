@@ -1,0 +1,7 @@
+id: vim-repeat-001
+title: "Repite con el punto"
+instruction: 'Borra las tres "very" para que solo quede "good", repitiendo el borrado.'
+hints:
+  - "Un dw quita una palabra."
+  - "El comando punto repite el último cambio."
+explanation: "dw borra un very y su espacio. . repite ese último cambio, así que dw seguido de dos puntos borra los tres con cuatro teclas en lugar de seis. Tras cada borrado el cursor cae en el siguiente very, así que el punto no necesita ningún movimiento extra."

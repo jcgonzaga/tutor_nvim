@@ -1,0 +1,10 @@
+id: vim-textobject-inner-braces
+title: "Dentro de llaves"
+description: "Opera sobre lo que hay dentro de { } con i{, en objetos, bloques y tablas."
+lesson:
+  - title: "Edita lo que hay dentro de { }"
+    body: "i{ es el objeto de texto de todo lo que hay entre un par de llaves. Úsalo para reescribir un objeto, un bloque o una tabla sin moverte antes hasta sus bordes."
+  - title: "Operador más i{"
+    body: "Pon un operador delante: di{ vacía las llaves, ci{ las vacía y te deja escribir. El cursor puede estar en cualquier punto entre las llaves; las llaves se quedan."
+  - title: "Cuidado con los espacios"
+    body: "En una sola línea, los espacios justo después de { y antes de } cuentan como contenido. Al cambiarlos desaparecen, así que vuelve a escribirlos si quieres { x } y no {x}."

@@ -1,0 +1,10 @@
+id: vim-navigation-line
+title: "Muévete dentro de una línea"
+description: "Salta al inicio, al primer carácter no vacío o al final de una línea con 0, ^ y $."
+lesson:
+  - title: "Salta a los extremos de una línea"
+    body: "Tres teclas te llevan al inicio o al final de la línea desde cualquier punto de ella. Te evitan pulsar h o l una y otra vez."
+  - title: "0 y $: los dos extremos"
+    body: "0 salta a la primera columna de la línea y $ salta al último carácter de la línea."
+  - title: "^: salta la sangría"
+    body: "En código con sangría, 0 aterriza en un espacio en blanco. ^ aterriza en el primer carácter que no es un espacio ni un tabulador, que suele ser donde empieza el código."

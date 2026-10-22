@@ -46,3 +46,4 @@ metadata:
   context: logs
   estimatedSeconds: 20
   transferTags: []
+explanation: "grep ERROR app.log prints only the matching lines, and > errors.txt sends them to a file instead of the screen. Only app.log is searched, so ERROR crash from old/app.log.1 correctly stays out."

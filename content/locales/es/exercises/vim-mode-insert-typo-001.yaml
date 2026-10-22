@@ -1,0 +1,7 @@
+id: vim-mode-insert-typo-001
+title: "Inserta una letra que falta"
+instruction: "Falta una letra en print. Insértala y vuelve al modo NORMAL."
+hints:
+  - "i inserta texto antes del carácter bajo el cursor."
+  - "Pulsa i, escribe la letra que falta y luego Esc."
+explanation: "El cursor está sobre la n de prnt, y la i que falta va justo antes. La primera i es el comando que empieza a insertar antes del cursor, la segunda i es la letra que escribes y Esc termina la inserción. Por eso la secuencia es ii<Esc>."

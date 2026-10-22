@@ -1,0 +1,7 @@
+id: shell-remove-rm-003
+title: "Solo los logs"
+instruction: "Borra los tres archivos .log de esta carpeta y conserva keep.txt."
+hints:
+  - "Un asterisco representa cualquier carácter."
+  - "rm *.log"
+explanation: "El shell expande *.log a a.log b.log c.log antes de ejecutar rm, así que un solo comando corto borra los tres. keep.txt no termina en .log, por lo que no coincide. Escribir los tres nombres también funciona, pero no escala."

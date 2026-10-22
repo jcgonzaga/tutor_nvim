@@ -1,0 +1,7 @@
+id: vim-delete-to-end-002
+title: "Borra un comentario final"
+instruction: "Borra el comentario y el espacio que lo precede."
+hints:
+  - "Borra desde el cursor hasta el final de la línea."
+  - "d$"
+explanation: "d$ borra desde el cursor hasta el final de la línea. El cursor está en el espacio anterior a //, así que el espacio y todo el comentario desaparecen con un solo comando y queda const a = 1;. Con x serían 13 pulsaciones."

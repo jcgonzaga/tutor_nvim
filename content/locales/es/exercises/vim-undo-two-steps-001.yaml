@@ -1,0 +1,7 @@
+id: vim-undo-two-steps-001
+title: "Deshaz dos pasos"
+instruction: "Se borraron tres palabras. Deshaz las dos últimas, para que quede b c d."
+hints:
+  - "Cada pulsación de u deshace un cambio."
+  - "u dos veces."
+explanation: "dwdwdw hizo tres cambios separados: se borraron a, b y c. Cada u deshace uno, así que dos pulsaciones devuelven c y luego b, mientras a sigue borrada, y queda b c d."

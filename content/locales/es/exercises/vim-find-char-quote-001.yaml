@@ -1,0 +1,7 @@
+id: vim-find-char-quote-001
+title: "Encuentra la comilla de apertura"
+instruction: "Salta a la primera comilla doble."
+hints:
+  - "f funciona con cualquier carácter, también con comillas."
+  - 'f"'
+explanation: 'f funciona con cualquier carácter, comillas incluidas, así que f" salta a la primera comilla doble tras el cursor. Las comillas son destinos típicos en el código porque marcan dónde empieza una cadena.'

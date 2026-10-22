@@ -47,3 +47,4 @@ metadata:
   context: config
   estimatedSeconds: 25
   transferTags: []
+explanation: "The shell expands *.log into a.log b.log c.log before rm runs, so one short command removes all three. keep.txt does not end in .log, so it does not match. Typing the three names also works, but it does not scale."

@@ -1,0 +1,7 @@
+id: vim-ci-quotes-ts-001
+title: "Cambia dentro de comillas (TypeScript)"
+instruction: 'Cambia el modo a "production" modificando solo lo que hay entre las comillas.'
+hints:
+  - "La misma habilidad, otro lenguaje."
+  - 'ci" encuentra la cadena aunque el cursor esté antes de ella.'
+explanation: 'El cursor está en const, fuera de la cadena. ci" salta hacia delante hasta el primer par de comillas de la línea y cambia solo el interior, así que la anotación de tipo y el = quedan como están. No tienes que ir antes hasta la cadena.'

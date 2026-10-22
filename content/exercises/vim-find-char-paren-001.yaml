@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:python
+
+explanation: "f) stops on the first ) to the right of the cursor, the one closing bar(1). f only goes to the first match; to reach the second ) you would repeat the search with ;. Nine presses of l reach the same cell but need counting."

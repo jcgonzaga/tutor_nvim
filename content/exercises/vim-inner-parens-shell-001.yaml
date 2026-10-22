@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:shell
+
+explanation: "In $(date +%s) the parentheses mark a command substitution, but Vim only sees a pair of ( ). ci( replaces date +%s with uname and keeps $( ). One command swaps the whole command and its arguments."

@@ -61,3 +61,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "d$ deletes from the cursor, on the comma, to the end of the line, leaving keep this. The cursor ends on the last remaining character, so 0, a motion on its own, moves it to the first one. d plus a motion deletes; a motion alone only moves."

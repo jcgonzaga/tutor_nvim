@@ -19,3 +19,14 @@ concepts:
 tags:
   - operator
   - yank
+
+lesson:
+  - title: "Copy with y"
+    body: "y is the copy operator, called yank. It takes the same motions as d but leaves the text where it is: yw copies a word, y$ copies to the end of the line and yy copies the whole line."
+    keys: "y"
+  - title: "Put with p and P"
+    body: "p puts the copied text after the cursor and P puts it before. For a copied whole line, p puts it on the line below and P on the line above."
+    keys: "p"
+  - title: "Characters or lines"
+    body: "The text lands the way it was copied. A line from yy is put as a line, but a word from yw goes inside the current line, next to the cursor. Check where the cursor is before you put."
+    keys: "yy"

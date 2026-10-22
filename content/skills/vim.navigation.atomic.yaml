@@ -18,3 +18,12 @@ concepts:
 tags:
   - motion
   - hjkl
+
+lesson:
+  - title: "h j k l move one step"
+    body: "Instead of the arrow keys, your hands stay on the home row: h moves left, j down, k up and l right. Each press moves one character or one line in NORMAL mode."
+    keys: "hjkl"
+  - title: "Remember them by position"
+    body: "h is the leftmost of the four and l the rightmost. j has a hook that points down, and k is the one next to it, going up."
+  - title: "Small steps only"
+    body: "Pressing l ten times is a slow habit. Use h j k l for one or two steps and the faster motions (w, b, 0, $, f) for longer jumps."

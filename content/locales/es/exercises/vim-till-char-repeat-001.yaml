@@ -1,0 +1,7 @@
+id: vim-till-char-repeat-001
+title: "Repite la búsqueda con ;"
+instruction: "Muévete a la e que está justo antes de la tercera coma."
+hints:
+  - "; repite el último t, f, T o F."
+  - "t, una vez y luego ; dos veces."
+explanation: "t, mueve a la e justo antes de la primera coma. Cada ; repite la misma búsqueda, así que t,;; salta dos comas más y acaba en la e anterior a la tercera. ; te ahorra volver a escribir el carácter."

@@ -48,3 +48,4 @@ metadata:
   transferTags:
     - context:bash
     - context:logs
+explanation: "Order matters: a file can only be created inside a folder that already exists. mkdir logs/archive first makes the folder, then touch logs/archive/today.log creates the empty file in it. Reversed, touch would fail because logs/archive is not there yet."

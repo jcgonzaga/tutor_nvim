@@ -51,3 +51,4 @@ metadata:
   context: project
   estimatedSeconds: 15
   transferTags: []
+explanation: "cd accepts a path with several steps, so cd project/src goes straight into src from your home folder. Using cd project and then cd src ends in the same place, but needs two commands for one move."

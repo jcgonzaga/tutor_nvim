@@ -59,3 +59,5 @@ metadata:
   transferTags:
     - context:json
     - context:config-file
+
+explanation: 'i{ is everything between the braces. Here there are no spaces next to them, so ci{ empties the object and you type "b": 2 straight away. The braces stay, and you did not have to move to the start of the contents.'

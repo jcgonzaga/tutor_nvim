@@ -64,3 +64,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "dd deletes the first line, and each . repeats it on the line that moved up, so dd followed by two dots removes a, b and c and leaves d and e. It is four keys instead of six."

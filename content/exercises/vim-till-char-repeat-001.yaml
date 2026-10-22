@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:csv-data
+
+explanation: "t, moves to the e just before the first comma. Each ; repeats the same search, so t,;; skips two more commas and ends on the e before the third one. ; saves you from typing the character again."

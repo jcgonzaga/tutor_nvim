@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:python
+
+explanation: "di( deletes everything between the parentheses around the cursor, whatever the number of arguments, leaving compute(). It works from any position inside the call, so you do not have to go to the first argument."

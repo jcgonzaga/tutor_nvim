@@ -55,3 +55,5 @@ metadata:
   context: prose
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "x deletes the character under the cursor, and . repeats it. After each deletion the next # shifts under the cursor, so x.. removes all three and leaves a space and Title. xxx also works; the dot is the habit worth building because it repeats any change."

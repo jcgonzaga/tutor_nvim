@@ -53,3 +53,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "dwdwdw made three separate changes: a, b and c were deleted. Each u undoes one, so two presses bring back c and then b, while a stays deleted, leaving b c d."

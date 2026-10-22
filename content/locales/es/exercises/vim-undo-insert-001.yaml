@@ -1,0 +1,7 @@
+id: vim-undo-insert-001
+title: "Deshaz lo escrito"
+instruction: "Alguien escribió hello antes de world. Deshazlo."
+hints:
+  - "u deshace toda la inserción en un solo paso."
+  - "u"
+explanation: "Todo lo escrito entre i y Esc cuenta como un solo cambio, así que una sola u quita hello y su espacio a la vez. No necesitas pulsar u una vez por letra."

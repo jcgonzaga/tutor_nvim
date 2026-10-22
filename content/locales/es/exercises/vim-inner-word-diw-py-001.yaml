@@ -1,0 +1,7 @@
+id: vim-inner-word-diw-py-001
+title: "Borra la palabra bajo el cursor"
+instruction: "Vacía los paréntesis borrando el nombre que hay dentro."
+hints:
+  - "El guion bajo forma parte de la palabra."
+  - "diw"
+explanation: "El guion bajo es un carácter de palabra, así que very_long_name es una sola palabra y diw la borra entera desde la l del medio, y deja print(). dw solo borraría desde el cursor hasta el final y dejaría very_ atrás. Borrar no entra en modo INSERT, por eso no hay Esc."

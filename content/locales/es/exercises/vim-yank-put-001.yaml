@@ -1,0 +1,7 @@
+id: vim-yank-put-001
+title: "Duplica una línea"
+instruction: 'Duplica la línea "second".'
+hints:
+  - "y copia, y duplicarla copia la línea entera."
+  - "p pega después de la línea actual."
+explanation: "yy copia la línea donde está el cursor, y p pega la copia en la línea de abajo, así que second aparece dos veces. P también funciona aquí porque la copia es idéntica a su vecina; la diferencia es solo dónde cae la copia. La columna del cursor no importa para una línea entera."

@@ -18,3 +18,17 @@ concepts:
 tags:
   - operator
   - delete
+
+lesson:
+  - title: "d is an operator"
+    body: "d means delete, but it needs to know how much. You give it a motion, and the text from the cursor to where that motion lands is deleted."
+    keys: "d"
+  - title: "Combine d with motions"
+    body: "dw deletes to the start of the next word, d$ to the end of the line and d0 to the start of it. dt( deletes up to, but not including, the next (. Learn a motion once and every operator can use it."
+    keys: "dw"
+  - title: "Whole lines and text objects"
+    body: "Doubling the operator, dd, deletes the whole current line. d followed by i and a quote or bracket deletes what is inside the pair, like di( for the arguments of a call, from anywhere inside it."
+    keys: "dd"
+  - title: "Deleted text is kept"
+    body: "Whatever d removes goes into a register, so you can put it back somewhere else with p. That is how you cut and paste in Vim."
+    keys: "p"

@@ -56,3 +56,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "dd deletes the whole current line, so with the cursor on pears that line goes and plums moves up. Doubling the operator means the whole line: you do not need to select it or delete it character by character."

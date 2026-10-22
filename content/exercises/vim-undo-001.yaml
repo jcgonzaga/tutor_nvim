@@ -53,3 +53,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 4
   transferTags: []
+
+explanation: "The two dw commands are two separate changes. u undoes only the last one, so a single press brings back two and leaves two three. Each u goes one change back, so count how many steps you need."

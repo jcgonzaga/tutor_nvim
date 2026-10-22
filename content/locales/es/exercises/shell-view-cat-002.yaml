@@ -1,0 +1,7 @@
+id: shell-view-cat-002
+title: "Leer desde otra carpeta"
+instruction: "Imprime el contenido de readme.txt de la carpeta photos."
+hints:
+  - "No tienes que moverte antes."
+  - "cat photos/readme.txt"
+explanation: "No necesitas moverte antes: cat acepta una ruta, así que cat photos/readme.txt lee el archivo desde donde estás. Ejecutar cd photos y luego cat readme.txt también funciona, pero cuesta un comando más."

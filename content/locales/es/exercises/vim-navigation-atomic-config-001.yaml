@@ -1,0 +1,7 @@
+id: vim-navigation-atomic-config-001
+title: "Muévete por un archivo de configuración"
+instruction: "Mueve el cursor al 8 de 8080."
+hints:
+  - "k sube, l va a la derecha."
+  - "Una línea arriba y luego cinco caracteres a la derecha."
+explanation: "El cursor empieza al inicio de la última línea. k sube hasta PORT=8080 y el 8 va después de PORT=, que son cinco caracteres, así que pulsa l cinco veces. Cuenta las columnas antes de empezar."

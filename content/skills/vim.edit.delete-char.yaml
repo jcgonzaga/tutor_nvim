@@ -19,3 +19,13 @@ concepts:
 tags:
   - edit
   - x
+
+lesson:
+  - title: "x deletes one character"
+    body: "When a single stray character is wrong, put the cursor on it in NORMAL mode and press x. It deletes the character under the cursor and you stay in NORMAL mode."
+    keys: "x"
+  - title: "After x the text closes up"
+    body: "The rest of the line shifts left to fill the gap, and the cursor stays in the same column, now on the next character. If you delete the last character of a line, the cursor steps back onto the new last one."
+  - title: "One character, one x"
+    body: "Pressing x many times works, but it is a slow habit. For a whole word or more, use an operator with a motion, such as dw, instead of counting presses."
+    keys: "dw"

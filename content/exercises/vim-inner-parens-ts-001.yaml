@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:typescript
+
+explanation: "ci( replaces the whole parameter list name: string with user: User and leaves the parentheses and the { after them alone. The text object takes everything between ( and ), so you do not delete the name and the type in separate steps."

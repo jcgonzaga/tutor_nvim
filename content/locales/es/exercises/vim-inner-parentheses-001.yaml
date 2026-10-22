@@ -1,0 +1,7 @@
+id: vim-inner-parentheses-001
+title: "Cambia dentro de paréntesis"
+instruction: 'Reemplaza los dos argumentos por el único argumento "value".'
+hints:
+  - "Piensa Cambiar + Dentro + paréntesis."
+  - "i( es el objeto de texto de lo que hay entre ( y )."
+explanation: "ci( reemplaza todo lo que hay entre los paréntesis, los dos argumentos y la coma, por value en un solo comando. No borras first, la coma y second por separado. El cursor puede estar en cualquier punto dentro de los paréntesis."

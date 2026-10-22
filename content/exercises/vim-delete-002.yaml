@@ -57,3 +57,5 @@ metadata:
   context: source-code
   estimatedSeconds: 6
   transferTags: []
+
+explanation: "dw deletes from the cursor to the start of the next word, so one command removes very and the space after it. With x you would need five presses, and the count changes with every word length."

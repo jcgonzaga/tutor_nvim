@@ -1,0 +1,7 @@
+id: vim-delete-char-json-comma-001
+title: "Quita una coma final"
+instruction: "JSON no permite la coma final. Bórrala."
+hints:
+  - "El cursor está sobre la coma."
+  - "x"
+explanation: "El cursor ya está sobre la coma, así que x borra justo ese carácter y nada más. No hay que seleccionar ni moverse: x actúa sobre el carácter bajo el cursor y la línea pasa a ser JSON válido."

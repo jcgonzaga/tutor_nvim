@@ -55,3 +55,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "The cursor is on the w of world, at the start of the line, so i inserts right before it. Everything typed after i goes into the buffer, comma and space included, until Esc brings you back to NORMAL mode. The goal requires ending in NORMAL mode, so the final Esc is part of the answer."

@@ -1,0 +1,7 @@
+id: vim-delete-till-paren-001
+title: "Borra hasta el paréntesis"
+instruction: "Borra todo lo que hay antes del paréntesis de apertura."
+hints:
+  - "Borra hasta un carácter, pero sin incluirlo."
+  - "dt("
+explanation: "t( es un movimiento que llega hasta el siguiente ( sin incluirlo. Con d delante, dt( borra todo desde el cursor hasta justo antes del paréntesis y conserva el ( . df( también lo borraría, porque f incluye el carácter de destino."

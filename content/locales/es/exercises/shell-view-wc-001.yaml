@@ -1,0 +1,7 @@
+id: shell-view-wc-001
+title: "Contar las líneas"
+instruction: "Cuenta las líneas de README.md."
+hints:
+  - "wc cuenta palabras, líneas y bytes."
+  - "La opción para líneas es -l."
+explanation: "wc cuenta líneas, palabras y bytes; -l se queda solo con las líneas. README.md tiene 2 líneas, así que wc -l README.md imprime 2 seguido del nombre del archivo. Sin -l obtendrías tres números."

@@ -1,0 +1,10 @@
+id: vim-operator-lines
+title: "Líneas completas"
+description: "Borra, copia o cambia una línea entera con dd, yy y cc."
+lesson:
+  - title: "Operadores sobre líneas enteras"
+    body: "El doble operador lo aplica a toda la línea actual: dd la borra, yy la copia y cc la reemplaza. El cursor puede estar en cualquier punto de la línea."
+  - title: "cc reescribe una línea"
+    body: "cc vacía la línea y te deja en modo INSERT, así que escribes el reemplazo y pulsas Esc. Es un solo comando en vez de borrar la línea y abrir otra nueva."
+  - title: "Las líneas se pueden volver a pegar"
+    body: "Una línea quitada con dd se guarda en un registro. p la pega debajo de la línea del cursor y P la pega encima, así que puedes mover líneas de sitio."

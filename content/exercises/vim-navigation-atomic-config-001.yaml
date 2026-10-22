@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:config-file
+
+explanation: "The cursor starts at the beginning of the last line. k goes up to PORT=8080, and the 8 comes after PORT=, which is five characters, so press l five times. Count the columns before you start."

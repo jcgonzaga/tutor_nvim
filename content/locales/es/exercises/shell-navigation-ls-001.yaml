@@ -1,0 +1,7 @@
+id: shell-navigation-ls-001
+title: "Lista una carpeta"
+instruction: "Escribe ls para listar los archivos de esta carpeta."
+hints:
+  - "ls es la abreviatura de list (listar)."
+  - "Escribe ls y pulsa Enter."
+explanation: "ls sin argumentos lista el contenido del directorio actual. Aquí estás en notes, así que muestra todo.txt, ideas.txt y la carpeta archive. Añade una ruta para listar otro sitio."

@@ -50,3 +50,4 @@ metadata:
   transferTags:
     - context:bash
     - context:notes
+explanation: "sort todo.txt prints the lines in alphabetical order, so book dentist comes first (o sorts before u in buy). The pipe hands that output to head -n 1, which keeps only the first line. head -1 is a shorter form."

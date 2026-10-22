@@ -1,0 +1,7 @@
+id: vim-find-char-comma-001
+title: "Encuentra la coma"
+instruction: "Salta a la coma."
+hints:
+  - "f seguido de un carácter salta a él."
+  - "f y luego la coma."
+explanation: "f, salta a la siguiente coma de la línea con dos teclas. Pulsar l siete veces también funciona, pero tienes que contar; f te deja nombrar el destino en lugar de medir la distancia."

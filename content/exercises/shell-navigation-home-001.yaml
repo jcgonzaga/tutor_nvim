@@ -52,3 +52,4 @@ metadata:
   context: logs
   estimatedSeconds: 20
   transferTags: []
+explanation: "cd with no argument always goes to your home folder, wherever you are, so one command is enough. cd ~ and cd /home/user also work. Repeating cd .. climbs one level at a time and takes three commands from logs/old/2023."

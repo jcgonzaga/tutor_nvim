@@ -1,0 +1,7 @@
+id: vim-till-char-change-001
+title: "Cambia hasta un carácter"
+instruction: "Cambia el color dark red por blue."
+hints:
+  - "c también funciona con t."
+  - "c, t y ;, luego escribe blue y Esc."
+explanation: "ct; cambia el texto desde el cursor hasta el siguiente ; sin incluirlo. Borra dark red y entra en modo INSERT, así que escribes blue y pulsas Esc, y el punto y coma se queda. Borrar con x necesitaría ocho pulsaciones antes de escribir."

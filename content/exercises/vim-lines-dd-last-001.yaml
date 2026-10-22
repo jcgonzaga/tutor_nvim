@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:config-file
+
+explanation: "dd deletes the whole current line, wherever the cursor is on it. Here the cursor is already on #old, so you do not need to move first, and the cursor lands on the new last line."

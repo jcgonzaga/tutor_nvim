@@ -1,0 +1,7 @@
+id: shell-pipes-append-001
+title: "Añadir al final"
+instruction: "Añade la línea second al final de log.txt con >>."
+hints:
+  - ">> añade, > reemplazaría."
+  - "echo second >> log.txt"
+explanation: "El archivo ya contiene first. >> añade la salida de echo después del contenido existente y quedan dos líneas. Un solo > reemplazaría el archivo y dejaría solo second."

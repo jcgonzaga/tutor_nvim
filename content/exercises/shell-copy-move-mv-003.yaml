@@ -56,3 +56,4 @@ metadata:
   transferTags:
     - context:bash
     - context:logs
+explanation: "When the destination of mv is an existing folder, the file goes inside it and keeps its name, so mv app.log old is enough. Writing mv app.log old/app.log also works, but it spells out what the shell already does for you."

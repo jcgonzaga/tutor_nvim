@@ -1,0 +1,7 @@
+id: vim-ci-quotes-second-string-001
+title: "¿Qué cadena?"
+instruction: "Cambia world por there. El cursor está dentro de world."
+hints:
+  - "El cursor está dentro de la segunda cadena: el objeto de texto elige esa."
+  - 'ci"'
+explanation: 'ci" usa el par de comillas en el que está el cursor. El cursor está en "world", así que cambia esa cadena y "hello" no se toca. No hace falta llegar con l o w antes: el objeto funciona desde cualquier letra dentro de la cadena.'

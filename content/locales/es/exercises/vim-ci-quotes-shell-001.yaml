@@ -1,0 +1,7 @@
+id: vim-ci-quotes-shell-001
+title: "Cambia dentro de comillas (shell)"
+instruction: 'Pon NODE_ENV en "production" sin tocar nada más.'
+hints:
+  - "La misma habilidad, en un script de shell."
+  - 'ci"'
+explanation: 'El cursor empieza al principio de la línea, antes de las comillas. ci" busca hacia delante en la línea el primer par de comillas y cambia lo que hay dentro, así que export NODE_ENV= queda intacto. Llegar con w o l es más lento y es más fácil equivocarse.'

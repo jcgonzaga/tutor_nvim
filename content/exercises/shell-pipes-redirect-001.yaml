@@ -49,3 +49,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "> sends the output of ls into files.txt instead of printing it. The shell creates the file before ls runs, which is why files.txt itself appears in its own listing."

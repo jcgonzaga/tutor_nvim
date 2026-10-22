@@ -1,0 +1,7 @@
+id: vim-append-a-001
+title: "Añade un paréntesis de cierre"
+instruction: "Añade el ) que falta al final."
+hints:
+  - "i inserta antes del cursor; a inserta después."
+  - "a, luego ), luego Esc."
+explanation: 'El cursor está sobre el último carácter, la comilla de cierre. i pondría el ) antes de la comilla y daría print("hi)". a inserta después del cursor, así que a, ), Esc lo añade al final de la línea.'

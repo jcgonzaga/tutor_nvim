@@ -1,0 +1,7 @@
+id: vim-inner-word-vs-cw-001
+title: "¿ciw o cw?"
+instruction: "Cambia quick por slow. El cursor está en medio de la palabra."
+hints:
+  - "cw solo cambia desde el cursor hasta el final de la palabra."
+  - "ciw toma primero la palabra entera."
+explanation: "El cursor está en la i de quick. cw solo cambia desde el cursor hasta el final de la palabra, así que dejaría qu delante de slow. ciw toma la palabra entera esté donde esté el cursor. b y luego cw también funciona, pero solo porque primero vuelves al inicio de la palabra."

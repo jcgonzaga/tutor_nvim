@@ -1,0 +1,12 @@
+id: vim-insert-append-open
+title: "Añadir y abrir una línea"
+description: "Empieza a escribir después del cursor con a, o en una línea nueva debajo con o."
+lesson:
+  - title: "Tres formas de entrar en modo INSERT"
+    body: "i inserta antes del cursor, a inserta después y o abre una línea nueva vacía debajo y empieza a escribir ahí. Todas te dejan en modo INSERT hasta que pulsas Esc."
+  - title: "a: insertar después del cursor"
+    body: "El cursor está SOBRE un carácter: i pone el texto delante y a lo pone detrás. Para añadir algo al final de una palabra, colócate en su última letra y pulsa a. Sobre la e de name, a y luego d da named."
+  - title: "o: una línea nueva debajo"
+    body: "o abre una línea nueva bajo la actual, esté donde esté el cursor, y puedes escribir enseguida. No hace falta ir antes al final de la línea."
+  - title: "Termina con Esc"
+    body: "Todo lo que escribes se queda en modo INSERT hasta que pulsas Esc. Escribe tu texto, pulsa Esc una vez y vuelves al modo NORMAL, listo para el siguiente comando."

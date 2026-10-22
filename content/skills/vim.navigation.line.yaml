@@ -19,3 +19,13 @@ concepts:
 tags:
   - motion
   - line
+
+lesson:
+  - title: "Jump to the ends of a line"
+    body: "Three keys take you to the start or the end of the line from anywhere in it. They save you from pressing h or l again and again."
+  - title: "0 and $: the two ends"
+    body: "0 jumps to the very first column of the line, and $ jumps to the last character of the line."
+    keys: "$"
+  - title: "^: skip the indentation"
+    body: "In indented code, 0 lands on blank space. ^ lands on the first character that is not a space or tab, which is usually where the code starts."
+    keys: "^"

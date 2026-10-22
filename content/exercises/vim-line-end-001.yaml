@@ -56,3 +56,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "$ moves to the last character of the line in one key, however long the line is. Pressing l eighteen times gets there too, but that is the slow habit this skill replaces."

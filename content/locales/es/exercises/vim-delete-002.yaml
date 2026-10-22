@@ -1,0 +1,7 @@
+id: vim-delete-002
+title: "Borra una palabra"
+instruction: 'Borra la palabra "very" y el espacio que le sigue.'
+hints:
+  - "d necesita un movimiento que diga cuánto borrar."
+  - "dw borra hasta el inicio de la palabra siguiente."
+explanation: "dw borra desde el cursor hasta el inicio de la palabra siguiente, así que un solo comando quita very y el espacio que le sigue. Con x necesitarías cinco pulsaciones, y la cuenta cambia con la longitud de cada palabra."

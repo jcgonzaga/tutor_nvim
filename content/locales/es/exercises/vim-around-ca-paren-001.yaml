@@ -1,0 +1,7 @@
+id: vim-around-ca-paren-001
+title: "Reemplaza un grupo entre paréntesis"
+instruction: "Reemplaza (a + b), paréntesis incluidos, por x."
+hints:
+  - "Cambiar alrededor (around) de paréntesis."
+  - "ca("
+explanation: "a( significa alrededor de los paréntesis: incluye ( y ) mismos. Así, ca( borra (a + b) por completo y entra en modo INSERT, y x ocupa su lugar. ci( conservaría los paréntesis y daría result = (x) * c."

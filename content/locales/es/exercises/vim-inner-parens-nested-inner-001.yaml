@@ -1,0 +1,7 @@
+id: vim-inner-parens-nested-inner-001
+title: "Anidados: la llamada interior"
+instruction: "Cambia el 1 dentro de bar(1) por 9."
+hints:
+  - "El cursor está dentro de los paréntesis interiores."
+  - "ci("
+explanation: "Con pares anidados, i( elige el par más interno que rodea al cursor. El cursor está en el 1, dentro de bar( ), así que ci( cambia solo el 1 y deja foo( ) y el 2 intactos."

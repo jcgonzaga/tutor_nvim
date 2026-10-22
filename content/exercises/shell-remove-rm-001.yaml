@@ -41,3 +41,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "rm draft.txt deletes exactly the file you name, permanently, with no trash can. keep.txt survives because it was never named."

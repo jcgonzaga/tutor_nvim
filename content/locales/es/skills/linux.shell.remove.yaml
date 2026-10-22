@@ -1,0 +1,12 @@
+id: linux-shell-remove
+title: "Borrar con cuidado"
+description: "Elimina archivos con rm y carpetas con rm -r, sabiendo que no hay deshacer."
+lesson:
+  - title: "rm borra para siempre"
+    body: "rm elimina archivos de forma permanente. No hay papelera ni deshacer, así que lee el nombre dos veces antes de pulsar Enter."
+  - title: "Nombra justo lo que se va"
+    body: "rm seguido de uno o varios nombres borra solo esos archivos. Un asterisco representa cualquier carácter, así que un patrón como *.tmp coincide con muchos archivos a la vez."
+  - title: "Las carpetas necesitan -r"
+    body: "rm a secas se niega a borrar una carpeta. Añade -r (recursivo) para borrar la carpeta y todo lo que contiene."
+  - title: "Mira antes de borrar"
+    body: "Ejecuta ls primero para ver qué hay. Con -r, un nombre o ruta equivocados eliminan todo un árbol, y no se puede recuperar."

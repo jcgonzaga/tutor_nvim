@@ -1,0 +1,7 @@
+id: vim-navigation-line-001
+title: "Primer carácter no vacío"
+instruction: "Salta al primer carácter de la línea que no sea un espacio."
+hints:
+  - "0 va a la columna 0, pero tú quieres el primer carácter que no es un espacio."
+  - "^ salta al primer carácter no vacío."
+explanation: "La línea tiene sangría, así que 0 caería en el primer espacio. ^ va al primer carácter que no es un espacio ni un tabulador, la r de return en la columna 5, que es donde empieza el código. Usa ^ cuando quieras trabajar sobre el código de una línea con sangría."

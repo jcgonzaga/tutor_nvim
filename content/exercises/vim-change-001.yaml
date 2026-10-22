@@ -54,3 +54,5 @@ metadata:
   context: source-code
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "cw deletes from the cursor to the end of the word and starts INSERT mode, so you type the replacement straight away. The cursor is on the first letter of pending, so the whole word goes, and the ; stays because punctuation is not part of a word. Pressing x seven times and then i is much slower."

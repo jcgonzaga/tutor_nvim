@@ -1,0 +1,7 @@
+id: vim-change-to-end-001
+title: "Cambia hasta el final de la línea"
+instruction: "Reemplaza todo desde old en adelante por new."
+hints:
+  - "Cambia desde el cursor hasta el final de la línea."
+  - "c$"
+explanation: "c$ cambia desde el cursor hasta el final de la línea: borra old text here y entra en modo INSERT, listo para escribir new. El cursor está en la o de old, así que echo y su espacio se conservan. Borrar el resto con x carácter a carácter requeriría muchas pulsaciones."

@@ -21,3 +21,14 @@ concepts:
 tags:
   - text-object
   - around
+
+lesson:
+  - title: "Around takes the delimiters"
+    body: "Put a before a pair character and the text object includes the pair itself. da( deletes the parentheses and everything inside them. Use it when the whole group must go, not only its contents."
+    keys: "da("
+  - title: "Inner or around?"
+    body: "i keeps the delimiters, a removes them too. With the cursor inside foo(x), di( leaves foo() and da( leaves foo. Ask yourself whether the pair should survive."
+    keys: "di("
+  - title: "Same idea for quotes and braces"
+    body: 'a{ takes the braces and a( the parentheses, with nothing extra. a" also takes the whitespace after the string (or before it, if there is none after), so the line stays tidy.'
+    keys: 'da"'

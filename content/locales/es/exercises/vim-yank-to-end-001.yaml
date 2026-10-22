@@ -1,0 +1,7 @@
+id: vim-yank-to-end-001
+title: "Copia hasta el final de la línea"
+instruction: "Haz que la línea diga abcabc copiándola entera."
+hints:
+  - "y$ copia desde el cursor hasta el final de la línea."
+  - "y$, luego $ para ir al final, y luego p."
+explanation: "y$ copia desde el cursor hasta el final de la línea, aquí abc. Es una copia de caracteres, así que p la inserta justo después del cursor. Si pulsaras p sobre la a saldría aabcbc, por eso $ lleva antes el cursor a la c, y p añade entonces la copia para dar abcabc."

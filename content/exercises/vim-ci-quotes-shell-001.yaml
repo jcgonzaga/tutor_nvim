@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:shell
+
+explanation: 'The cursor starts at the beginning of the line, before the quotes. ci" looks ahead on the line for the first pair of quotes and changes what is inside, so export NODE_ENV= stays intact. Walking there with w or l is slower and easier to get wrong.'

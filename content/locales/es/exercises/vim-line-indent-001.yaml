@@ -1,0 +1,7 @@
+id: vim-line-indent-001
+title: "Primer carácter que no es un espacio"
+instruction: "Muévete a la r de return, saltando la sangría."
+hints:
+  - "Hay una tecla para el primer carácter que no es un espacio."
+  - "^"
+explanation: "^ salta al primer carácter que no es un espacio ni un tabulador, aquí la r de return tras cuatro espacios de sangría. 0w también llega (0 al inicio, w a la palabra siguiente) pero usa dos teclas, y 0 solo se quedaría en un espacio en blanco."

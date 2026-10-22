@@ -55,3 +55,5 @@ hints:
 metadata:
   language: javascript
   estimatedSeconds: 8
+
+explanation: 'i" means inside the quotes, so ci" deletes development, keeps both quotes and starts INSERT mode. The cursor is in the middle of the word and that does not matter: the text object finds the pair around it. cw would only change from the cursor to the end of the word.'

@@ -47,3 +47,4 @@ metadata:
   transferTags:
     - context:bash
     - context:notes
+explanation: "The shape is the same as for the logs: grep, then the word, then the file. grep milk todo.txt prints only the line that contains milk, buy milk. The other lines of todo.txt are not shown."

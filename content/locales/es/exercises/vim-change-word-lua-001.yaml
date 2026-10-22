@@ -1,0 +1,7 @@
+id: vim-change-word-lua-001
+title: "Renombra en Lua"
+instruction: "Renombra speed a velocity."
+hints:
+  - "El mismo comando, otro lenguaje."
+  - "cw"
+explanation: "El mismo operador, otro lenguaje: el cursor está en la primera letra de speed, así que cw reemplaza speed por velocity y deja el = y el 10 intactos. Los movimientos de Vim no dependen del lenguaje, solo de dónde empiezan y terminan las palabras."

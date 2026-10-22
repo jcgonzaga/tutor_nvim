@@ -58,3 +58,5 @@ metadata:
   transferTags:
     - context:json
     - context:config-file
+
+explanation: "name is on line 2, so one j gets you there. The line starts with two spaces and a quote, so from column 1 three l presses step over them and land on the n at column 4."

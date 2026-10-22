@@ -59,3 +59,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:typescript
+
+explanation: "yy copies the current line without changing the text, and p puts the copy on the line below, giving two identical lines. One copy and one paste are much quicker than typing the line again in INSERT mode."

@@ -1,0 +1,7 @@
+id: vim-find-char-paren-001
+title: "Encuentra un paréntesis de cierre"
+instruction: "Salta al primer paréntesis de cierre."
+hints:
+  - "f se detiene en la primera coincidencia."
+  - "f)"
+explanation: "f) se detiene en el primer ) a la derecha del cursor, el que cierra bar(1). f solo va a la primera coincidencia; para llegar al segundo ) repetirías la búsqueda con ;. Nueve pulsaciones de l llegan a la misma celda pero hay que contarlas."

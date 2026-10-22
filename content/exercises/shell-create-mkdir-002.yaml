@@ -52,3 +52,4 @@ metadata:
   context: project
   estimatedSeconds: 15
   transferTags: []
+explanation: "mkdir accepts a path, so mkdir project/tests creates tests inside project without leaving where you are. It works because project already exists. Using cd project and then mkdir tests also reaches the goal, but costs an extra command and moves you."

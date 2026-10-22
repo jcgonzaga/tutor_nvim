@@ -1,0 +1,10 @@
+id: vim-operator-change
+title: "Cambiar"
+description: "Reemplaza texto con c combinado con un movimiento, como cw."
+lesson:
+  - title: "Cambiar reemplaza texto"
+    body: "c borra texto y te deja en modo INSERT, así puedes escribir el reemplazo de inmediato. Úsalo siempre que fueras a borrar algo y luego escribir otra cosa."
+  - title: "c más un movimiento"
+    body: "c espera un movimiento y cambia el texto que cubre. Con el cursor en la primera letra de una palabra, cw reemplaza la palabra; c$ reemplaza todo hasta el final de la línea. Pulsa Esc cuando termines de escribir."
+  - title: "Mejor c que d y luego i"
+    body: "dw borra la palabra y el espacio que le sigue, y tendrías que escribir ese espacio de nuevo. cw conserva el espacio. Si vas a escribir un reemplazo, c lo hace en un solo comando."

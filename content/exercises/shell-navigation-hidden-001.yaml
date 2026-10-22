@@ -45,3 +45,4 @@ metadata:
   context: photos
   estimatedSeconds: 20
   transferTags: []
+explanation: "Names starting with a dot, like .cache, are hidden from a plain ls. The -a option (all) includes them, so ls -a photos lists them. ls -A does the same without . and .., and ls -la also shows them, with extra detail you did not ask for."

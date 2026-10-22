@@ -1,0 +1,7 @@
+id: vim-append-o-shell-001
+title: "Añade un alias debajo"
+instruction: 'Añade alias la="ls -a" en la línea siguiente.'
+hints:
+  - "Abre una línea debajo de la actual."
+  - "o, escribe el alias y Esc."
+explanation: "La misma idea en un archivo de shell: o abre una línea debajo y empieza el modo INSERT, y todo lo que escribes entra tal cual, comillas incluidas. Escribe la línea del alias y pulsa Esc para volver al modo NORMAL."

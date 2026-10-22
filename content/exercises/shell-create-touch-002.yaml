@@ -41,3 +41,4 @@ metadata:
   context: config
   estimatedSeconds: 20
   transferTags: []
+explanation: "touch takes any number of names, so touch a.txt b.txt c.txt creates all three empty files in one command. Running touch three times gives the same result, but with more typing, and the point of the shell is to batch work like this."

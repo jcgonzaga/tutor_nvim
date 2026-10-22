@@ -51,3 +51,4 @@ metadata:
   context: logs
   estimatedSeconds: 15
   transferTags: []
+explanation: "Plain rm refuses to delete a folder. -r (recursive) makes rm go inside old, delete app.log.1 and then the folder itself. app.log is not touched because only old is named."

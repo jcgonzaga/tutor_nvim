@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:python
+
+explanation: "a( means around the parentheses: it includes ( and ) themselves. So ca( deletes (a + b) completely and starts INSERT mode, and x takes its place. ci( would keep the parentheses and give result = (x) * c."

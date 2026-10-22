@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: 'f works with any single character, quotes included, so f" jumps onto the first double quote after the cursor. Quotes are typical targets in code because they mark where a string starts.'

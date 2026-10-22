@@ -54,3 +54,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "cp takes the source first and the name of the copy second, so cp todo.txt backup.txt leaves todo.txt untouched and creates backup.txt with the same content. The order matters: reversed, you would try to copy a file that does not exist."

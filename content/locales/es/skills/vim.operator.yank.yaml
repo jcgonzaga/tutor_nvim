@@ -1,0 +1,10 @@
+id: vim-operator-yank
+title: "Copiar y pegar"
+description: "Copia texto con y y pégalo con p y P."
+lesson:
+  - title: "Copia con y"
+    body: "y es el operador de copiar, llamado yank. Usa los mismos movimientos que d pero deja el texto donde está: yw copia una palabra, y$ copia hasta el final de la línea y yy copia la línea entera."
+  - title: "Pega con p y P"
+    body: "p pega el texto copiado después del cursor y P lo pega antes. Si copiaste una línea entera, p la pega en la línea de abajo y P en la de arriba."
+  - title: "Caracteres o líneas"
+    body: "El texto se pega tal como se copió. Una línea copiada con yy se pega como línea, pero una palabra copiada con yw va dentro de la línea actual, junto al cursor. Mira dónde está el cursor antes de pegar."

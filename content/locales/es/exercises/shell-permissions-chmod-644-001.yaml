@@ -1,0 +1,7 @@
+id: shell-permissions-chmod-644-001
+title: "Legible para todos"
+instruction: "Permite que todos lean app.log pero que solo tú lo escribas."
+hints:
+  - "Propietario lectura+escritura (6), demás lectura (4)."
+  - "chmod 644 logs/app.log"
+explanation: "El propietario conserva lectura y escritura (4 + 2 = 6) y el grupo y los demás solo leen (4), lo que da 644. El archivo empieza en 600, así que chmod 644 logs/app.log lo abre. chmod a+r logs/app.log también vale: añade lectura para todos y mantiene el resto."

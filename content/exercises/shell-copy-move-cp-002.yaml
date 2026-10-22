@@ -54,3 +54,4 @@ metadata:
   context: config
   estimatedSeconds: 20
   transferTags: []
+explanation: "You are already in config, so no paths are needed: cp dev.env staging.env creates staging.env with the same content and keeps dev.env. mv would be wrong here, because it would rename the original and the objective needs both files."

@@ -54,3 +54,5 @@ metadata:
   context: source-code
   estimatedSeconds: 6
   transferTags: []
+
+explanation: "fc jumps to the first c to the right of the cursor. render, user and options contain no c, so that c is the one in callback, and you never have to count characters. Pressing l 22 times reaches the same place but is far slower."

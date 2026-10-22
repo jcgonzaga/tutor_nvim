@@ -1,0 +1,7 @@
+id: vim-inner-braces-shell-001
+title: "Cambia una variable de shell"
+instruction: "Cambia el nombre de la variable dentro de ${ } por USER."
+hints:
+  - "${ } tiene llaves."
+  - "ci{"
+explanation: "En ${HOME} las llaves son sintaxis de shell, pero Vim solo ve un par de { }. ci{ reemplaza HOME por USER y deja ${ } intacto. El objeto de texto funciona igual en cualquier lenguaje."

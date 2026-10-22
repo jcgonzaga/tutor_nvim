@@ -1,0 +1,7 @@
+id: shell-search-grep-002
+title: "Una palabra en tus notas"
+instruction: "Muestra la línea de todo.txt que menciona milk."
+hints:
+  - "La misma herramienta que para los logs."
+  - "grep milk todo.txt"
+explanation: "La forma es la misma que con los logs: grep, luego la palabra y luego el archivo. grep milk todo.txt imprime solo la línea que contiene milk, buy milk. Las demás líneas de todo.txt no se muestran."

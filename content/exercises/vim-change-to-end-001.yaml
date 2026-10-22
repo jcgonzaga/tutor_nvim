@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:shell
+
+explanation: "c$ changes from the cursor to the end of the line: it deletes old text here and starts INSERT mode, ready for new. The cursor is on the o of old, so echo and its space are kept. Deleting the rest with x one character at a time would take many presses."

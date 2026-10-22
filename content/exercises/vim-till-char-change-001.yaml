@@ -57,3 +57,5 @@ metadata:
   transferTags:
     - context:css
     - context:stylesheet
+
+explanation: "ct; changes the text from the cursor up to, but not including, the next ;. It deletes dark red and enters INSERT mode, so you type blue and press Esc, and the semicolon stays. Deleting with x would need eight presses before typing."

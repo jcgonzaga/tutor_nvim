@@ -1,0 +1,7 @@
+id: shell-pipes-sort-001
+title: "El primero en orden alfabético"
+instruction: "Muestra el primer elemento de todo.txt en orden alfabético."
+hints:
+  - "Ordena y quédate solo con la primera línea."
+  - "sort todo.txt | head -n 1"
+explanation: "sort todo.txt imprime las líneas en orden alfabético, así que book dentist va primero (la o va antes que la u de buy). La tubería pasa esa salida a head -n 1, que se queda solo con la primera línea. head -1 es una forma más corta."

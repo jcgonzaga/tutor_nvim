@@ -45,3 +45,4 @@ metadata:
   context: notes
   estimatedSeconds: 20
   transferTags: []
+explanation: "ls prints the three entries of notes (archive, ideas.txt, todo.txt), one per line when piped. The pipe feeds that output to wc -l, which counts lines, so you get 3 without counting by eye."

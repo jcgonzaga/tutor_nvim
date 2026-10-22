@@ -1,0 +1,7 @@
+id: vim-around-da-quote-001
+title: "Borra una cadena y sus comillas"
+instruction: "Borra la primera cadena, comillas incluidas."
+hints:
+  - 'a" toma las comillas y el espacio que sigue a la cadena.'
+  - 'da"'
+explanation: 'a" toma las comillas y también el espacio que sigue a la cadena, así que da" convierte echo "one" "two" en echo "two" con un único espacio. di" dejaría un par de comillas vacío y un espacio de más.'

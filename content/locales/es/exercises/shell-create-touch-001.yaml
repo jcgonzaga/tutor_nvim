@@ -1,0 +1,7 @@
+id: shell-create-touch-001
+title: "Crea un archivo vacío"
+instruction: "Escribe touch draft.txt para crear un archivo vacío."
+hints:
+  - "touch crea el archivo si no existe."
+  - "touch draft.txt"
+explanation: "touch draft.txt crea un archivo vacío llamado draft.txt en el directorio actual cuando no existe. Por eso touch es la forma más rápida de tener un archivo en blanco para rellenarlo después."

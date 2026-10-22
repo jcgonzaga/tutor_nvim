@@ -1,0 +1,7 @@
+id: vim-navigation-atomic-002
+title: "Sube y ve a la izquierda"
+instruction: 'Mueve el cursor a la "a" de "alpha" (dos líneas arriba y luego a la izquierda).'
+hints:
+  - "k sube, h va a la izquierda."
+  - "Dos líneas arriba y luego tres caracteres a la izquierda."
+explanation: "Empiezas en la i de epsilon (línea 3, columna 4) y el objetivo es la a de alpha (línea 1, columna 1). k dos veces sube dos líneas y luego h tres veces retrocede tres columnas. k es arriba, h es izquierda."

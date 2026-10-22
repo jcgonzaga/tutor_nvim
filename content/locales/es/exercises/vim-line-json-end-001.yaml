@@ -1,0 +1,7 @@
+id: vim-line-json-end-001
+title: "Final de una línea JSON"
+instruction: "Muévete a la coma del final de la línea."
+hints:
+  - "La coma es el último carácter."
+  - "$"
+explanation: "La coma es el último carácter de la línea, y $ se mueve hasta el último carácter, no más allá. Una tecla cae justo sobre la coma, aunque la línea empiece con sangría."

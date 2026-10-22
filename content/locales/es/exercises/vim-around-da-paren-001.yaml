@@ -1,0 +1,7 @@
+id: vim-around-da-paren-001
+title: "Borra también los paréntesis"
+instruction: "Borra los argumentos junto con sus paréntesis."
+hints:
+  - "a significa alrededor (around): se incluyen los delimitadores."
+  - "da("
+explanation: "a( toma los paréntesis junto con lo que contienen, así que da( convierte foo(bar, baz) + 1 en foo + 1. di( dejaría foo() + 1. El cursor puede estar en cualquier punto dentro de los paréntesis."

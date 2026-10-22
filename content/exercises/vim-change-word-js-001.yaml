@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "The cursor is on the first letter of count, so cw replaces the whole word with total in one command. dw deletes the word and the space after it, so dw, itotal and a space would be needed to get the same result: more keys for no benefit."

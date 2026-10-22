@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:shell
+
+explanation: "W treats anything between spaces as one word, so rm, -rf and ./build/cache are three stops and two W presses land on the last one. With lowercase w the - and the . are stops of their own, so you need three presses to reach the same place."

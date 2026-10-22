@@ -1,0 +1,7 @@
+id: shell-navigation-where-001
+title: "Muévete y comprueba"
+instruction: "Entra en la carpeta logs, después en old, e imprime dónde estás."
+hints:
+  - "Dos pasos: moverte y luego imprimir la carpeta."
+  - "cd logs/old, y después pwd."
+explanation: "Al final deben cumplirse los dos objetivos: estás en logs/old y la última salida es su ruta. cd logs/old te mueve en un paso y luego pwd imprime /home/user/logs/old. Usar cd logs y cd old por separado llega al mismo sitio con un comando más."

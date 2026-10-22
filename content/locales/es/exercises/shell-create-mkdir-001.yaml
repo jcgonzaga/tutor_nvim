@@ -1,0 +1,7 @@
+id: shell-create-mkdir-001
+title: "Crea una carpeta"
+instruction: "Escribe mkdir backup para crear una carpeta nueva llamada backup."
+hints:
+  - "mkdir significa make directory (crear directorio)."
+  - "mkdir backup"
+explanation: "mkdir viene de make directory (crear directorio). Seguido de un nombre, como en mkdir backup, crea una carpeta vacía nueva en el directorio actual. No hace falta nada más, y las carpetas existentes, como notes, no se tocan."

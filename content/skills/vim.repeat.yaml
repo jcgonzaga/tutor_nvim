@@ -18,3 +18,14 @@ concepts:
   - repeat
 tags:
   - repeat
+
+lesson:
+  - title: "The dot repeats your last change"
+    body: "Press . to repeat the last change you made, with the same operator, motion and typed text. It saves you from retyping a command for every similar edit."
+    keys: "."
+  - title: "Change once, move, repeat"
+    body: "Make the edit once, move to the next spot and press . again. A change can be x, dd, dw or a whole insert such as cw plus the text you typed. Moving the cursor is not a change."
+    keys: "."
+  - title: "Choose changes that repeat well"
+    body: "Prefer commands that work from anywhere in the target, like ciw for the word under the cursor. Then each repetition only needs a movement to the next target."
+    keys: "ciw"

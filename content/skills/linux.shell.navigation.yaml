@@ -18,3 +18,14 @@ concepts:
 tags:
   - navigation
   - filesystem
+
+lesson:
+  - title: "Always know where you are"
+    body: "The shell works inside one folder, the current directory. pwd prints it, and most commands act on the files in that folder."
+    keys: "pwd"
+  - title: "Look around and move"
+    body: "ls lists what is inside a folder and cd folder goes into it. A path can have several steps, like one/two."
+    keys: "cd one/two"
+  - title: "Hidden files and home"
+    body: "Names that start with a dot are hidden, and ls -a shows them. cd with nothing after it takes you straight back to your home folder."
+    keys: "ls -a"

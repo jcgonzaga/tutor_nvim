@@ -1,0 +1,7 @@
+id: vim-word-ends-big-words-001
+title: "Las WORDS saltan la puntuación"
+instruction: "Salta al inicio de ./build/cache."
+hints:
+  - "La W mayúscula trata todo lo que hay entre espacios como una sola palabra."
+  - "W dos veces: rm, -rf, y luego ./build/cache."
+explanation: "W trata todo lo que hay entre espacios como una sola palabra, así que rm, -rf y ./build/cache son tres paradas y dos pulsaciones de W te dejan en la última. Con la w minúscula el - y el . son paradas propias, así que necesitas tres pulsaciones para llegar al mismo sitio."

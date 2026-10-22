@@ -47,3 +47,4 @@ metadata:
   context: logs
   estimatedSeconds: 20
   transferTags: []
+explanation: "tail is the opposite of head: it shows the end of a file. tail -n 1 app.log keeps only the last line, INFO shutdown. head would give you the first line instead. tail -1 is a shorter form."

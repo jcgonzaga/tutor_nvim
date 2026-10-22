@@ -56,3 +56,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 6
   transferTags: []
+
+explanation: "dw deletes one very and its space. . repeats that last change, so dw followed by two dots clears all three in four keys instead of six. The cursor lands on the next very after each deletion, so the dot needs no extra movement."

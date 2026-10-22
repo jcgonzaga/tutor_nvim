@@ -64,3 +64,5 @@ metadata:
   transferTags:
     - context:json
     - context:config-file
+
+explanation: 'The line has two strings, the key and the value. i" uses the pair the cursor is inside, which is the value, so ci" changes development and leaves the key alone. With the cursor on the key, the same command would change the key: the cursor position picks the string.'

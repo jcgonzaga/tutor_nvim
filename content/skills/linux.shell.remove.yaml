@@ -18,3 +18,17 @@ concepts:
 tags:
   - files
   - folders
+
+lesson:
+  - title: "rm deletes for good"
+    body: "rm removes files permanently. There is no trash can and no undo, so read the name twice before you press Enter."
+    keys: "rm"
+  - title: "Name exactly what goes"
+    body: "rm followed by one or more file names deletes only those. A star stands for any characters, so a pattern like *.tmp matches many files at once."
+    keys: "rm *.tmp"
+  - title: "Folders need -r"
+    body: "Plain rm refuses to delete a folder. Add -r (recursive) to delete the folder and everything inside it."
+    keys: "rm -r folder"
+  - title: "Look before you delete"
+    body: "Run ls first to see what is there. With -r, a wrong name or path removes a whole tree, and it is gone for good."
+    keys: "ls"

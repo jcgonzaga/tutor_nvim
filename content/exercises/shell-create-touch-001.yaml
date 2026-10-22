@@ -44,3 +44,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "touch draft.txt creates an empty file called draft.txt in the current directory when it does not exist. That makes touch the quickest way to get a blank file to fill in later."

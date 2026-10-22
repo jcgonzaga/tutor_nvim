@@ -1,0 +1,7 @@
+id: shell-pipes-redirect-001
+title: "Guardar el listado"
+instruction: "Escribe ls > files.txt para guardar el listado de esta carpeta en un archivo."
+hints:
+  - "> envía la salida a un archivo en lugar de a la pantalla."
+  - "ls > files.txt"
+explanation: "> envía la salida de ls a files.txt en lugar de imprimirla. El shell crea el archivo antes de ejecutar ls, por eso files.txt aparece en su propio listado."

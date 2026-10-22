@@ -1,0 +1,7 @@
+id: shell-copy-move-mv-003
+title: "Mueve a una carpeta"
+instruction: "Mueve app.log a la carpeta old."
+hints:
+  - "Si el destino es una carpeta, el archivo entra en ella."
+  - "mv app.log old"
+explanation: "Cuando el destino de mv es una carpeta que ya existe, el archivo entra en ella y conserva su nombre, así que mv app.log old basta. Escribir mv app.log old/app.log también funciona, pero repite lo que la shell ya hace por ti."

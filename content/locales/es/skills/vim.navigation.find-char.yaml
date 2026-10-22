@@ -1,0 +1,10 @@
+id: vim-navigation-find-char
+title: "Encontrar un carácter"
+description: "Salta a un carácter de la línea con f y t, y repite con ; y ,."
+lesson:
+  - title: "Salta a un carácter de la línea"
+    body: "f seguida de un carácter mueve el cursor a la siguiente aparición de ese carácter en la línea actual. Sustituye a pulsar l muchas veces."
+  - title: "Se detiene en la primera coincidencia"
+    body: "f se detiene en la primera coincidencia a la derecha del cursor. Si quieres una posterior, pulsa ; para repetir la búsqueda hacia delante o , para repetirla hacia atrás."
+  - title: "Vale cualquier carácter"
+    body: "f acepta cualquier carácter, también signos de puntuación como ( ) , = o comillas. Elige un carácter que esté cerca del lugar al que quieres llegar."

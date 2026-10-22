@@ -1,0 +1,7 @@
+id: vim-word-ends-end-code-001
+title: "Final de un nombre en código"
+instruction: "Ve a la última letra de total."
+hints:
+  - "La primera e termina const."
+  - "e dos veces."
+explanation: "La primera e te lleva a la t con la que termina const. Ya estás en una última letra, así que la segunda e va al final de la palabra siguiente, total. w no sirve aquí: te deja en la primera letra de cada palabra, no en la última."

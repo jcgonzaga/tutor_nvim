@@ -1,0 +1,10 @@
+id: vim-navigation-words
+title: "Moverse por palabras"
+description: "Salta entre palabras con w, W, b, B, e y E."
+lesson:
+  - title: "Muévete palabra a palabra"
+    body: "w salta al inicio de la palabra siguiente. Es mucho más rápido que pulsar l muchas veces, y llegas a cualquier palabra de la línea con unas pocas pulsaciones."
+  - title: "Cómo cuenta w las palabras"
+    body: "Una palabra es una secuencia de letras, dígitos y guiones bajos, o una secuencia de otros símbolos. En total = price, el = es una palabra por sí solo, así que w se detiene en él."
+  - title: "w cruza líneas, b retrocede"
+    body: "w no se detiene al final de una línea: continúa en la línea siguiente. b es el espejo de w y salta atrás al inicio de una palabra. W y B saltan la puntuación y tratan todo lo que hay entre espacios como una palabra."

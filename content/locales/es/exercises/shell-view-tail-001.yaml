@@ -1,0 +1,7 @@
+id: shell-view-tail-001
+title: "La última línea"
+instruction: "Muestra solo la última línea de app.log."
+hints:
+  - "Lo contrario de head."
+  - "tail -n 1 app.log"
+explanation: "tail es lo contrario de head: muestra el final de un archivo. tail -n 1 app.log se queda solo con la última línea, INFO shutdown. head te daría la primera línea. tail -1 es una forma más corta."

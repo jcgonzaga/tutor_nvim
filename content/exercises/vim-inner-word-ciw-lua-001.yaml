@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "ciw changes the whole word speed from the e in the middle, so you type velocity and nothing is left behind. cw would only change eed and leave sp in front, giving spvelocity. The text object does not depend on where the cursor is inside the word."

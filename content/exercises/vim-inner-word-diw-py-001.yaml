@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:python
+
+explanation: "The underscore is a word character, so very_long_name is a single word and diw deletes all of it from the l in the middle, leaving print(). dw would only delete from the cursor to the end and leave very_ behind. Deleting does not enter INSERT mode, so there is no Esc."

@@ -1,0 +1,10 @@
+id: vim-navigation-word-ends
+title: "Atrás y final de palabra"
+description: "Retrocede con b y ve al final de una palabra con e, y salta sobre la puntuación con W, B y E."
+lesson:
+  - title: "Atrás y al final de una palabra"
+    body: "b salta atrás al inicio de una palabra y e salta adelante a la última letra de una palabra. Úsalos cuando w te dejaría en el lado equivocado del lugar al que quieres llegar."
+  - title: "e se detiene en la última letra"
+    body: "Desde el inicio de alpha beta, e te deja en la a con la que termina alpha. Si pulsas e otra vez llegas al final de beta, porque desde una última letra e va al final de la palabra siguiente."
+  - title: "Las mayúsculas ignoran la puntuación"
+    body: "W, B y E hacen los mismos movimientos pero tratan todo lo que hay entre espacios como una sola palabra. En compute(value), w se detiene en el ( pero W salta todo de una vez."

@@ -1,0 +1,7 @@
+id: shell-pipes-pipe-001
+title: "Contar con una tubería"
+instruction: "Cuenta las entradas de esta carpeta enviando ls a wc -l."
+hints:
+  - "| pasa la salida de un comando al siguiente."
+  - "ls | wc -l"
+explanation: "ls imprime las tres entradas de notes (archive, ideas.txt, todo.txt), una por línea al ir por una tubería (pipe). La tubería pasa esa salida a wc -l, que cuenta líneas, así que obtienes 3 sin contar a ojo."

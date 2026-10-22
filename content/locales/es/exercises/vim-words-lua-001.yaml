@@ -1,0 +1,7 @@
+id: vim-words-lua-001
+title: "Salta al contenido de una cadena"
+instruction: "Salta a la t de tutor."
+hints:
+  - "Las comillas de apertura también son una parada de w."
+  - "local, name, =, las comillas y luego tutor."
+explanation: "Para w, los símbolos son palabras por sí solos, así que el = y las comillas de apertura cuentan cada uno como una parada. Desde local te detienes en name, =, las comillas y por fin tutor: cuatro pulsaciones de w. Con solo tres estarías sobre las comillas."

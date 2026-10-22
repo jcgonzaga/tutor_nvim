@@ -1,0 +1,7 @@
+id: vim-inner-braces-json-001
+title: "Cambia lo que hay dentro de las llaves"
+instruction: 'Reemplaza el contenido del objeto por "b": 2.'
+hints:
+  - "i{ es el objeto de texto de las llaves."
+  - "ci{"
+explanation: 'i{ es todo lo que hay entre las llaves. Aquí no hay espacios junto a ellas, así que ci{ vacía el objeto y escribes "b": 2 de inmediato. Las llaves se quedan y no tuviste que moverte al inicio del contenido.'

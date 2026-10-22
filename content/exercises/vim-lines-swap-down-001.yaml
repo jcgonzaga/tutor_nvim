@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:python
+
+explanation: "dd deletes import sys but keeps it in a register. The cursor lands on import os, and p puts the saved line below it, giving import os then import sys. Deleting is also cutting: whatever d removes can be pasted."

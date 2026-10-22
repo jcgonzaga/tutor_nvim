@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:python
+
+explanation: 'The cursor is on the last character, the closing quote. i would put the ) before the quote and give print("hi)". a inserts after the cursor, so a, ), Esc adds it at the end of the line.'

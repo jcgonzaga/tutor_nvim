@@ -1,0 +1,7 @@
+id: vim-find-char-001
+title: "Encuentra un carácter"
+instruction: 'Salta a la "c" de "callback" con una sola búsqueda.'
+hints:
+  - "f seguido de un carácter salta a la siguiente aparición en la línea."
+  - 'La primera "c" de la línea está en "callback".'
+explanation: "fc salta a la primera c a la derecha del cursor. render, user y options no tienen c, así que esa c es la de callback y no tienes que contar caracteres. Pulsar l 22 veces llega al mismo sitio pero es mucho más lento."

@@ -36,3 +36,4 @@ metadata:
   context: config
   estimatedSeconds: 20
   transferTags: []
+explanation: "You may read and write (4 + 2 = 6) and nobody else gets anything (0 and 0), so the mode is 600. You run it from your home folder, so the file needs its path: chmod 600 config/token."

@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:shell
+
+explanation: "In ${HOME} the braces are shell syntax, but Vim only sees a pair of { }. ci{ replaces HOME with USER and leaves ${ } intact. The text object works the same in any language."

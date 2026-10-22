@@ -55,3 +55,5 @@ metadata:
   context: source-code
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "ci( replaces everything between the parentheses, both arguments and the comma, with value in one command. You do not delete first, the comma and second separately. The cursor can be anywhere inside the parentheses."

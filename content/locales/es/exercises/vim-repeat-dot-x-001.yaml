@@ -1,0 +1,7 @@
+id: vim-repeat-dot-x-001
+title: "Repite x"
+instruction: "Quita los tres caracteres #."
+hints:
+  - "Borra uno y luego repite el borrado."
+  - "x, y luego . dos veces."
+explanation: "x borra el carácter bajo el cursor y . lo repite. Tras cada borrado el siguiente # se desplaza bajo el cursor, así que x.. quita los tres y deja un espacio y Title. xxx también funciona; el punto es el hábito que conviene crear porque repite cualquier cambio."

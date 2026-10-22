@@ -56,3 +56,5 @@ metadata:
   transferTags:
     - context:json
     - context:config-file
+
+explanation: 'The cursor is on the closing brace and the space after the colon is already there, so i inserts the digits right before the brace and gives {"port": 8080}. Nothing else needs to be moved or typed.'

@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 14
   transferTags:
     - context:javascript
+
+explanation: "With nested pairs, i( chooses the innermost pair that surrounds the cursor. The cursor is on the 1, inside bar( ), so ci( changes only the 1 and leaves foo( ) and the 2 alone."

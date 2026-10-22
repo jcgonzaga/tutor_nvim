@@ -1,0 +1,7 @@
+id: shell-copy-move-cp-001
+title: "Copia un archivo"
+instruction: "Escribe cp todo.txt backup.txt para copiar el archivo."
+hints:
+  - "cp recibe el origen y luego el nombre de la copia."
+  - "cp todo.txt backup.txt"
+explanation: "cp recibe primero el origen y después el nombre de la copia, así que cp todo.txt backup.txt deja todo.txt intacto y crea backup.txt con el mismo contenido. El orden importa: al revés intentarías copiar un archivo que no existe."

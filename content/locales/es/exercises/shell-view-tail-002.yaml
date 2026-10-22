@@ -1,0 +1,7 @@
+id: shell-view-tail-002
+title: "Los dos últimos elementos"
+instruction: "Imprime los dos últimos elementos de todo.txt."
+hints:
+  - "El final del archivo, no el principio."
+  - "tail -n 2 todo.txt"
+explanation: "Los últimos elementos están al final del archivo, así que usa tail, no head. tail -n 2 todo.txt imprime las dos líneas finales, buy bread y book dentist. head -n 2 mostraría las dos primeras."

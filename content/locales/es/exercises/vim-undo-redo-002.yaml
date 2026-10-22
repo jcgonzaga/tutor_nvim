@@ -1,0 +1,7 @@
+id: vim-undo-redo-002
+title: "Rehaz un borrado"
+instruction: "Deshiciste por error el borrado de b. Rehazlo."
+hints:
+  - "Rehacer es lo opuesto a deshacer."
+  - "Ctrl+r"
+explanation: "dd borró b y u lo devolvió. <C-r> vuelve a aplicar el borrado, y el buffer queda de nuevo con a y c. Rehacer solo está disponible hasta que haces un cambio nuevo, así que úsalo justo después de deshacer."

@@ -1,0 +1,7 @@
+id: shell-pipes-replace-001
+title: "Reemplazar, no añadir"
+instruction: "Reemplaza todo el contenido de draft.txt por la palabra reset."
+hints:
+  - "Un > sobrescribe; dos >> añaden."
+  - "echo reset > draft.txt"
+explanation: "Un solo > vacía draft.txt y luego escribe reset, así que las líneas antiguas a y b desaparecen. Con >> el archivo quedaría como a, b y reset, que no es lo que se pide."

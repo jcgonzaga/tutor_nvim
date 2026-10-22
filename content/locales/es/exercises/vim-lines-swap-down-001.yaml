@@ -1,0 +1,7 @@
+id: vim-lines-swap-down-001
+title: "Baja una línea"
+instruction: "Intercambia las dos líneas, de modo que import os quede primero."
+hints:
+  - "Borrar deja la línea en el registro. Pégala de nuevo debajo."
+  - "dd y luego p."
+explanation: "dd borra import sys pero lo guarda en un registro. El cursor cae en import os y p pega debajo la línea guardada, con lo que queda import os y luego import sys. Borrar también es cortar: lo que quita d se puede pegar."

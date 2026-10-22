@@ -55,3 +55,4 @@ metadata:
   transferTags:
     - context:bash
     - context:logs
+explanation: "Both goals must hold at the end: you are in logs/old and the last output is its path. cd logs/old moves in one step, then pwd prints /home/user/logs/old. Using cd logs and cd old separately reaches the same place with one more command."

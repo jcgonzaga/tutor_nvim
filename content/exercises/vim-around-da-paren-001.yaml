@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:javascript
+
+explanation: "a( takes the parentheses together with what is inside them, so da( turns foo(bar, baz) + 1 into foo + 1. di( would leave foo() + 1. The cursor can be anywhere inside the parentheses."

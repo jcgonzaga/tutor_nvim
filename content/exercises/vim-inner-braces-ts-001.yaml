@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:typescript
+
+explanation: "The body of the interface sits between { and }, with a space on each side. ci{ removes all of it, spaces included, so you type a space, y: string and another space before Esc. The braces and the rest of the line stay."

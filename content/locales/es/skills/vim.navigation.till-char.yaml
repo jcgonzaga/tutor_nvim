@@ -1,0 +1,10 @@
+id: vim-navigation-till-char
+title: "Hasta un carácter, y repetir"
+description: "Aterriza justo antes de un carácter con t y repite o invierte una búsqueda con ; y ,."
+lesson:
+  - title: "t se detiene justo antes"
+    body: "t funciona como f, pero el cursor se detiene en el carácter anterior al que nombras. Úsala cuando quieras quedar junto a un carácter en lugar de sobre él."
+  - title: "Repetir e invertir"
+    body: "Después de f o t, ; repite la misma búsqueda hasta la siguiente coincidencia y , la repite en dirección contraria. No tienes que volver a escribir el carácter."
+  - title: "Combínala con un operador"
+    body: "Operadores como d y c aceptan t como movimiento. dt, borra hasta la siguiente coma sin incluirla, de modo que el delimitador se queda."

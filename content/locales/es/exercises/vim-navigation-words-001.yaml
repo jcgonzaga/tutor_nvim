@@ -1,0 +1,7 @@
+id: vim-navigation-words-001
+title: "Salta por palabras"
+instruction: 'Colócate sobre la "f" de "four" usando movimientos por palabras.'
+hints:
+  - "w va al inicio de la palabra siguiente."
+  - "Tres palabras hacia la derecha."
+explanation: "Cada w salta al inicio de la palabra siguiente: two, three, four. Tres pulsaciones te dejan en la f de four. Pulsar l costaría 14 pulsaciones y tendrías que contar las letras."

@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 14
   transferTags:
     - context:javascript
+
+explanation: "To remove the parentheses too you need a( (around), not i( (inner). da( deletes (a, b) and leaves run;. di( would only empty them and leave run();. Use i when the delimiters must stay and a when they must go."

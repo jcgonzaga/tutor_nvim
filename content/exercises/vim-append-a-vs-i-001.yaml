@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "The cursor is on the r, the last letter of user, and the s belongs after it. a inserts after the cursor, so as then Esc is enough. With i you must first press l to step past the r (lis<Esc>), which costs an extra key."

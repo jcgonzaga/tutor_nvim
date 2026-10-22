@@ -1,0 +1,7 @@
+id: vim-around-da-brace-001
+title: "Borra un objeto con sus llaves"
+instruction: "Elimina el argumento objeto, llaves incluidas."
+hints:
+  - "Alrededor de las llaves."
+  - "da{"
+explanation: "a{ incluye las llaves mismas, así que da{ elimina { a: 1 } en un solo comando y deja call(). di{ solo vaciaría las llaves y dejaría call({}). da{ no entra en modo INSERT, por eso no hay Esc."

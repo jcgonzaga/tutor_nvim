@@ -54,3 +54,4 @@ metadata:
   context: project
   estimatedSeconds: 25
   transferTags: []
+explanation: "find searches by name, not content: find project -name '*.js' walks everything under project and prints the paths ending in .js (app.js and util.js). Quoting '*.js' stops the shell from expanding the star so find matches it. grep would look inside files instead."

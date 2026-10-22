@@ -56,3 +56,5 @@ metadata:
   transferTags:
     - context:text
     - context:plain-text
+
+explanation: "y$ copies from the cursor to the end of the line, here abc. It is a copy of characters, so p inserts it right after the cursor. Pressing p on the a would give aabcbc, so $ first moves the cursor to the c, and p then appends the copy to give abcabc."

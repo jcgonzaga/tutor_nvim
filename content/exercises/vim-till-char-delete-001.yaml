@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:javascript
+
+explanation: "dt) deletes from the cursor up to, but not including, the next ), so arg1, arg2 disappears and both parentheses stay. Ten presses of x give the same result, but d with a till motion says what you mean in three keys."

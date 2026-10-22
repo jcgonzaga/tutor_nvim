@@ -53,3 +53,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:shell
+
+explanation: "It works the same in any kind of file: Esc leaves INSERT mode and returns to NORMAL mode. The text, even a line like export PATH=$HOME/bin, does not change; only the mode does."

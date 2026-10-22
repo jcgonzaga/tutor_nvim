@@ -19,3 +19,14 @@ concepts:
 tags:
   - motion
   - word
+
+lesson:
+  - title: "Move word by word"
+    body: "w jumps to the start of the next word. It is much faster than tapping l, and you reach any word on the line with a few presses."
+    keys: "w"
+  - title: "How w counts words"
+    body: "A word is a run of letters, digits and underscores, or a run of other symbols. In total = price, the = is a word of its own, so w stops on it."
+    keys: "w"
+  - title: "w crosses lines, b goes back"
+    body: "w does not stop at the end of a line: it carries on to the next line. b is the mirror of w and jumps back to the start of a word. W and B skip punctuation and treat anything between spaces as one word."
+    keys: "b"

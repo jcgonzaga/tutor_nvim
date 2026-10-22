@@ -1,0 +1,7 @@
+id: vim-till-char-basic-001
+title: "Párate justo antes de un carácter"
+instruction: "Muévete a la o que está justo antes de la coma."
+hints:
+  - "t es como f, pero se detiene un carácter antes."
+  - "t,"
+explanation: "t, mueve al carácter justo anterior a la siguiente coma, la o de hello. f, caería sobre la propia coma. Usa t cuando quieras detenerte junto a un carácter en lugar de sobre él."

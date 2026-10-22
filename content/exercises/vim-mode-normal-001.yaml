@@ -52,3 +52,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 4
   transferTags: []
+
+explanation: "In INSERT mode every key you type becomes text, so no command can run. Esc leaves INSERT mode and returns to NORMAL mode, where keys are commands. One press is enough."

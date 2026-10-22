@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "i( is what sits between ( and ), so ci( deletes oldValue and starts INSERT mode. The cursor is in the middle of the word and that does not matter. cw would only change from the cursor to the end of the word and leave the o in front."

@@ -1,0 +1,7 @@
+id: vim-mode-insert-json-value-001
+title: "Rellena un valor JSON"
+instruction: "Inserta 8080 como valor de port."
+hints:
+  - "El cursor ya está sobre la llave de cierre: inserta antes de ella."
+  - "i, escribe 8080 y luego Esc."
+explanation: 'El cursor está sobre la llave de cierre y el espacio tras los dos puntos ya existe, así que i inserta los dígitos justo antes de la llave y da {"port": 8080}. No hay que mover ni escribir nada más.'

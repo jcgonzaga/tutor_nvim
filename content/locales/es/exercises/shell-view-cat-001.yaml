@@ -1,0 +1,7 @@
+id: shell-view-cat-001
+title: "Imprimir un archivo"
+instruction: "Escribe cat todo.txt para imprimir el archivo."
+hints:
+  - "cat imprime un archivo entero."
+  - "Escribe cat todo.txt."
+explanation: "cat imprime el contenido completo de un archivo. Ya estás dentro de notes, así que basta el nombre todo.txt; la salida incluye la línea call mom."

@@ -1,0 +1,7 @@
+id: vim-repeat-dot-append-001
+title: "Añade un punto y coma a cada línea"
+instruction: "Añade un ; al final de las tres líneas."
+hints:
+  - "$a; añade uno. Luego repite la inserción en las líneas siguientes."
+  - "Tras cada j, pulsa $ y luego ."
+explanation: "$a;<Esc> añade un ; a la línea 1. El punto repite la inserción completa, así que en cada línea siguiente j$ lleva el cursor al final y . vuelve a escribir el ;. Hace falta $ antes porque a inserta después del cursor, y el cursor no está al final de la nueva línea."

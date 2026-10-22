@@ -1,0 +1,7 @@
+id: vim-yank-line-dup-001
+title: "Duplica la línea del medio"
+instruction: "Duplica la línea const b = 2;."
+hints:
+  - "yy copia una línea, p la pega debajo."
+  - "yy y luego p."
+explanation: "yy copia la línea actual sin cambiar el texto, y p pega la copia en la línea de abajo, con lo que quedan dos líneas idénticas. Una copia y un pegado son mucho más rápidos que volver a escribir la línea en modo INSERT."

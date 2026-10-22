@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: 'i{ is everything between { and }, including the spaces next to them, so ci{ deletes " debug: true " and the braces stay. That is why you type the new contents with a space before and after it. Without them you would get {debug: false}.'

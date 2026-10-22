@@ -1,0 +1,7 @@
+id: shell-view-head-001
+title: "Las primeras líneas"
+instruction: "Muestra las 2 primeras líneas de app.log con head -n 2."
+hints:
+  - "head muestra el principio de un archivo."
+  - "-n 2 pide dos líneas."
+explanation: "head muestra el principio de un archivo, y -n 2 lo limita a dos líneas: INFO server started y ERROR disk full. head -2 es una forma más corta de escribir lo mismo."

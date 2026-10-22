@@ -16,3 +16,12 @@ concepts:
   - mode
 tags:
   - mode
+
+lesson:
+  - title: "Two modes: commands and text"
+    body: "Vim has modes. NORMAL mode is the default, and there every key is a command: move, delete, copy. INSERT mode is where keys type text."
+  - title: "Esc takes you back"
+    body: "Esc leaves INSERT mode and returns to NORMAL mode. If you are ever unsure which mode you are in, press Esc: in NORMAL mode it does no harm."
+    keys: "<Esc>"
+  - title: "The cursor steps back"
+    body: "In INSERT mode the cursor sits between characters. NORMAL mode always rests ON a character, so Esc also moves the cursor one place left, unless it is already at the start of the line."

@@ -1,0 +1,12 @@
+id: vim-textobject-inner-parentheses
+title: "Dentro de paréntesis"
+description: "Opera sobre lo que hay entre paréntesis con i( y a(."
+lesson:
+  - title: "Edita lo que hay dentro de ( )"
+    body: "i( es el objeto de texto de todo lo que hay entre un par de paréntesis: argumentos de una llamada, condiciones, listas de parámetros. Puedes editarlo desde cualquier punto dentro del par."
+  - title: "Operador más i("
+    body: "Pon un operador delante: di( vacía los paréntesis, ci( los vacía y te deja escribir el contenido nuevo. Los paréntesis se quedan."
+  - title: "Pares anidados"
+    body: "Con paréntesis anidados, i( usa el par más interno que rodea al cursor. Para llegar al par exterior, coloca el cursor donde solo lo rodee el exterior."
+  - title: "a( incluye los paréntesis"
+    body: "a( es el mismo objeto con los paréntesis incluidos, así que da( elimina el par y lo que hay dentro."

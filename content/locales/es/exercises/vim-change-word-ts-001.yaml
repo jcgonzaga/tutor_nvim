@@ -1,0 +1,7 @@
+id: vim-change-word-ts-001
+title: "Corrige un error en un nombre"
+instruction: "Renombra nme a name."
+hints:
+  - "Cambia la palabra entera."
+  - "cw"
+explanation: "nme termina en los dos puntos, porque la puntuación no forma parte de la palabra, así que cw cambia exactamente nme y deja : string intacto. Escribir name reemplaza el error en una sola edición, en lugar de arreglarlo letra a letra con x e i."

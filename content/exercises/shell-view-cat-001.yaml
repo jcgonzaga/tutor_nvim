@@ -44,3 +44,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "cat prints the whole content of a file. You are already inside notes, so the bare name todo.txt is enough; the output includes the line call mom."

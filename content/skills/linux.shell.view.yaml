@@ -18,3 +18,16 @@ concepts:
 tags:
   - files
   - reading
+
+lesson:
+  - title: "Read without an editor"
+    body: "Four small commands let you look inside a file straight from the shell: cat, head, tail and wc. Use them when you only need to see something, not change it."
+  - title: "cat prints a whole file"
+    body: "cat file prints the entire content. You can give a path such as folder/file to read a file from where you are, without moving first."
+    keys: "cat folder/file"
+  - title: "head and tail: the ends"
+    body: "head shows the start of a file and tail shows the end. They print 10 lines by default; -n sets how many."
+    keys: "tail -n 3 file"
+  - title: "wc counts"
+    body: "wc file prints lines, words and bytes, followed by the file name. Add -l to get only the line count."
+    keys: "wc -l file"

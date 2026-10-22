@@ -18,3 +18,14 @@ concepts:
 tags:
   - files
   - folders
+
+lesson:
+  - title: "Make things before you use them"
+    body: "mkdir makes a new folder and touch makes a new empty file. Use them to prepare a place for your work."
+    keys: "mkdir"
+  - title: "Name the target"
+    body: "Put the name after the command, like mkdir name or touch name.txt. With a path such as a/b the new item is created inside a, which must already exist."
+    keys: "touch name.txt"
+  - title: "Parents and several names"
+    body: "mkdir -p also creates the missing parent folders. Both commands accept several names at once, separated by spaces."
+    keys: "mkdir -p a/b/c"

@@ -43,3 +43,4 @@ metadata:
   transferTags:
     - context:bash
     - context:photos
+explanation: "photos/2023 is a folder, so rm needs -r; the path photos/2023 names exactly that year. photos/2024 and readme.txt stay. The exact path matters: a wrong folder is deleted just as permanently."

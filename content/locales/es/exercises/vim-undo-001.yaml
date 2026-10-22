@@ -1,0 +1,7 @@
+id: vim-undo-001
+title: "Deshaz un borrado"
+instruction: 'Se borraron dos palabras por error. Deshaz solo el último borrado, para que quede "two three".'
+hints:
+  - "u deshace el último cambio."
+  - "Una pulsación deshace un cambio."
+explanation: "Los dos comandos dw son dos cambios separados. u deshace solo el último, así que una sola pulsación devuelve two y deja two three. Cada u retrocede un cambio, así que cuenta cuántos pasos necesitas."

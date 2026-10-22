@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:csv-data
+
+explanation: "You start after f,;;, which leaves the cursor on the third comma. The , key repeats the last find in the opposite direction, so one , jumps back to the second comma. Do not confuse the , command with the comma character being searched."

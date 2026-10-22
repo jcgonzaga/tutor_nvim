@@ -1,0 +1,7 @@
+id: vim-yank-put-before-001
+title: "¿p o P?"
+instruction: "Copia la última línea y pégala encima de la primera."
+hints:
+  - "P pega la línea copiada encima de la línea del cursor."
+  - "yy, ve a la primera línea y luego P."
+explanation: "yy copia second. P pega una línea copiada encima de la línea del cursor, así que sube a la primera línea con k y pulsa P: la copia cae arriba del todo. Con p caería debajo de first, que no es lo que quieres."

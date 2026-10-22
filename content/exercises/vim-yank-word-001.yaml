@@ -53,3 +53,5 @@ metadata:
   context: prose
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "yw copies from the cursor to the start of the next word, that is hello and its space. P puts it before the cursor, in front of the original hello, giving hello hello world. p would paste after the h and give hhello ello world."

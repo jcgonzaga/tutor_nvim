@@ -1,0 +1,7 @@
+id: vim-words-fruit-001
+title: "Salta por palabras"
+instruction: "Salta al inicio de cherry."
+hints:
+  - "w salta al inicio de la palabra siguiente."
+  - "Dos palabras más adelante."
+explanation: "w va al inicio de la palabra siguiente: apple, banana, cherry. Dos pulsaciones reemplazan 13 pulsaciones de l, y funcionan sea cual sea la longitud de las palabras."

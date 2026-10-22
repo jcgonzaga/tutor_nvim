@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:javascript
+
+explanation: "a{ includes the braces themselves, so da{ removes { a: 1 } in one command and leaves call(). di{ would only empty the braces and leave call({}). da{ does not enter INSERT mode, so there is no Esc."

@@ -1,0 +1,7 @@
+id: vim-lines-swap-up-001
+title: "Sube una línea"
+instruction: "Intercambia las líneas para que second quede primero."
+hints:
+  - "Borra la línea, sube y pégala encima."
+  - "dd, k, P."
+explanation: "dd quita second y lo guarda en un registro. P lo pega encima de la línea del cursor, así que queda por encima de first. Aquí, tras dd el cursor ya está en first, así que la k no hace nada; en un archivo más largo la necesitarías para subir antes. Con p recuperarías el orden original."

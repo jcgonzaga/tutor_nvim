@@ -1,0 +1,7 @@
+id: vim-inner-word-ciw-json-001
+title: "Corrige una clave JSON"
+instruction: "Corrige el error en la clave: nmae debe ser name."
+hints:
+  - "Las comillas no forman parte de la palabra."
+  - "ciw"
+explanation: "Las comillas son puntuación, no parte de una palabra, así que iw sobre nmae es exactamente nmae. ciw reemplaza todo el error desde la m del medio. cw solo cambiaría mae y dejaría la n delante, con el resultado nname."

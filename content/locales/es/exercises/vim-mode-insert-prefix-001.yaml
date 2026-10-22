@@ -1,0 +1,7 @@
+id: vim-mode-insert-prefix-001
+title: "Inserta al inicio de un comando"
+instruction: "Pon sudo y un espacio delante del comando."
+hints:
+  - "El cursor ya está al inicio de la línea."
+  - "i, escribe sudo y un espacio, y luego Esc."
+explanation: "El cursor está sobre el primer carácter de la línea, así que i inserta texto antes de todo lo demás. Escribe sudo seguido de un espacio y pulsa Esc. No hace falta moverse porque el punto de inserción ya está donde quieres."

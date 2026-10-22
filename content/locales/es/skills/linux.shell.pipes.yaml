@@ -1,0 +1,12 @@
+id: linux-shell-pipes
+title: "Tuberías y redirección"
+description: "Encadena comandos con | y envía la salida a archivos con > y >>."
+lesson:
+  - title: "Envía la salida a otro sitio"
+    body: "Los comandos muestran su resultado en pantalla. Puedes redirigirlo a un archivo, o pasárselo a otro comando, sin volver a escribir nada."
+  - title: "Redirige con > y >>"
+    body: "Un comando seguido de > y un nombre de archivo guarda ahí su salida. > reemplaza el contenido del archivo, >> añade al final."
+  - title: "Encadena comandos con una tubería (pipe)"
+    body: "El signo | pasa la salida del comando de la izquierda al de la derecha. Encadena los que necesites, cada uno con una tarea pequeña."
+  - title: "La trampa: > borra en silencio"
+    body: "Un solo > vacía el archivo antes de escribir, y no hay deshacer. Si solo quieres añadir una línea, usa >>."

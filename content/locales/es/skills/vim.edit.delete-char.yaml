@@ -1,0 +1,10 @@
+id: vim-edit-delete-char
+title: "Borrar un carácter"
+description: "Quita el carácter bajo el cursor con x y sabe cuándo conviene un comando más grande."
+lesson:
+  - title: "x borra un carácter"
+    body: "Cuando sobra un solo carácter, pon el cursor sobre él en modo NORMAL y pulsa x. Borra el carácter bajo el cursor y sigues en modo NORMAL."
+  - title: "Después de x el texto se cierra"
+    body: "El resto de la línea se desplaza a la izquierda para tapar el hueco y el cursor se queda en la misma columna, ahora sobre el carácter siguiente. Si borras el último carácter de la línea, el cursor retrocede al nuevo último."
+  - title: "Un carácter, una x"
+    body: "Pulsar x muchas veces funciona, pero es un mal hábito. Para una palabra entera o más, usa un operador con un movimiento, como dw, en lugar de contar pulsaciones."

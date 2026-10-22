@@ -1,0 +1,7 @@
+id: vim-change-001
+title: "Cambia una palabra"
+instruction: 'Cambia "pending" por "done".'
+hints:
+  - "c borra y te deja en modo INSERT, listo para escribir."
+  - "cw cambia hasta el final de la palabra."
+explanation: "cw borra desde el cursor hasta el final de la palabra y entra en modo INSERT, así que escribes el reemplazo de inmediato. El cursor está en la primera letra de pending, por eso se va la palabra entera, y el ; se queda porque la puntuación no forma parte de la palabra. Pulsar x siete veces y luego i es mucho más lento."

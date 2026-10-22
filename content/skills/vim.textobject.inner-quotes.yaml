@@ -20,3 +20,13 @@ concepts:
 tags:
   - text-object
   - quotes
+
+lesson:
+  - title: "Edit what is inside quotes"
+    body: 'i" is the text object for the text between a pair of double quotes. Use it to change a string''s value without touching the quotes or moving to its first letter.'
+    keys: 'i"'
+  - title: 'Operator plus i"'
+    body: 'Put an operator in front: ci" replaces the contents of the string, di" empties it. The cursor can be anywhere inside the string. If it is before the first quote on the line, Vim looks ahead for the next string.'
+    keys: 'ci"'
+  - title: "Same line only"
+    body: "Quote objects work on the current line only. With two strings on a line, the one the cursor is inside is the one that changes."

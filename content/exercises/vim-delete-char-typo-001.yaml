@@ -53,3 +53,5 @@ metadata:
   context: prose
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "The word has three l's and the cursor is on one of them, so x removes it and leaves hello. Which of the three you delete does not matter; what counts is removing one character with one key."

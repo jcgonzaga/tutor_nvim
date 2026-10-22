@@ -38,3 +38,4 @@ metadata:
   context: logs
   estimatedSeconds: 15
   transferTags: []
+explanation: "The file already holds first. >> adds echo's output after the existing content, giving two lines. A single > would replace the file and leave only second."

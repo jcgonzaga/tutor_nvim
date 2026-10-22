@@ -1,0 +1,7 @@
+id: vim-delete-char-typo-001
+title: "Quita una letra de más"
+instruction: "Hello tiene una l de más. Borra una."
+hints:
+  - "x borra el carácter bajo el cursor."
+  - "Una sola pulsación."
+explanation: "La palabra tiene tres l y el cursor está sobre una de ellas, así que x la quita y queda hello. Da igual cuál de las tres borres; lo que cuenta es quitar un carácter con una sola tecla."

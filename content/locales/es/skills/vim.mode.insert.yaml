@@ -1,0 +1,10 @@
+id: vim-mode-insert
+title: "Modo INSERT"
+description: "Entra en modo INSERT con i, a y o, escribe texto y sal con Esc."
+lesson:
+  - title: "Escribir ocurre en modo INSERT"
+    body: "En modo NORMAL cada tecla es un comando, así que ahí no se puede escribir texto. Pulsa i para entrar en modo INSERT y, desde ese momento, lo que teclees entra en el texto."
+  - title: "i inserta antes del cursor"
+    body: "El texto entra delante del carácter bajo el cursor y el resto se desplaza a la derecha. Sobre la b de bar, i y luego foo da foobar."
+  - title: "Sal con Esc"
+    body: "Esc sale del modo INSERT. Púlsala en cuanto termines de escribir, para que las siguientes teclas vuelvan a ser comandos y no más texto."

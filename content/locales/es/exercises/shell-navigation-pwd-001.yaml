@@ -1,0 +1,7 @@
+id: shell-navigation-pwd-001
+title: "¿Dónde estoy?"
+instruction: "Escribe pwd para mostrar la carpeta en la que estás."
+hints:
+  - "El comando tiene tres letras: print working directory."
+  - "Escribe pwd y pulsa Enter."
+explanation: "pwd viene de print working directory. Muestra la ruta completa de la carpeta en la que estás, que aquí es /home/user. No cambia nada; solo te dice dónde actuarán comandos como ls o cp."

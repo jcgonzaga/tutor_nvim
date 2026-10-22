@@ -52,3 +52,5 @@ metadata:
   context: source-code
   estimatedSeconds: 4
   transferTags: []
+
+explanation: "After typing code you are still in INSERT mode, so further keys would add text instead of running commands. Press Esc once to return to NORMAL mode, and make it a habit to do so as soon as you finish typing."

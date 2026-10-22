@@ -1,0 +1,7 @@
+id: shell-copy-move-mv-002
+title: "Sube un archivo"
+instruction: "Mueve beach.jpg fuera de 2024 a la propia carpeta photos."
+hints:
+  - "El destino es la carpeta en la que estás."
+  - "Un solo punto significa aquí: mv 2024/beach.jpg ."
+explanation: "Estás en photos, y un punto solo significa la carpeta actual. Así, mv 2024/beach.jpg . mueve el archivo de 2024 a la carpeta donde estás, conservando su nombre. El origen necesita su ruta (2024/beach.jpg) porque no está en la carpeta actual."

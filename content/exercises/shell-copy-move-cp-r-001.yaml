@@ -56,3 +56,4 @@ metadata:
   context: project
   estimatedSeconds: 25
   transferTags: []
+explanation: "A folder is not a file, so plain cp refuses it. cp -r src src-backup copies the folder recursively: src-backup is created and gets every file inside src, while src stays as it was."

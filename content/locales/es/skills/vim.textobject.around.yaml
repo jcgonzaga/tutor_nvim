@@ -1,0 +1,10 @@
+id: vim-textobject-around
+title: "Alrededor de un par"
+description: 'Toma también los delimitadores con a", a( y a{, por ejemplo para borrar una lista de argumentos completa.'
+lesson:
+  - title: "Alrededor incluye los delimitadores"
+    body: "Pon a antes de un carácter de par y el objeto de texto incluye el par completo. da( borra los paréntesis y todo lo que contienen. Úsalo cuando debe desaparecer todo el grupo, no solo su contenido."
+  - title: "¿Dentro o alrededor?"
+    body: "i conserva los delimitadores, a los elimina también. Con el cursor dentro de foo(x), di( deja foo() y da( deja foo. Pregúntate si el par debe sobrevivir."
+  - title: "La misma idea con comillas y llaves"
+    body: 'a{ toma las llaves y a( los paréntesis, sin nada más. a" también toma el espacio en blanco que sigue a la cadena (o el que la precede, si no hay ninguno después), y la línea queda ordenada.'

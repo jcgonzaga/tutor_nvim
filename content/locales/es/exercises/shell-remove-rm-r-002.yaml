@@ -1,0 +1,7 @@
+id: shell-remove-rm-r-002
+title: "Borrar la carpeta de configuración"
+instruction: "Borra toda la carpeta config del proyecto."
+hints:
+  - "Una carpeta con archivos necesita -r."
+  - "rm -r project/config"
+explanation: "config contiene dev.env y prod.env, así que es una carpeta con archivos y necesita rm -r. Desde el nivel superior la ruta es project/config. Entrar antes en project y ejecutar rm -r config también funciona. src queda intacta."

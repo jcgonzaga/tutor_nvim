@@ -55,3 +55,5 @@ metadata:
   context: source-code
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "iw is the whole word under the cursor, from any position inside it. The cursor is on the N of oldName, so ciw deletes all of oldName and you type newName. cw would only delete Name and leave old in front, giving oldnewName."

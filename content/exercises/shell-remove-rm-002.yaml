@@ -51,3 +51,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "rm only touches the names you give it. rm ideas.txt removes that one file from notes, while todo.txt and the archive folder are left alone."

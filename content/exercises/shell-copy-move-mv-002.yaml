@@ -42,3 +42,4 @@ metadata:
   context: photos
   estimatedSeconds: 20
   transferTags: []
+explanation: "You are in photos, and a single dot means the current folder. So mv 2024/beach.jpg . moves the file from 2024 into the folder you are in, keeping its name. The source needs its path (2024/beach.jpg) because it is not in the current folder."

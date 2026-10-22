@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:shell
+
+explanation: 'a" takes the quotes and also the space after the string, so da" turns echo "one" "two" into echo "two" with a single space left. di" would leave an empty pair of quotes and an extra space.'

@@ -53,3 +53,5 @@ metadata:
   context: prose
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "dw deletes from the cursor to the start of the next word, so it removes very and the space after it, and the sentence keeps correct spacing. Deleting with x would take five presses."

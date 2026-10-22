@@ -19,3 +19,14 @@ concepts:
 tags:
   - mode
   - insert
+
+lesson:
+  - title: "Typing happens in INSERT mode"
+    body: "In NORMAL mode every key is a command, so typing text does not work there. Press i to enter INSERT mode, and from then on what you type goes into the text."
+    keys: "i"
+  - title: "i inserts before the cursor"
+    body: "The text goes in front of the character under the cursor and the rest moves to the right. On the b of bar, i then foo gives foobar."
+    keys: "ifoo<Esc>"
+  - title: "Leave with Esc"
+    body: "Esc leaves INSERT mode. Press it as soon as you finish typing, so the next keys are commands again and not more text."
+    keys: "<Esc>"

@@ -19,3 +19,16 @@ concepts:
 tags:
   - insert
   - append
+
+lesson:
+  - title: "Three ways into INSERT mode"
+    body: "i inserts before the cursor, a inserts after it, and o opens a new empty line below and starts typing there. All of them leave you in INSERT mode until you press Esc."
+  - title: "a: insert after the cursor"
+    body: "The cursor sits ON a character, so i puts text in front of it and a puts text behind it. To add to the end of a word, stand on its last letter and press a. On the e of name, a then d gives named."
+    keys: "a"
+  - title: "o: a new line below"
+    body: "o opens a fresh line under the current one, wherever the cursor is, and you can type at once. You do not need to go to the end of the line first."
+    keys: "o"
+  - title: "Finish with Esc"
+    body: "Everything you type stays in INSERT mode until you press Esc. Write your text, press Esc once, and you are back in NORMAL mode, ready for the next command."
+    keys: "<Esc>"

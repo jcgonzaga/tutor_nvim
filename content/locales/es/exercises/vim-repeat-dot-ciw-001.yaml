@@ -1,0 +1,7 @@
+id: vim-repeat-dot-ciw-001
+title: "Reemplaza cada old"
+instruction: "Reemplaza las tres old por new."
+hints:
+  - "Cambia una, muévete a la siguiente y repite."
+  - "ww llega a la siguiente old (la coma cuenta como palabra)."
+explanation: "ciwnew<Esc> cambia la palabra bajo el cursor por new. Luego ww llega a la siguiente old (la coma es una palabra por sí sola) y . repite el cambio completo, ciw más el texto más Esc, con una sola tecla. ciw funciona desde cualquier punto de la palabra, así que el punto no necesita una posición exacta."

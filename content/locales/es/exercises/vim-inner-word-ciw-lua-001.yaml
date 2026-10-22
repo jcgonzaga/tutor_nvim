@@ -1,0 +1,7 @@
+id: vim-inner-word-ciw-lua-001
+title: "ciw en Lua"
+instruction: "Dale un mejor nombre a speed: velocity. El cursor está en medio de la palabra."
+hints:
+  - "El mismo comando, otro lenguaje."
+  - "ciw"
+explanation: "ciw cambia la palabra speed entera desde la e del medio, así que escribes velocity y no queda nada atrás. cw solo cambiaría eed y dejaría sp delante, con el resultado spvelocity. El objeto de texto no depende de en qué punto de la palabra esté el cursor."

@@ -1,0 +1,7 @@
+id: vim-inner-word-ciw-js-001
+title: "Cambia una palabra desde el medio"
+instruction: "Cambia price por cost. El cursor está en medio de la palabra."
+hints:
+  - "ciw cambia la palabra entera, esté donde esté el cursor dentro de ella."
+  - "c, i, w, luego la palabra nueva, luego Esc."
+explanation: "iw es la palabra entera, así que ciw reemplaza price aunque el cursor esté en la i del medio. cw solo cambiaría desde el cursor hasta el final (ice) y dejaría pr delante, con el resultado prcost."

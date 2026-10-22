@@ -1,0 +1,7 @@
+id: vim-change-cw-vs-dw-001
+title: "¿cw, o dw y luego insertar?"
+instruction: "Cambia bar por qux."
+hints:
+  - "dw también borra el espacio que sigue a la palabra. cw no."
+  - "cw, luego qux, luego Esc."
+explanation: "cw cambia bar pero conserva el espacio que le sigue, así que cw, qux, Esc da foo qux baz. dw también borra ese espacio, por lo que tras dw e iqux obtienes foo quxbaz a menos que escribas también un espacio. Por eso c es mejor que d más i cuando vas a escribir un reemplazo."

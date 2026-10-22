@@ -1,0 +1,7 @@
+id: vim-inner-parens-shell-001
+title: "Cambia una sustitución de comandos"
+instruction: "Reemplaza el comando dentro de $( ) por uname."
+hints:
+  - "$( ) tiene paréntesis como cualquier otro."
+  - "ci("
+explanation: "En $(date +%s) los paréntesis marcan una sustitución de comandos, pero Vim solo ve un par de ( ). ci( reemplaza date +%s por uname y conserva $( ). Un solo comando cambia el comando completo y sus argumentos."

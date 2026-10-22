@@ -1,0 +1,7 @@
+id: vim-inner-parens-di-py-001
+title: "Vacía una llamada"
+instruction: "Quita todos los argumentos pero conserva los paréntesis."
+hints:
+  - "Borrar + dentro + paréntesis."
+  - "di("
+explanation: "di( borra todo lo que hay entre los paréntesis que rodean al cursor, sea cual sea el número de argumentos, y deja compute(). Funciona desde cualquier posición dentro de la llamada, así que no tienes que ir al primer argumento."

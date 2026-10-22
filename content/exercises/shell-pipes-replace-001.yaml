@@ -38,3 +38,4 @@ metadata:
   context: config
   estimatedSeconds: 20
   transferTags: []
+explanation: "A single > empties draft.txt and then writes reset, so the old lines a and b disappear. With >> the file would end up as a, b and reset, which is not what was asked."

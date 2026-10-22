@@ -48,3 +48,4 @@ metadata:
   context: project
   estimatedSeconds: 15
   transferTags: []
+explanation: "-n puts the line number before each match, as number:text. In app.js, line 1 is const API_URL and line 2 is console.log(API_URL), so both are listed, and the first one starts with 1:const API_URL."

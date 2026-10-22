@@ -1,0 +1,7 @@
+id: vim-line-end-001
+title: "Salta al final de la línea"
+instruction: "Mueve el cursor al último carácter de la línea."
+hints:
+  - "$ va al final de la línea."
+  - "Una sola tecla."
+explanation: "$ mueve al último carácter de la línea con una sola tecla, sea cual sea su longitud. Pulsar l dieciocho veces también llega, pero ese es el mal hábito que esta habilidad sustituye."

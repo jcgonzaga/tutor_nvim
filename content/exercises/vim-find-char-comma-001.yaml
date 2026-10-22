@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "f, jumps onto the next comma on the line in two keys. Pressing l seven times also works, but you must count; f lets you name the target instead of measuring the distance."

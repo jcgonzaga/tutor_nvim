@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:lua
+
+explanation: "0 jumps to the very first column of the line in one key. From the end of this line it replaces eleven presses of h. The line has no indentation, so the first column is also the first character."

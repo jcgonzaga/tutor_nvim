@@ -1,0 +1,7 @@
+id: vim-undo-002
+title: "Rehaz lo que deshiciste"
+instruction: 'Deshiciste demasiado. Rehaz el primer borrado, para que quede "two three".'
+hints:
+  - "Deshacer tiene una contraparte que repite lo que deshiciste."
+  - "Ctrl-r rehace el último cambio deshecho."
+explanation: "Dos pulsaciones de u devolvieron el texto al inicio. <C-r> (Ctrl-r) es rehacer: vuelve a aplicar el cambio que deshiciste en último lugar, aquí el primer dw, y deja two three. Una segunda <C-r> rehacería el otro dw y te pasarías."

@@ -1,0 +1,10 @@
+id: vim-textobject-inner-word
+title: "Dentro de una palabra"
+description: "Opera sobre la palabra bajo el cursor con iw, esté donde esté el cursor dentro de ella."
+lesson:
+  - title: "Una palabra entera, desde cualquier punto"
+    body: "iw es la palabra entera bajo el cursor, esté el cursor en su primera letra, en el medio o en la última. Úsalo para reemplazar o borrar una palabra sin ir antes hasta su inicio."
+  - title: "Operador más iw"
+    body: "ciw cambia la palabra entera y diw la borra. cw o dw a secas solo actúan desde el cursor hasta el final de la palabra, así que desde el medio dejan el principio sin tocar."
+  - title: "Qué cuenta como palabra"
+    body: "Letras, dígitos y guiones bajos forman una palabra. La puntuación a su lado, como comillas, paréntesis o puntos, no forma parte de ella. Así, very_long es una palabra, pero user.name son tres."

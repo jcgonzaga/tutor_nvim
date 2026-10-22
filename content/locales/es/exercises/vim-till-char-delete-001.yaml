@@ -1,0 +1,7 @@
+id: vim-till-char-delete-001
+title: "Borra hasta un carácter"
+instruction: "Borra los argumentos pero conserva los paréntesis."
+hints:
+  - "Un operador puede usar t como movimiento."
+  - "d, luego t y el carácter antes del cual detenerse."
+explanation: "dt) borra desde el cursor hasta el siguiente ) sin incluirlo, así que arg1, arg2 desaparece y los dos paréntesis se quedan. Diez pulsaciones de x dan el mismo resultado, pero d con un movimiento t dice lo que quieres con tres teclas."

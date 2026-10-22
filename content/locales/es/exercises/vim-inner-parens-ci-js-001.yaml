@@ -1,0 +1,7 @@
+id: vim-inner-parens-ci-js-001
+title: "Cambia el argumento de una llamada"
+instruction: "Reemplaza el argumento oldValue por newValue."
+hints:
+  - "Cambiar + dentro + paréntesis."
+  - "ci("
+explanation: "i( es lo que hay entre ( y ), así que ci( borra oldValue y entra en modo INSERT. El cursor está en medio de la palabra y no importa. cw solo cambiaría desde el cursor hasta el final de la palabra y dejaría la o delante."

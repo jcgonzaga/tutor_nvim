@@ -58,3 +58,5 @@ metadata:
   transferTags:
     - context:python
     - context:config-file
+
+explanation: 'When the cursor is before the first quote on the line, ci" looks ahead for the next pair of quotes, so you do not need to move first. It replaces localhost and keeps the quotes. Walking there with w or l would cost extra keys.'

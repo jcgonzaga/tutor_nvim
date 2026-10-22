@@ -54,3 +54,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "e moves to the last letter of the current word, here the final a of alpha. It is the motion to use when you want to land on the end of a word, for example to append after it. Moving with l would take four presses."

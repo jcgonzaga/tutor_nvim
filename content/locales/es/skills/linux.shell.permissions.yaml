@@ -1,0 +1,10 @@
+id: linux-shell-permissions
+title: "Permisos de archivos"
+description: "Lee y cambia quién puede leer, escribir o ejecutar un archivo con chmod."
+lesson:
+  - title: "Quién puede hacer qué"
+    body: "Cada archivo tiene permisos para tres grupos: el propietario, el grupo y los demás. Cada uno puede leer (r), escribir (w) o ejecutar (x). chmod los cambia."
+  - title: "Números: 4, 2, 1"
+    body: "Leer vale 4, escribir 2 y ejecutar 1; súmalos para cada grupo. Así, 7 es rwx, 6 es rw-, 5 es r-x y 4 es r--. Tres dígitos dan propietario, grupo y demás."
+  - title: "Letras: añadir o quitar"
+    body: "chmod +x añade el permiso de ejecución y chmod -x lo quita, sin tocar los demás permisos. Así haces que un script se pueda ejecutar."

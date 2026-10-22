@@ -49,3 +49,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "The shell has no separate rename command: mv ideas.txt old-ideas.txt moves the file to a new name in the same folder. The old name disappears and the content is kept, which is exactly what renaming means. cp would leave ideas.txt behind."

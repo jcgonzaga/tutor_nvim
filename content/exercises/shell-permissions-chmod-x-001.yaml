@@ -36,3 +36,4 @@ metadata:
   context: project
   estimatedSeconds: 15
   transferTags: []
+explanation: "chmod changes a file's permissions. +x adds the execute permission without touching read and write, so chmod +x run.sh turns a normal 644 script into 755, which the shell can run. Without x, a script cannot be executed."

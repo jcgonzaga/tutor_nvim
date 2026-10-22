@@ -48,3 +48,4 @@ metadata:
   context: notes
   estimatedSeconds: 20
   transferTags: []
+explanation: "Plain mkdir year/2025 fails because year does not exist yet. The -p option creates every missing parent along the path, so mkdir -p year/2025 builds both folders at once. Two separate commands (mkdir year, then mkdir year/2025) also work, just slower."

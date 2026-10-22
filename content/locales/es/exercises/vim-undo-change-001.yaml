@@ -1,0 +1,7 @@
+id: vim-undo-change-001
+title: "Deshaz un cambio"
+instruction: "El nombre se cambió por error. Deshazlo."
+hints:
+  - "Un cambio más el texto escrito es un solo paso de deshacer."
+  - "u"
+explanation: "cwHOST<Esc> es un único cambio: el cw, el texto escrito en modo INSERT y el Esc se deshacen juntos. Una u devuelve PORT=8080; no se deshace letra a letra."

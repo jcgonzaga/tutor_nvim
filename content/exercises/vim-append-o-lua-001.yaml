@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "o creates the line below and enters INSERT mode in one key, so the cursor position on the first line does not matter. Moving to the end of the line first and then pressing Enter is extra work: o already does both."

@@ -1,0 +1,7 @@
+id: shell-navigation-hidden-001
+title: "Muestra los archivos ocultos"
+instruction: "Lista todo el contenido de la carpeta photos, incluidos los archivos ocultos."
+hints:
+  - "Los archivos ocultos empiezan por punto. ls tiene una opción para verlos todos."
+  - "ls -a photos"
+explanation: "Los nombres que empiezan por punto, como .cache, quedan ocultos con un ls normal. La opción -a (all) los incluye, así que ls -a photos los muestra. ls -A hace lo mismo sin . ni .., y ls -la también los muestra, con detalles extra que no pediste."

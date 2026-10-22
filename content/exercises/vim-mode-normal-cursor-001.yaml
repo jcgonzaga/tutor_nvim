@@ -53,3 +53,5 @@ metadata:
   context: prose
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "In INSERT mode the cursor sits after the last character (column 6 of Done.). NORMAL mode must rest ON a character, so Esc leaves INSERT mode and also moves the cursor one place left, onto the period at column 5. That is why the objective is column 5."

@@ -54,3 +54,5 @@ metadata:
   context: prose
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "The cursor is already on the f of fox, so i inserts right before it. Type brown followed by a space so the words stay separated, then press Esc. The space goes after brown because the whole text is inserted in front of fox."

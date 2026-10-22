@@ -64,3 +64,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:javascript
+
+explanation: "$a;<Esc> appends a ; to line 1. The dot repeats the whole insertion, so on each next line j$ gets the cursor to the end and . types the ; again. $ is needed first because a inserts after the cursor, and the cursor is not at the end of the new line."

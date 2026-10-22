@@ -1,0 +1,10 @@
+id: vim-textobject-inner-quotes
+title: "Dentro de comillas"
+description: 'Opera sobre el texto dentro de un par de comillas con i" y a".'
+lesson:
+  - title: "Edita lo que hay dentro de comillas"
+    body: 'i" es el objeto de texto del texto entre un par de comillas dobles. Úsalo para cambiar el valor de una cadena sin tocar las comillas ni ir hasta su primera letra.'
+  - title: 'Operador más i"'
+    body: 'Pon un operador delante: ci" reemplaza el contenido de la cadena, di" la vacía. El cursor puede estar en cualquier punto de la cadena. Si está antes de la primera comilla de la línea, Vim busca la siguiente cadena hacia delante.'
+  - title: "Solo en la misma línea"
+    body: "Los objetos de comillas funcionan solo en la línea actual. Con dos cadenas en una línea, cambia aquella en la que está el cursor."

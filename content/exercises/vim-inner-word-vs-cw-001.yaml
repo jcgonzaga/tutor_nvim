@@ -59,3 +59,5 @@ metadata:
   context: prose
   estimatedSeconds: 12
   transferTags: []
+
+explanation: "The cursor is on the i of quick. cw only changes from the cursor to the end of the word, so it would leave qu in front of slow. ciw takes the whole word wherever the cursor is. b then cw also works, but only because you first walk back to the start of the word."

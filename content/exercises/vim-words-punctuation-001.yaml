@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "For w, symbols such as = and * are words of their own, so the line has more stops than it seems: total, =, price, *, qty. It takes five w presses. If you count only the names you stop two words short."

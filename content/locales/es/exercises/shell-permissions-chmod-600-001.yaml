@@ -1,0 +1,7 @@
+id: shell-permissions-chmod-600-001
+title: "Mantenlo privado"
+instruction: "Escribe chmod 600 secret.txt para que solo tú puedas leerlo y escribirlo."
+hints:
+  - "Tres dígitos: propietario, grupo, demás."
+  - "6 es lectura más escritura."
+explanation: "Los tres dígitos son propietario, grupo y demás. 6 es lectura (4) más escritura (2) para ti, y 0 no da nada al grupo ni a los demás, así que chmod 600 secret.txt deja el archivo privado. El bit de ejecución (1) no hace falta en un archivo de datos."

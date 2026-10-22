@@ -19,3 +19,14 @@ concepts:
 tags:
   - motion
   - find
+
+lesson:
+  - title: "t stops just before"
+    body: "t works like f, but the cursor stops on the character before the one you name. Use it when you want to land next to a character instead of on it."
+    keys: "t;"
+  - title: "Repeat and reverse"
+    body: "After f or t, ; repeats the same search to the next match and , repeats it in the opposite direction. You do not have to type the character again."
+    keys: ";"
+  - title: "Pair it with an operator"
+    body: "Operators such as d and c accept t as their motion. dt, deletes up to, but not including, the next comma, so the delimiter stays."
+    keys: "dt,"

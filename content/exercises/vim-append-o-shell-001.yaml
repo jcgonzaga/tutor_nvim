@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:shell
+
+explanation: "Same idea in a shell file: o opens a line below and starts INSERT mode, and everything you type goes in literally, quotes included. Type the alias line, then press Esc to return to NORMAL mode."

@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "d$ deletes from the cursor to the end of the line. The cursor is on the space before //, so the space and the whole comment go in one command, leaving const a = 1;. With x it would be 13 presses."

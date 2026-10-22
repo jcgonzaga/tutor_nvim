@@ -54,3 +54,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 6
   transferTags: []
+
+explanation: "Each w jumps to the start of the next word: two, three, four. Three presses put you on the f of four. Tapping l would take 14 presses and you would have to count the letters."

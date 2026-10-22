@@ -57,3 +57,5 @@ metadata:
   context: source-code
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "return is on the last line, after four spaces of indentation. Press j four times to reach line 5, then l four times to cross the four spaces and land on the r. The cursor starts in column 1, so count the indentation."

@@ -1,0 +1,7 @@
+id: vim-ci-quotes-001
+title: "Cambia dentro de comillas"
+instruction: 'Cambia solo el texto dentro de las comillas por "production".'
+hints:
+  - "Piensa Cambiar + Dentro (Inside)."
+  - '¿Qué objeto de texto representa "?'
+explanation: 'i" significa dentro de las comillas, así que ci" borra development, conserva las dos comillas y entra en modo INSERT. El cursor está en medio de la palabra y no importa: el objeto de texto encuentra el par que lo rodea. cw solo cambiaría desde el cursor hasta el final de la palabra.'

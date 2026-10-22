@@ -1,0 +1,7 @@
+id: shell-copy-move-mv-001
+title: "Renombra un archivo"
+instruction: "Escribe mv ideas.txt old-ideas.txt para renombrar el archivo."
+hints:
+  - "mv mueve, y renombrar es mover a un nombre nuevo."
+  - "mv ideas.txt old-ideas.txt"
+explanation: "La shell no tiene un comando aparte para renombrar: mv ideas.txt old-ideas.txt mueve el archivo a un nombre nuevo en la misma carpeta. El nombre antiguo desaparece y el contenido se conserva, que es justo lo que significa renombrar. cp dejaría ideas.txt atrás."

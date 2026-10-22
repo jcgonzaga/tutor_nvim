@@ -51,3 +51,4 @@ metadata:
   context: config
   estimatedSeconds: 20
   transferTags: []
+explanation: "On a folder, grep needs -r (recursive) to look inside every file below it. grep -r DEBUG project finds the word in project/config/dev.env and prod.env, and prefixes each match with its path so you know where it came from."

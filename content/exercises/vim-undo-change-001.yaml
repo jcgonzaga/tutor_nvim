@@ -54,3 +54,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:config-file
+
+explanation: "cwHOST<Esc> is a single change: the cw, the text typed in INSERT mode and the Esc undo together. One u brings back PORT=8080; you do not undo it letter by letter."

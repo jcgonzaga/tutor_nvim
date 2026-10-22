@@ -44,3 +44,4 @@ metadata:
   context: notes
   estimatedSeconds: 15
   transferTags: []
+explanation: "mkdir stands for make directory. Followed by a name, as in mkdir backup, it creates a new empty folder in the current directory. Nothing else is needed, and existing folders such as notes are not touched."

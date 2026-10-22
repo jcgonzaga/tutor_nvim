@@ -17,3 +17,14 @@ concepts:
   - history
 tags:
   - undo
+
+lesson:
+  - title: "Undo and redo"
+    body: "u undoes the last change and Ctrl-r redoes what you undid. Editing is safe: you can try something and go back."
+    keys: "u"
+  - title: "One change is one step"
+    body: "A change is one command such as dw, or everything you typed in a single stay in INSERT mode, from i to Esc. One u undoes all of it. Press u again to go back another step."
+    keys: "u"
+  - title: "Went too far? Redo"
+    body: "If you press u once too often, <C-r> brings the change back. You can walk back and forth through the history until the text is how you want it."
+    keys: "<C-r>"

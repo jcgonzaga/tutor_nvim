@@ -1,0 +1,7 @@
+id: shell-permissions-chmod-600-002
+title: "Un token privado"
+instruction: "Haz privado el archivo token: tú puedes leerlo y escribirlo, nadie más puede hacer nada."
+hints:
+  - "Propietario con lectura y escritura es 6, grupo y demás reciben 0."
+  - "chmod 600 config/token"
+explanation: "Tú puedes leer y escribir (4 + 2 = 6) y nadie más recibe nada (0 y 0), así que el modo es 600. Lo ejecutas desde tu carpeta personal, por lo que el archivo necesita su ruta: chmod 600 config/token."

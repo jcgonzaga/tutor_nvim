@@ -1,0 +1,7 @@
+id: shell-navigation-cd-001
+title: "Entra en una carpeta"
+instruction: "Entra en la carpeta src del proyecto."
+hints:
+  - "cd cambia de directorio."
+  - "Una ruta puede tener varias carpetas: project/src."
+explanation: "cd acepta una ruta con varios pasos, así que cd project/src entra directamente en src desde tu carpeta personal. Usar cd project y luego cd src acaba en el mismo sitio, pero necesita dos comandos para un solo movimiento."

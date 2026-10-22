@@ -48,3 +48,4 @@ metadata:
   context: logs
   estimatedSeconds: 15
   transferTags: []
+explanation: "head shows the start of a file, and -n 2 limits it to two lines: INFO server started and ERROR disk full. head -2 is a shorter way to write the same thing."

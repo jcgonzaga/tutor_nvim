@@ -54,3 +54,5 @@ metadata:
   estimatedSeconds: 8
   transferTags:
     - context:shell
+
+explanation: "The cursor is on the first character of the line, so i inserts text before everything else. Type sudo followed by a space and press Esc. No movement is needed because the insertion point is already where you want it."

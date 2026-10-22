@@ -18,3 +18,16 @@ concepts:
 tags:
   - search
   - text
+
+lesson:
+  - title: "Search inside, or by name"
+    body: "grep looks for text inside files and prints the matching lines. find looks for files by their name and prints their paths. Pick the one that matches your question."
+  - title: "grep: pattern, then file"
+    body: "grep word file prints every line of the file that contains the word. Add -n to show line numbers, or -c to print only how many lines match."
+    keys: "grep -n word file"
+  - title: "grep -r searches folders"
+    body: "On a folder, grep needs -r to look inside every file below it. Each result then starts with the file it came from, as path:line."
+    keys: "grep -r word folder"
+  - title: "find: where to look, what name"
+    body: "find folder -name pattern lists the paths whose name matches. Quote the pattern so find sees the star, not the shell."
+    keys: "find . -name '*.txt'"

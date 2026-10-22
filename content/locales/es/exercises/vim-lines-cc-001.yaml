@@ -1,0 +1,7 @@
+id: vim-lines-cc-001
+title: "Reemplaza una línea entera"
+instruction: "Reemplaza la línea del medio por let b = 2;"
+hints:
+  - "cc borra el texto de la línea y entra en modo INSERT."
+  - "cc, escribe la línea nueva, Esc."
+explanation: "cc vacía la línea actual y entra en modo INSERT sobre ella, así que escribes el texto nuevo y pulsas Esc. Reemplaza la línea con un solo comando. El camino más largo dd, k, o da el mismo resultado en más pasos y es fácil equivocarse."

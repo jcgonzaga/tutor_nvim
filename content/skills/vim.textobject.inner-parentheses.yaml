@@ -20,3 +20,16 @@ concepts:
 tags:
   - text-object
   - parentheses
+
+lesson:
+  - title: "Edit what is inside ( )"
+    body: "i( is the text object for everything between a pair of parentheses: call arguments, conditions, parameter lists. You can edit it from anywhere inside the pair."
+    keys: "i("
+  - title: "Operator plus i("
+    body: "Put an operator in front: di( empties the parentheses, ci( empties them and lets you type the new contents. The parentheses themselves stay."
+    keys: "ci("
+  - title: "Nested pairs"
+    body: "With nested parentheses, i( uses the innermost pair around the cursor. To reach the outer pair, put the cursor where only the outer one surrounds it."
+  - title: "a( includes the parentheses"
+    body: "a( is the same object with the parentheses included, so da( removes the pair and what is inside it."
+    keys: "da("

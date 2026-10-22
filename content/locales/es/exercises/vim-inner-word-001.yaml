@@ -1,0 +1,7 @@
+id: vim-inner-word-001
+title: "Cambia la palabra bajo el cursor"
+instruction: 'Cambia "oldName" por "newName", con el cursor en medio de la palabra.'
+hints:
+  - "Piensa Cambiar + Dentro + Palabra."
+  - "ciw funciona desde cualquier posición dentro de la palabra."
+explanation: "iw es la palabra entera bajo el cursor, desde cualquier posición dentro de ella. El cursor está en la N de oldName, así que ciw borra todo oldName y escribes newName. cw solo borraría Name y dejaría old delante, con el resultado oldnewName."

@@ -48,3 +48,4 @@ metadata:
   context: project
   estimatedSeconds: 15
   transferTags: []
+explanation: "pwd stands for print working directory. It prints the full path of the folder you are in, which here is /home/user. It changes nothing; it only tells you where commands such as ls or cp will act."

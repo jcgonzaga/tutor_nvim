@@ -1,0 +1,7 @@
+id: vim-navigation-atomic-001
+title: "Muévete por la fila base"
+instruction: 'Mueve el cursor a la "i" de "epsilon" (dos líneas abajo y luego a la derecha).'
+hints:
+  - "j baja, l va a la derecha."
+  - "Dos líneas abajo y luego tres caracteres a la derecha."
+explanation: "El objetivo está en la línea 3, así que pulsa j dos veces. Después l tres veces te lleva de la e a la i de epsilon (de la columna 1 a la 4). Cada tecla mueve un paso, así que cuenta primero los pasos; las flechas harían lo mismo pero sacan la mano de la fila base."

@@ -1,0 +1,7 @@
+id: shell-remove-rm-r-001
+title: "Borrar una carpeta"
+instruction: "Escribe rm -r old para borrar una carpeta y todo lo que contiene."
+hints:
+  - "rm a secas se niega a borrar carpetas."
+  - "-r significa recursivo."
+explanation: "rm a secas se niega a borrar una carpeta. -r (recursivo) hace que rm entre en old, borre app.log.1 y luego la propia carpeta. app.log no se toca porque solo se nombra old."

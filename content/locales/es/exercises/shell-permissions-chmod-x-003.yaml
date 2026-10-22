@@ -1,0 +1,7 @@
+id: shell-permissions-chmod-x-003
+title: "Quita el permiso de ejecución"
+instruction: "Quita el permiso de ejecución de run.sh."
+hints:
+  - "+ añade, - quita."
+  - "chmod -x run.sh"
+explanation: "Igual que + añade un permiso, - lo quita: chmod -x run.sh quita el bit de ejecución y deja lectura y escritura, convirtiendo 755 en 644. Escribir chmod 644 run.sh da el mismo resultado, pero tienes que calcular los dígitos tú."

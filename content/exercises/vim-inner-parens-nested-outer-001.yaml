@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 14
   transferTags:
     - context:javascript
+
+explanation: "The cursor is on the 2, which is inside foo( ) but not inside bar( ). The innermost pair around it is foo's, so ci( replaces bar(1), 2 entirely with 0. Same keys as the previous exercise: the cursor position decides which parentheses count."

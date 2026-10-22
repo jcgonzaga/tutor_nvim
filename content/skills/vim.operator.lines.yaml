@@ -19,3 +19,14 @@ concepts:
 tags:
   - operator
   - line
+
+lesson:
+  - title: "Operators on whole lines"
+    body: "Doubling an operator applies it to the whole current line: dd deletes it, yy copies it and cc replaces it. The cursor can be anywhere on the line."
+    keys: "dd"
+  - title: "cc rewrites a line"
+    body: "cc empties the line and puts you in INSERT mode, so you type the replacement and press Esc. It is one command instead of deleting the line and opening a new one."
+    keys: "cc"
+  - title: "Lines can be put back"
+    body: "A line removed with dd is kept in a register. p puts it below the cursor line and P puts it above, so you can move lines around."
+    keys: "p"

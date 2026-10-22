@@ -1,0 +1,7 @@
+id: vim-lines-dd-last-001
+title: "Borra la última línea"
+instruction: "Borra la última línea, que está comentada."
+hints:
+  - "El cursor ya está sobre ella."
+  - "dd"
+explanation: "dd borra la línea actual entera, esté donde esté el cursor. Aquí el cursor ya está sobre #old, así que no necesitas moverte antes, y el cursor queda en la nueva última línea."

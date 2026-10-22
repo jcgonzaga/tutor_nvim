@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:typescript
+
+explanation: "nme ends at the colon, because punctuation is not part of a word, so cw changes exactly nme and leaves : string alone. Typing name replaces the typo in a single edit, instead of fixing it letter by letter with x and i."

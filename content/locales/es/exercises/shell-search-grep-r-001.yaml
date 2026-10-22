@@ -1,0 +1,7 @@
+id: shell-search-grep-r-001
+title: "Buscar en todos los archivos"
+instruction: "Busca la palabra DEBUG en todos los archivos de project."
+hints:
+  - "Para buscar dentro de carpetas, grep necesita una opción."
+  - "-r busca de forma recursiva."
+explanation: "Con una carpeta, grep necesita -r (recursivo) para mirar dentro de todos los archivos que hay debajo. grep -r DEBUG project encuentra la palabra en project/config/dev.env y prod.env, y antepone a cada coincidencia su ruta para que sepas de dónde viene."

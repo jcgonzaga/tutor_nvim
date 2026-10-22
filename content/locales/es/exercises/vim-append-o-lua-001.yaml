@@ -1,0 +1,7 @@
+id: vim-append-o-lua-001
+title: "Añade una segunda variable"
+instruction: "Añade local b = 2 en la línea de abajo."
+hints:
+  - "¿Necesitas moverte antes al final de la línea?"
+  - "o lo hace por ti."
+explanation: "o crea la línea de abajo y entra en modo INSERT con una sola tecla, así que la posición del cursor en la primera línea no importa. Moverte antes al final de la línea y pulsar Enter es trabajo de más: o ya hace las dos cosas."

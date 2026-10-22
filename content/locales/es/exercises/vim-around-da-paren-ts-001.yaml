@@ -1,0 +1,7 @@
+id: vim-around-da-paren-ts-001
+title: "Borra los paréntesis de una llamada (TypeScript)"
+instruction: "Elimina los paréntesis y sus argumentos."
+hints:
+  - "Alrededor de los paréntesis."
+  - "da("
+explanation: "da( borra (a, b) incluidos los paréntesis y deja max + 1. di( dejaría max() + 1. El cursor está en a, dentro de los paréntesis, así que el objeto se encuentra sin moverte."

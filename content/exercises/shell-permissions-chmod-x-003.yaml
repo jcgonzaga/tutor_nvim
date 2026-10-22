@@ -41,3 +41,4 @@ metadata:
   context: project
   estimatedSeconds: 20
   transferTags: []
+explanation: "Just as + adds a permission, - removes it: chmod -x run.sh takes the execute bit away and leaves read and write, turning 755 into 644. Typing chmod 644 run.sh gets the same result, but you must work out the digits yourself."

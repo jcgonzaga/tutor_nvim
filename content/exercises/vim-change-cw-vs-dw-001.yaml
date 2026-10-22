@@ -57,3 +57,5 @@ metadata:
   context: prose
   estimatedSeconds: 12
   transferTags: []
+
+explanation: "cw changes bar but keeps the space after it, so cw, qux, Esc gives foo qux baz. dw also deletes that space, so after dw and iqux you get foo quxbaz unless you type a space too. That is why c is better than d plus i when you are going to type a replacement."

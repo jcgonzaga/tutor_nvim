@@ -1,0 +1,7 @@
+id: shell-pipes-filter-001
+title: "Guarda solo los errores"
+instruction: "Guarda solo las líneas ERROR de app.log en errors.txt."
+hints:
+  - "Filtra primero y redirige después."
+  - "grep ERROR app.log > errors.txt"
+explanation: "grep ERROR app.log imprime solo las líneas que coinciden, y > errors.txt las envía a un archivo en lugar de a la pantalla. Solo se busca en app.log, así que ERROR crash de old/app.log.1 queda fuera, como debe."

@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:python
+
+explanation: "t( is a motion that goes up to, but not onto, the next (. With d in front, dt( deletes everything from the cursor to just before the parenthesis and keeps the ( itself. df( would also delete it, because f includes the target character."

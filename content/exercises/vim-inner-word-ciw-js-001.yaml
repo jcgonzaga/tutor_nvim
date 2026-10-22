@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "iw is the whole word, so ciw replaces price even though the cursor is on the i in the middle. cw would only change from the cursor to the end (ice) and leave pr in front, giving prcost."

@@ -1,0 +1,7 @@
+id: vim-repeat-dot-cw-001
+title: "Repite un cambio"
+instruction: "Renombra los dos foo a bar, repitiendo el cambio."
+hints:
+  - "Haz el cambio una vez, muévete y repítelo."
+  - ". repite el último cambio."
+explanation: "cwbar<Esc> cambia el primer foo por bar. ww se mueve al segundo foo, ya que el = es una palabra intermedia, y . repite allí el cambio completo: una tecla en lugar de seis. Solo se repite el último cambio, así que haz la edición antes de usar el punto."

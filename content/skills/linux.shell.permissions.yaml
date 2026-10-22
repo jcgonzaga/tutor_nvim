@@ -18,3 +18,14 @@ concepts:
 tags:
   - permissions
   - security
+
+lesson:
+  - title: "Who may do what"
+    body: "Every file has permissions for three groups: the owner, the group and others. Each may read (r), write (w) or execute (x). chmod changes them."
+    keys: "chmod"
+  - title: "Numbers: 4, 2, 1"
+    body: "Read is 4, write is 2 and execute is 1; add them for each group. So 7 is rwx, 6 is rw-, 5 is r-x and 4 is r--. Three digits give owner, group, others."
+    keys: "chmod 640 file"
+  - title: "Letters: add or remove"
+    body: "chmod +x adds the execute permission and chmod -x removes it, leaving the other permissions untouched. That is how you make a script runnable."
+    keys: "chmod +x script"

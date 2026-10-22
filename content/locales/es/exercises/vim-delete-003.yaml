@@ -1,0 +1,7 @@
+id: vim-delete-003
+title: "Borra hasta el final y vuelve al inicio"
+instruction: "Borra todo desde la coma hasta el final de la línea y luego coloca el cursor en el primer carácter."
+hints:
+  - "$ es el movimiento hasta el final de la línea."
+  - "Borra con d$ y salta al inicio con 0."
+explanation: "d$ borra desde el cursor, que está en la coma, hasta el final de la línea y deja keep this. El cursor queda en el último carácter que sobrevive, así que 0, un movimiento por sí solo, lo lleva al primero. d más un movimiento borra; un movimiento solo únicamente mueve."

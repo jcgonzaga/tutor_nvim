@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:python
+
+explanation: "B treats everything between spaces as one word, so from the closing parenthesis a single B jumps back to the start of compute(value). Lowercase b also works, but it stops at every symbol: value, (, then compute, which is three presses."

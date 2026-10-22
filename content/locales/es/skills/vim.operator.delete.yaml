@@ -1,0 +1,12 @@
+id: vim-operator-delete
+title: "Borrar"
+description: "Borra texto combinando d con un movimiento, y líneas enteras con dd."
+lesson:
+  - title: "d es un operador"
+    body: "d significa borrar, pero necesita saber cuánto. Le das un movimiento y se borra el texto desde el cursor hasta donde ese movimiento termina."
+  - title: "Combina d con movimientos"
+    body: "dw borra hasta el inicio de la palabra siguiente, d$ hasta el final de la línea y d0 hasta el inicio. dt( borra hasta el siguiente ( sin incluirlo. Aprende un movimiento una vez y todos los operadores pueden usarlo."
+  - title: "Líneas enteras y objetos de texto"
+    body: "Duplicar el operador, dd, borra la línea actual entera. d seguida de i y unas comillas o un paréntesis borra lo que hay dentro del par, como di( para los argumentos de una llamada, desde cualquier punto de su interior."
+  - title: "El texto borrado se guarda"
+    body: "Lo que quita d va a un registro, así que puedes pegarlo en otro sitio con p. Así se corta y se pega en Vim."

@@ -1,0 +1,7 @@
+id: shell-remove-rm-001
+title: "Borrar un archivo"
+instruction: "Escribe rm draft.txt para borrar el archivo."
+hints:
+  - "rm elimina. No hay papelera."
+  - "rm draft.txt"
+explanation: "rm draft.txt borra exactamente el archivo que nombras, de forma permanente y sin papelera. keep.txt se salva porque nunca lo nombraste."

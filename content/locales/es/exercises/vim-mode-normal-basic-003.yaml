@@ -1,0 +1,7 @@
+id: vim-mode-normal-basic-003
+title: "Sal del modo INSERT en un archivo de shell"
+instruction: "Estás escribiendo en modo INSERT. Vuelve al modo NORMAL."
+hints:
+  - "El modo NORMAL es donde las teclas son comandos."
+  - "Una tecla sale del modo INSERT."
+explanation: "Funciona igual en cualquier tipo de archivo: Esc sale del modo INSERT y vuelve al modo NORMAL. El texto, aunque sea una línea como export PATH=$HOME/bin, no cambia; solo cambia el modo."

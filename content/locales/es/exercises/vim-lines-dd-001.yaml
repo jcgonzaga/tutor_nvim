@@ -1,0 +1,7 @@
+id: vim-lines-dd-001
+title: "Borra una línea entera"
+instruction: "Borra la línea con pears."
+hints:
+  - "Duplicar el operador actúa sobre la línea entera."
+  - "dd"
+explanation: "dd borra la línea actual entera, así que con el cursor en pears esa línea desaparece y plums sube. Duplicar el operador significa la línea entera: no necesitas seleccionarla ni borrarla carácter a carácter."

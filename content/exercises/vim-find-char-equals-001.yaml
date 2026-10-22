@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:shell
+
+explanation: "f= jumps onto the next = on the line, so you skip over export and API_KEY without counting. Naming the character is faster and less error-prone than pressing l fourteen times."

@@ -1,0 +1,12 @@
+id: linux-shell-search
+title: "Buscar texto y archivos"
+description: "Encuentra líneas con grep y archivos con find."
+lesson:
+  - title: "Busca dentro, o por nombre"
+    body: "grep busca texto dentro de los archivos e imprime las líneas que coinciden. find busca archivos por su nombre e imprime sus rutas. Elige el que responda a tu pregunta."
+  - title: "grep: patrón y luego archivo"
+    body: "grep palabra archivo imprime cada línea del archivo que contiene la palabra. Añade -n para ver los números de línea, o -c para mostrar solo cuántas líneas coinciden."
+  - title: "grep -r busca en carpetas"
+    body: "Con una carpeta, grep necesita -r para mirar dentro de todos los archivos que hay debajo. Cada resultado empieza por el archivo de origen, como ruta:línea."
+  - title: "find: dónde buscar y qué nombre"
+    body: "find carpeta -name patrón lista las rutas cuyo nombre coincide. Pon el patrón entre comillas para que find vea el asterisco y no el shell."

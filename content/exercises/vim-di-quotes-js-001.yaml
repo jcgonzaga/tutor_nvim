@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: 'di" means delete inside the quotes: it removes the text between the pair of quotes around the cursor, from anywhere in the string, and keeps the quotes. You do not need to move to the start of the text first.'

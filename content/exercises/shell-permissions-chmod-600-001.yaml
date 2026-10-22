@@ -36,3 +36,4 @@ metadata:
   context: config
   estimatedSeconds: 15
   transferTags: []
+explanation: "The three digits are owner, group and others. 6 is read (4) plus write (2) for you, and 0 gives the group and others nothing, so chmod 600 secret.txt leaves the file private. The execute bit (1) is not needed for a data file."

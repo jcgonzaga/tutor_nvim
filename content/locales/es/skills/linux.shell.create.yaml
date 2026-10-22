@@ -1,0 +1,10 @@
+id: linux-shell-create
+title: "Crear carpetas y archivos"
+description: "Crea carpetas nuevas (mkdir, mkdir -p) y archivos vacíos (touch)."
+lesson:
+  - title: "Crea las cosas antes de usarlas"
+    body: "mkdir crea una carpeta nueva y touch crea un archivo vacío. Úsalos para preparar un sitio donde trabajar."
+  - title: "Indica el nombre"
+    body: "Escribe el nombre después del comando, como mkdir nombre o touch nombre.txt. Con una ruta como a/b el elemento nuevo se crea dentro de a, que ya debe existir."
+  - title: "Carpetas padre y varios nombres"
+    body: "mkdir -p también crea las carpetas padre que falten. Los dos comandos aceptan varios nombres a la vez, separados por espacios."

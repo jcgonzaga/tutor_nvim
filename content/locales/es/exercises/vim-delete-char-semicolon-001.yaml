@@ -1,0 +1,7 @@
+id: vim-delete-char-semicolon-001
+title: "Quita un punto y coma doble"
+instruction: "Borra el punto y coma sobrante."
+hints:
+  - "El cursor ya está sobre uno de ellos."
+  - "x"
+explanation: "El cursor está sobre el segundo punto y coma, así que una sola x lo quita. Una segunda x borraría el punto y coma que quieres conservar, por eso una pulsación es toda la respuesta."

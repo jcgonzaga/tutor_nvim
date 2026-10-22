@@ -1,0 +1,7 @@
+id: vim-till-char-reverse-001
+title: "Vuelve con la coma"
+instruction: "Te pasaste una coma. Vuelve a la segunda coma."
+hints:
+  - "La tecla coma repite la búsqueda en dirección contraria."
+  - ","
+explanation: "Empiezas tras f,;;, que deja el cursor en la tercera coma. La tecla , repite la última búsqueda en dirección contraria, así que una , salta atrás hasta la segunda coma. No confundas el comando , con el carácter coma que se está buscando."

@@ -1,0 +1,7 @@
+id: shell-copy-move-cp-002
+title: "Copia una configuración"
+instruction: "Copia dev.env como staging.env en la misma carpeta."
+hints:
+  - "El original tiene que quedarse."
+  - "cp dev.env staging.env"
+explanation: "Ya estás en config, así que no hacen falta rutas: cp dev.env staging.env crea staging.env con el mismo contenido y conserva dev.env. mv sería un error, porque renombraría el original y el objetivo necesita los dos archivos."

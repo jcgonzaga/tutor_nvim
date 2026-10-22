@@ -44,3 +44,4 @@ metadata:
   context: logs
   estimatedSeconds: 20
   transferTags: []
+explanation: "-c makes grep print how many lines match instead of the lines themselves. app.log has two ERROR lines, so grep -c ERROR app.log prints 2. It is shorter than listing the lines and counting them."

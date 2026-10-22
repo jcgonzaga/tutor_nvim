@@ -55,3 +55,5 @@ metadata:
   transferTags:
     - context:json
     - context:config-file
+
+explanation: "The cursor already sits on the comma, so x deletes exactly that one character and nothing else. There is nothing to select or move: x acts on the character under the cursor, and the line becomes valid JSON."

@@ -19,3 +19,13 @@ concepts:
 tags:
   - motion
   - find
+
+lesson:
+  - title: "Jump to a character on the line"
+    body: "f followed by a character moves the cursor onto the next occurrence of that character on the current line. It replaces pressing l many times."
+    keys: "fe"
+  - title: "It stops at the first match"
+    body: "f stops on the first match to the right of the cursor. If you want a later one, press ; to repeat the search forward, or , to repeat it backward."
+    keys: ";"
+  - title: "Any character works"
+    body: "f accepts any single character, including punctuation such as ( ) , = or quotes. Pick a character that is close to where you want to land."

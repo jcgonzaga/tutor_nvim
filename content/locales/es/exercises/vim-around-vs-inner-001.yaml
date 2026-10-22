@@ -1,0 +1,7 @@
+id: vim-around-vs-inner-001
+title: "¿Dentro (inner) o alrededor (around)?"
+instruction: "Convierte run(a, b); en run; (elimina también los paréntesis)."
+hints:
+  - "di( dejaría los paréntesis."
+  - "da("
+explanation: "Para eliminar también los paréntesis necesitas a( (alrededor), no i( (dentro). da( borra (a, b) y deja run;. di( solo los vaciaría y dejaría run();. Usa i cuando los delimitadores deban quedarse y a cuando deban desaparecer."

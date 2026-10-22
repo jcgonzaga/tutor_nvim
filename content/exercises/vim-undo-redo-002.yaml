@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "dd deleted b and u brought it back. <C-r> replays the deletion, so the buffer is a and c again. Redo is available only until you make a new change, so use it right after the undo."

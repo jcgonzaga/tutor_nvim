@@ -1,0 +1,7 @@
+id: vim-inner-braces-lua-001
+title: "Vacía una tabla de Lua"
+instruction: "Vacía la tabla."
+hints:
+  - "Borrar + dentro + llaves."
+  - "di{"
+explanation: 'di{ borra lo que hay dentro de las llaves que rodean al cursor, sea cual sea la posición del cursor dentro de ellas y cuantos elementos haya, y deja {}. Es la misma idea que di" y di(, solo que con otro par.'

@@ -1,0 +1,7 @@
+id: vim-delete-char-vs-word-001
+title: "¿x o algo más grande?"
+instruction: "Borra la palabra unwanted y el espacio que la sigue."
+hints:
+  - "Nueve pulsaciones de x funcionarían. ¿Hay un comando que borre una palabra?"
+  - "dw borra desde el cursor hasta el inicio de la siguiente palabra."
+explanation: "El cursor está sobre la u de unwanted, y unwanted más su espacio son nueve caracteres. Con x harían falta nueve pulsaciones, mientras que dw borra desde el cursor hasta el inicio de la siguiente palabra con dos teclas. Usa x para un carácter y un operador con un movimiento para algo mayor."

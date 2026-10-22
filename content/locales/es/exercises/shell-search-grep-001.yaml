@@ -1,0 +1,7 @@
+id: shell-search-grep-001
+title: "Encontrar los errores"
+instruction: "Escribe grep ERROR app.log para mostrar solo las líneas con ERROR."
+hints:
+  - "grep imprime las líneas que coinciden."
+  - "grep ERROR app.log"
+explanation: "grep ERROR app.log imprime solo las líneas de app.log que contienen ERROR: disk full y timeout. Las líneas con INFO se omiten, y old/app.log.1 no se busca porque no lo nombraste."

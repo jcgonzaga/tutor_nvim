@@ -1,0 +1,7 @@
+id: shell-remove-rm-r-003
+title: "Borrar un año antiguo"
+instruction: "Borra la carpeta de fotos de 2023."
+hints:
+  - "Una carpeta: necesitas -r."
+  - "rm -r photos/2023"
+explanation: "photos/2023 es una carpeta, así que rm necesita -r; la ruta photos/2023 nombra justo ese año. photos/2024 y readme.txt se quedan. La ruta exacta importa: una carpeta equivocada se borra igual de definitivamente."

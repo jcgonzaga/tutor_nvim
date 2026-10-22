@@ -20,3 +20,13 @@ concepts:
 tags:
   - text-object
   - braces
+
+lesson:
+  - title: "Edit what is inside { }"
+    body: "i{ is the text object for everything between a pair of braces. Use it to rewrite an object, a block or a table without moving to its edges first."
+    keys: "i{"
+  - title: "Operator plus i{"
+    body: "Put an operator in front: di{ empties the braces, ci{ empties them and lets you type. The cursor can be anywhere between the braces; the braces themselves stay."
+    keys: "ci{"
+  - title: "Mind the spaces"
+    body: "On one line, the spaces right after { and before } count as contents. Changing them removes them, so type them back if you want { x } rather than {x}."

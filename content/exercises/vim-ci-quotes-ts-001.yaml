@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:typescript
+
+explanation: 'The cursor is on const, outside the string. ci" jumps ahead to the first pair of quotes on the line and changes only the inside, so the type annotation and the = stay as they are. You do not have to move to the string first.'

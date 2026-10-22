@@ -19,3 +19,14 @@ concepts:
 tags:
   - motion
   - word
+
+lesson:
+  - title: "Back and to the end of a word"
+    body: "b jumps back to the start of a word, and e jumps forward to the last letter of a word. Use them when w would land on the wrong side of where you want to be."
+    keys: "b"
+  - title: "e stops on the last letter"
+    body: "From the start of alpha beta, e lands on the a that ends alpha. Press e again and you land on the end of beta, because from a last letter e goes to the end of the next word."
+    keys: "e"
+  - title: "Capitals ignore punctuation"
+    body: "W, B and E make the same moves but treat anything between spaces as one word. In compute(value), w stops at the ( but W jumps over the whole thing in one go."
+    keys: "W"

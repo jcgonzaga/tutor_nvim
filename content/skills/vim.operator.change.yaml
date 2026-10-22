@@ -20,3 +20,14 @@ concepts:
 tags:
   - operator
   - change
+
+lesson:
+  - title: "Change replaces text"
+    body: "c deletes text and drops you into INSERT mode, so you can type the replacement right away. Use it whenever you would delete something and then type something else."
+    keys: "c"
+  - title: "c plus a motion"
+    body: "c waits for a motion and changes the text that motion covers. With the cursor on the first letter of a word, cw replaces the word; c$ replaces everything up to the end of the line. Press Esc when you finish typing."
+    keys: "cw"
+  - title: "Prefer c over d then i"
+    body: "dw deletes the word and the space after it, so you must type that space back. cw keeps the space. When you are going to type a replacement, c does it in one command."
+    keys: "cw"

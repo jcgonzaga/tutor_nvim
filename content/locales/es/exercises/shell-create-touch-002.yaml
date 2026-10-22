@@ -1,0 +1,7 @@
+id: shell-create-touch-002
+title: "Tres archivos a la vez"
+instruction: "Crea los archivos vacíos a.txt, b.txt y c.txt con un solo comando."
+hints:
+  - "La mayoría de comandos aceptan varios nombres."
+  - "touch a.txt b.txt c.txt"
+explanation: "touch acepta cualquier cantidad de nombres, así que touch a.txt b.txt c.txt crea los tres archivos vacíos con un solo comando. Ejecutar touch tres veces da el mismo resultado, pero con más escritura, y la gracia de la shell es agrupar el trabajo así."

@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:shell
+
+explanation: "0 is a motion to the first character of the line, and d0 deletes from there up to, but not including, the character under the cursor. So # TODO: goes and the cursor stays on the f of fix. With x it would be eight presses."

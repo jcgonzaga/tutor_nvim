@@ -54,3 +54,5 @@ metadata:
   context: source-code
   estimatedSeconds: 5
   transferTags: []
+
+explanation: "The line is indented, so 0 would land on the first blank. ^ goes to the first character that is not a space or tab, the r of return at column 5, which is where the code starts. Use ^ when you want to work on the code of an indented line."

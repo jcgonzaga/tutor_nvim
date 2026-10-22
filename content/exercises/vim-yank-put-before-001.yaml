@@ -56,3 +56,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "yy copies second. P puts a copied line above the cursor line, so go up to the first line with k and press P: the copy lands at the top. With p it would land below first, which is not what you want."

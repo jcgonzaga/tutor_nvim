@@ -1,0 +1,7 @@
+id: vim-navigation-atomic-down-001
+title: "Baja con j"
+instruction: "Mueve el cursor hacia abajo hasta la última línea."
+hints:
+  - "j baja una línea."
+  - "Tres líneas abajo."
+explanation: "Hay cuatro líneas y el cursor empieza en la primera, así que necesitas tres pasos hacia abajo: jjj. Cada j baja una línea y mantiene la columna, por lo que no hace falta ninguna otra tecla."

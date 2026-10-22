@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:python
+
+explanation: 'ci" uses the pair of quotes the cursor is inside. The cursor is in "world", so that string changes and "hello" is untouched. There is no need to walk over with l or w first: the object works from any letter inside the string.'

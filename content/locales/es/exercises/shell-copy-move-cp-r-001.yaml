@@ -1,0 +1,7 @@
+id: shell-copy-move-cp-r-001
+title: "Copia una carpeta entera"
+instruction: "Copia la carpeta src como src-backup, conservando el original."
+hints:
+  - "cp se niega a copiar carpetas si no se lo indicas."
+  - "La opción es -r, de recursivo."
+explanation: "Una carpeta no es un archivo, así que cp a secas la rechaza. cp -r src src-backup copia la carpeta de forma recursiva: se crea src-backup con todos los archivos de src, y src queda como estaba."

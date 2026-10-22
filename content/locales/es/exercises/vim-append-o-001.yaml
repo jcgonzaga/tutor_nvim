@@ -1,0 +1,7 @@
+id: vim-append-o-001
+title: "Abre una línea debajo"
+instruction: "Añade una línea nueva debajo con import sys."
+hints:
+  - "o abre una línea nueva debajo y empieza a escribir ahí."
+  - "o, escribe la línea y luego Esc."
+explanation: "o abre una línea nueva vacía debajo de la actual y entra en modo INSERT, esté donde esté el cursor en la línea. Después escribes la línea nueva y pulsas Esc. Ir al final de la línea y pulsar Enter cuesta más teclas para el mismo resultado."

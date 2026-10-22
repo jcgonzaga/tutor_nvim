@@ -48,3 +48,4 @@ metadata:
   context: project
   estimatedSeconds: 20
   transferTags: []
+explanation: "wc counts lines, words and bytes; -l keeps only the lines. README.md has 2 lines, so wc -l README.md prints 2 followed by the file name. Without -l you would get three numbers."

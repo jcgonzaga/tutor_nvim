@@ -1,0 +1,7 @@
+id: vim-word-ends-back-big-001
+title: "Atrás sobre una llamada completa"
+instruction: "Salta atrás hasta el inicio de compute(value)."
+hints:
+  - "La B mayúscula también salta atrás sobre la puntuación."
+  - "Una sola tecla: B."
+explanation: "B trata todo lo que hay entre espacios como una sola palabra, así que desde el paréntesis de cierre una sola B salta atrás hasta el inicio de compute(value). La b minúscula también funciona, pero se detiene en cada símbolo: value, (, y luego compute, o sea tres pulsaciones."

@@ -56,3 +56,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "There are four lines and the cursor starts on the first, so you need three steps down: jjj. Each j moves down one line and keeps the column, so no other key is needed."

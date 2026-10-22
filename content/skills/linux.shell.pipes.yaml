@@ -20,3 +20,16 @@ concepts:
 tags:
   - pipes
   - redirection
+
+lesson:
+  - title: "Send output somewhere else"
+    body: "Commands print their result on the screen. You can redirect it into a file, or hand it to another command, without retyping anything."
+  - title: "Redirect with > and >>"
+    body: "A command followed by > and a file name saves its output there. > replaces the file's content, >> adds to the end of it."
+    keys: "pwd > where.txt"
+  - title: "Chain commands with a pipe"
+    body: "The | sign feeds the output of the left command into the right one. Chain as many as you need, each doing one small job."
+    keys: "cat todo.txt | wc -l"
+  - title: "The trap: > erases silently"
+    body: "A single > empties the file before writing, and there is no undo. If you only want to add a line, use >>."
+    keys: ">>"

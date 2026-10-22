@@ -1,0 +1,7 @@
+id: shell-search-grep-c-001
+title: "Contar los errores"
+instruction: "Cuenta cuántas líneas ERROR tiene app.log."
+hints:
+  - "grep puede contar en lugar de imprimir."
+  - "grep -c ERROR app.log"
+explanation: "-c hace que grep imprima cuántas líneas coinciden en lugar de las líneas. app.log tiene dos líneas ERROR, así que grep -c ERROR app.log imprime 2. Es más corto que listar las líneas y contarlas."

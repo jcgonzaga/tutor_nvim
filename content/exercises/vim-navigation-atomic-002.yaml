@@ -55,3 +55,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "You start on the i of epsilon (line 3, column 4) and the target is the a of alpha (line 1, column 1). k twice goes up two lines, then h three times goes back three columns. k is up, h is left."

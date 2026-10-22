@@ -1,0 +1,7 @@
+id: vim-line-start-001
+title: "Salta al inicio de la línea"
+instruction: "Mueve el cursor al primer carácter de la línea."
+hints:
+  - "0 va al inicio de la línea."
+  - "Una sola tecla."
+explanation: "0 salta a la primera columna de la línea con una sola tecla. Desde el final de esta línea sustituye once pulsaciones de h. La línea no tiene sangría, así que la primera columna es también el primer carácter."

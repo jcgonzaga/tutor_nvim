@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "ci( replaces everything between the parentheses, a, b, with x, y in one command, comma and space included. It is the same as in JavaScript: the text object finds the pair around the cursor, whatever the language. Changing each argument separately would take several commands."

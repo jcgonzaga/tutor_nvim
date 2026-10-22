@@ -1,0 +1,7 @@
+id: shell-create-mkdir-p-001
+title: "Carpetas de una vez"
+instruction: "Crea la carpeta year/2025 con un solo comando (year todavía no existe)."
+hints:
+  - "mkdir a secas necesita que la carpeta padre exista."
+  - "La opción -p crea también las carpetas padre."
+explanation: "mkdir year/2025 a secas falla porque year todavía no existe. La opción -p crea todas las carpetas padre que falten en la ruta, así que mkdir -p year/2025 crea las dos carpetas de una vez. Dos comandos separados (mkdir year y luego mkdir year/2025) también valen, pero son más lentos."

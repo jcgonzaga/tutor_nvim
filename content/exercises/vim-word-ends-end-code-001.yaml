@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "The first e takes you to the t that ends const. You are now on a last letter, so the second e goes to the end of the next word, total. w would not help here: it lands on the first letter of each word, not on the last one."

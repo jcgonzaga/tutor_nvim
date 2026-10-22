@@ -1,0 +1,10 @@
+id: linux-shell-copy-move
+title: "Copiar, mover y renombrar"
+description: "Copia con cp (y cp -r para carpetas) y mueve o renombra con mv."
+lesson:
+  - title: "Copiar conserva, mover traslada"
+    body: "cp hace una copia y deja el original donde está. mv mueve un archivo, y moverlo a un nombre nuevo en la misma carpeta es la forma de renombrarlo."
+  - title: "Primero el origen, al final el destino"
+    body: "Los dos comandos leen primero el origen y luego el destino. Si el destino es una carpeta que ya existe, el archivo entra en ella; si no, ese es el nombre nuevo."
+  - title: "Las carpetas necesitan -r"
+    body: "cp se niega a copiar una carpeta si no añades -r, que significa recursivo: la carpeta y todo lo que contiene. Un punto solo representa la carpeta actual."

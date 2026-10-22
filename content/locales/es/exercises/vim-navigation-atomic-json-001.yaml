@@ -1,0 +1,7 @@
+id: vim-navigation-atomic-json-001
+title: "Muévete por un archivo JSON"
+instruction: "Mueve el cursor a la n de name."
+hints:
+  - "Una línea abajo y luego a la derecha."
+  - "j una vez y l tres veces."
+explanation: "name está en la línea 2, así que una j te lleva allí. La línea empieza con dos espacios y una comilla, de modo que desde la columna 1 tres pulsaciones de l los atraviesan y caen sobre la n de la columna 4."

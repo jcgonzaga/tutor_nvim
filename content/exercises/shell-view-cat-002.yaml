@@ -45,3 +45,4 @@ metadata:
   transferTags:
     - context:bash
     - context:photos
+explanation: "You do not need to move first: cat accepts a path, so cat photos/readme.txt reads the file from where you are. Running cd photos and then cat readme.txt also works, but it takes an extra command."

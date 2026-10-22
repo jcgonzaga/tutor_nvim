@@ -56,3 +56,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:python
+
+explanation: "w is not limited to the current line. The first w goes from import to os, and the second goes past the line break to the first word of the next line, so you reach it without j."

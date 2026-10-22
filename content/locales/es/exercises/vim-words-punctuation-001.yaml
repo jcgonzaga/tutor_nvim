@@ -1,0 +1,7 @@
+id: vim-words-punctuation-001
+title: "Las palabras se detienen en la puntuación"
+instruction: "Salta al inicio de qty."
+hints:
+  - "= y * cuentan como palabras propias para w."
+  - "Cinco saltos: total, =, price, *, qty."
+explanation: "Para w, los símbolos como = y * son palabras por sí solos, así que la línea tiene más paradas de las que parece: total, =, price, *, qty. Hacen falta cinco pulsaciones de w. Si cuentas solo los nombres te quedas dos palabras antes."

@@ -45,3 +45,4 @@ metadata:
   context: logs
   estimatedSeconds: 15
   transferTags: []
+explanation: "grep ERROR app.log prints only the lines of app.log that contain ERROR: disk full and timeout. Lines with INFO are skipped, and old/app.log.1 is not searched because you did not name it."

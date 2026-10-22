@@ -1,0 +1,10 @@
+id: vim-repeat
+title: "Repetir el último cambio"
+description: "Repite el último cambio con el comando punto."
+lesson:
+  - title: "El punto repite tu último cambio"
+    body: "Pulsa . para repetir el último cambio que hiciste, con el mismo operador, movimiento y texto escrito. Te ahorra volver a escribir el comando en cada edición parecida."
+  - title: "Cambia una vez, muévete, repite"
+    body: "Haz la edición una vez, muévete al siguiente sitio y pulsa . de nuevo. Un cambio puede ser x, dd, dw o una inserción completa como cw más el texto que escribiste. Mover el cursor no es un cambio."
+  - title: "Elige cambios que se repitan bien"
+    body: "Prefiere comandos que funcionen desde cualquier punto del objetivo, como ciw para la palabra bajo el cursor. Así cada repetición solo necesita un movimiento hasta el siguiente objetivo."

@@ -1,0 +1,7 @@
+id: vim-mode-normal-002
+title: "Sal del modo INSERT en código"
+instruction: "Acabas de escribir esta línea en modo INSERT. Vuelve al modo NORMAL."
+hints:
+  - "Las teclas solo actúan como comandos en modo NORMAL."
+  - "Pulsa Esc una vez."
+explanation: "Después de escribir código sigues en modo INSERT, así que más teclas añadirían texto en lugar de ejecutar comandos. Pulsa Esc una vez para volver al modo NORMAL y acostúmbrate a hacerlo en cuanto termines de escribir."

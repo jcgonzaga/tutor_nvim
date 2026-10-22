@@ -1,0 +1,7 @@
+id: vim-delete-word-prose-001
+title: "Borra una palabra en prosa"
+instruction: "Borra la palabra very."
+hints:
+  - "Borrar + palabra."
+  - "dw"
+explanation: "dw borra desde el cursor hasta el inicio de la palabra siguiente, así que quita very y el espacio que le sigue, y la frase conserva el espaciado correcto. Borrar con x costaría cinco pulsaciones."

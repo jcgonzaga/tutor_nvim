@@ -40,3 +40,4 @@ metadata:
   context: project
   estimatedSeconds: 15
   transferTags: []
+explanation: "A script must have the execute permission to run. chmod +x deploy.sh adds it and leaves the other bits alone, so there are no digits to work out. chmod 755 deploy.sh gives the same result but you have to know the number."

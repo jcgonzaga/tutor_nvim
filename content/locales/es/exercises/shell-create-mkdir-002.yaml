@@ -1,0 +1,7 @@
+id: shell-create-mkdir-002
+title: "Una carpeta dentro de otra"
+instruction: "Crea una carpeta llamada tests dentro de project."
+hints:
+  - "Dale a mkdir la ruta completa."
+  - "mkdir project/tests"
+explanation: "mkdir acepta una ruta, así que mkdir project/tests crea tests dentro de project sin que te muevas de donde estás. Funciona porque project ya existe. Usar cd project y luego mkdir tests también llega al objetivo, pero cuesta un comando más y te cambia de carpeta."

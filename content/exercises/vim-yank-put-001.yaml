@@ -60,3 +60,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 5
   transferTags: []
+
+explanation: "yy copies the line the cursor is on, and p puts the copy on the line below, so second appears twice. P also works here because the copy is identical to its neighbour; the difference is only where the copy lands. The cursor column does not matter for a whole line."

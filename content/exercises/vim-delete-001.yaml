@@ -57,3 +57,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 5
   transferTags: []
+
+explanation: "dd deletes the whole current line, wherever the cursor is on it, and the lines below move up. Pressing x for every character would take 16 presses and leave an empty line behind."

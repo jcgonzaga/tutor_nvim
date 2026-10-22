@@ -1,0 +1,7 @@
+id: shell-permissions-chmod-x-002
+title: "Ejecuta el script de despliegue"
+instruction: "Haz ejecutable deploy.sh."
+hints:
+  - "Un script necesita el permiso de ejecución para correr."
+  - "chmod +x deploy.sh"
+explanation: "Un script necesita el permiso de ejecución para correr. chmod +x deploy.sh lo añade y deja los demás bits como están, así que no hay dígitos que calcular. chmod 755 deploy.sh da el mismo resultado, pero tienes que saber el número."

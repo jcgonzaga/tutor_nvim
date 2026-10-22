@@ -54,3 +54,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "b moves back to the start of the previous word. From the g of gamma, one b lands on the b of beta. Tapping h five times gets there too, but costs five keystrokes and grows with every extra letter."

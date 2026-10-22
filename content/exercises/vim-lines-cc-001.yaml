@@ -61,3 +61,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:javascript
+
+explanation: "cc clears the current line and starts INSERT mode on it, so you type the new text and press Esc. It replaces the line in one command. The longer route dd, k, o gets the same result in more steps and is easy to get wrong."

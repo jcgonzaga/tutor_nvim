@@ -1,0 +1,7 @@
+id: shell-remove-rm-002
+title: "Un archivo, no el otro"
+instruction: "Borra el archivo ideas.txt pero conserva todo.txt."
+hints:
+  - "Nombra solo el archivo que quieres."
+  - "rm ideas.txt"
+explanation: "rm solo toca los nombres que le das. rm ideas.txt elimina ese archivo de notes, mientras todo.txt y la carpeta archive no se tocan."

@@ -1,0 +1,7 @@
+id: vim-word-ends-end-001
+title: "Ve al final de una palabra"
+instruction: "Ve a la última letra de alpha."
+hints:
+  - "e salta al final de la palabra actual."
+  - "Una sola tecla."
+explanation: "e va a la última letra de la palabra actual, aquí la a final de alpha. Es el movimiento que debes usar cuando quieres quedar al final de una palabra, por ejemplo para añadir texto después. Moverte con l costaría cuatro pulsaciones."

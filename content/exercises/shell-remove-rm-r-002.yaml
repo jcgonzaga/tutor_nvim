@@ -54,3 +54,4 @@ metadata:
   context: project
   estimatedSeconds: 20
   transferTags: []
+explanation: "config holds dev.env and prod.env, so it is a folder with files and needs rm -r. From the top level the path is project/config. Going into project first and running rm -r config also works. src stays untouched."

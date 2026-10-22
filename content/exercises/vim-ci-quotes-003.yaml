@@ -58,3 +58,5 @@ metadata:
   transferTags:
     - context:lua
     - context:config-file
+
+explanation: 'The cursor is already inside tokyonight, so ci" empties the quotes and starts INSERT mode. You do not need to go to the start of the word: the quotes around the cursor define the text. The quotes stay, so only the name changes.'

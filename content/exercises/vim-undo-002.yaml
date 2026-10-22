@@ -53,3 +53,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 4
   transferTags: []
+
+explanation: "Two u presses brought the text back to the start. <C-r> (Ctrl-r) is redo: it replays the change you undid last, here the first dw, and leaves two three. A second <C-r> would redo the other dw and go too far."

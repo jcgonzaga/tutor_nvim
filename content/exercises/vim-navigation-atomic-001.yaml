@@ -55,3 +55,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "The target is on line 3, so press j twice. Then l three times moves from the e to the i of epsilon (column 1 to column 4). Each key moves one step, so count the steps first; the arrow keys would do the same but take your hand off the home row."

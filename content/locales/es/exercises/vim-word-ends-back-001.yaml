@@ -1,0 +1,7 @@
+id: vim-word-ends-back-001
+title: "Retrocede una palabra"
+instruction: "Salta atrás hasta el inicio de beta."
+hints:
+  - "b es w hacia atrás."
+  - "Una sola tecla."
+explanation: "b retrocede al inicio de la palabra anterior. Desde la g de gamma, una b te deja en la b de beta. Pulsar h cinco veces también llega, pero cuesta cinco pulsaciones y crece con cada letra extra."

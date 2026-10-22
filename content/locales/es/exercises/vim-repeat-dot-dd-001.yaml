@@ -1,0 +1,7 @@
+id: vim-repeat-dot-dd-001
+title: "Borra varias líneas"
+instruction: "Borra las tres primeras líneas."
+hints:
+  - "Hazlo una vez y luego repite."
+  - "dd, y luego . dos veces."
+explanation: "dd borra la primera línea, y cada . lo repite sobre la línea que subió, así que dd seguido de dos puntos quita a, b y c y deja d y e. Son cuatro teclas en lugar de seis."

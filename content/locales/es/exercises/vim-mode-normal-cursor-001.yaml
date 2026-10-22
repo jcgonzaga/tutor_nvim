@@ -1,0 +1,7 @@
+id: vim-mode-normal-cursor-001
+title: "¿Dónde queda el cursor tras Esc?"
+instruction: "Sal del modo INSERT y fíjate en que el cursor retrocede hasta el último carácter."
+hints:
+  - "En modo INSERT el cursor está entre caracteres; en modo NORMAL está sobre uno."
+  - "Esc sale del modo INSERT y mueve el cursor un lugar hacia atrás."
+explanation: "En modo INSERT el cursor está después del último carácter (columna 6 de Done.). El modo NORMAL debe descansar SOBRE un carácter, así que Esc sale del modo INSERT y además mueve el cursor un lugar a la izquierda, sobre el punto de la columna 5. Por eso el objetivo es la columna 5."

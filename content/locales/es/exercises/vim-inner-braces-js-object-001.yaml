@@ -1,0 +1,7 @@
+id: vim-inner-braces-js-object-001
+title: "Cambia el contenido de un objeto"
+instruction: "Pon debug en false dentro de las llaves."
+hints:
+  - "En una sola línea, los espacios junto a las llaves también están dentro de ellas."
+  - "ci{, escribe el contenido con sus espacios, Esc."
+explanation: 'i{ es todo lo que hay entre { y }, incluidos los espacios junto a ellas, así que ci{ borra " debug: true " y las llaves se quedan. Por eso escribes el contenido nuevo con un espacio antes y otro después. Sin ellos obtendrías {debug: false}.'

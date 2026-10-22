@@ -1,0 +1,7 @@
+id: shell-search-find-001
+title: "Buscar por nombre"
+instruction: "Lista las rutas de todos los archivos .js dentro de project."
+hints:
+  - "find mira los nombres, grep mira dentro de los archivos."
+  - "find project -name '*.js'"
+explanation: "find busca por nombre, no por contenido: find project -name '*.js' recorre todo lo que hay bajo project e imprime las rutas que terminan en .js (app.js y util.js). Las comillas en '*.js' evitan que el shell expanda el asterisco y así find lo usa como patrón. grep miraría dentro de los archivos."

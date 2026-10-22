@@ -1,0 +1,7 @@
+id: vim-inner-braces-block-001
+title: "Vacía un bloque"
+instruction: "Borra el cuerpo del bloque pero conserva las llaves."
+hints:
+  - "i{ funciona a través de varias líneas."
+  - "di{"
+explanation: "di{ borra todo lo que hay dentro de las llaves, aunque el bloque ocupe varias líneas, y funciona desde cualquier línea de su interior. Las llaves se quedan en sus líneas. dd solo quitaría una línea y no sirve cuando el cuerpo es más largo."

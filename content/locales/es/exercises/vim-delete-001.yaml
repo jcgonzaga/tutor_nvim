@@ -1,0 +1,7 @@
+id: vim-delete-001
+title: "Borra una línea"
+instruction: 'Borra la línea que dice "remove this line".'
+hints:
+  - "d borra, y duplicarla actúa sobre la línea entera."
+  - "dd quita la línea actual."
+explanation: "dd borra la línea actual entera, esté donde esté el cursor, y las líneas de abajo suben. Pulsar x por cada carácter costaría 16 pulsaciones y dejaría una línea vacía."

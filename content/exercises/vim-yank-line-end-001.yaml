@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "yy copies the first line. A paste lands relative to the cursor, so first go down to the last line with j and then p puts the copy below it. Pressing p right after yy would put the copy under the first line instead."

@@ -1,0 +1,7 @@
+id: vim-inner-braces-ts-001
+title: "Cambia el cuerpo de una interfaz"
+instruction: "Reemplaza el contenido de la interfaz por y: string."
+hints:
+  - "Llaves otra vez, en TypeScript."
+  - "ci{"
+explanation: "El cuerpo de la interfaz está entre { y }, con un espacio a cada lado. ci{ lo elimina todo, espacios incluidos, así que escribes un espacio, y: string y otro espacio antes de Esc. Las llaves y el resto de la línea se quedan."

@@ -57,3 +57,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:python
+
+explanation: "^ jumps to the first character that is not a space or tab, here the r of return after four spaces of indentation. 0w also gets there (0 to the start, w to the next word) but takes two keys, and 0 alone would stop on a blank."

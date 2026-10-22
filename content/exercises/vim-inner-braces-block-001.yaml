@@ -61,3 +61,5 @@ metadata:
   estimatedSeconds: 14
   transferTags:
     - context:javascript
+
+explanation: "di{ deletes everything inside the braces, even when the block spans several lines, and works from any line within it. The braces stay on their lines. dd would remove only one line, and fails to scale when the body is longer."

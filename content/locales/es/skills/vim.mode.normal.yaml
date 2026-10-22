@@ -1,0 +1,10 @@
+id: vim-mode-normal
+title: "Modo NORMAL"
+description: "Quédate en modo NORMAL, donde las teclas son comandos, y vuelve a él con Esc."
+lesson:
+  - title: "Dos modos: comandos y texto"
+    body: "Vim tiene modos. El modo NORMAL es el predeterminado y en él cada tecla es un comando: mover, borrar, copiar. El modo INSERT es donde las teclas escriben texto."
+  - title: "Esc te devuelve"
+    body: "Esc sale del modo INSERT y vuelve al modo NORMAL. Si alguna vez dudas del modo en que estás, pulsa Esc: en modo NORMAL no hace ningún daño."
+  - title: "El cursor retrocede"
+    body: "En modo INSERT el cursor está entre caracteres. El modo NORMAL siempre descansa SOBRE un carácter, así que Esc también mueve el cursor un lugar a la izquierda, salvo que ya esté al inicio de la línea."

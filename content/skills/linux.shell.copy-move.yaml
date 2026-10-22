@@ -19,3 +19,14 @@ concepts:
 tags:
   - files
   - folders
+
+lesson:
+  - title: "Copy keeps, move relocates"
+    body: "cp makes a copy and leaves the original where it is. mv moves a file, and moving it to a new name in the same folder is how you rename it."
+    keys: "cp source copy"
+  - title: "Source first, destination last"
+    body: "Both commands read the source, then the destination. If the destination is an existing folder the file goes inside it; otherwise it becomes the new name."
+    keys: "mv file folder"
+  - title: "Folders need -r"
+    body: "cp refuses to copy a folder unless you add -r, which means recursive: the folder and everything inside it. A single dot stands for the current folder."
+    keys: "cp -r dir copy"

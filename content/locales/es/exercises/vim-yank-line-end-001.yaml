@@ -1,0 +1,7 @@
+id: vim-yank-line-end-001
+title: "Copia una línea al final"
+instruction: "Añade una copia de la primera línea al final."
+hints:
+  - "Cópiala, baja y luego pégala debajo."
+  - "yy, j, p."
+explanation: "yy copia la primera línea. El pegado se hace respecto al cursor, así que primero baja a la última línea con j y entonces p pega la copia debajo de ella. Si pulsaras p justo después de yy, la copia quedaría debajo de la primera línea."

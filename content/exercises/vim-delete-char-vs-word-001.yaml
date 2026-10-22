@@ -56,3 +56,5 @@ metadata:
   context: prose
   estimatedSeconds: 10
   transferTags: []
+
+explanation: "The cursor is on the u of unwanted, and unwanted plus its space is nine characters. x would need nine presses, while dw deletes from the cursor to the start of the next word in two keys. Use x for one character and an operator with a motion for anything bigger."

@@ -54,3 +54,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "w moves to the start of the next word: apple, banana, cherry. Two presses replace 13 presses of l, and they work whatever the length of the words."

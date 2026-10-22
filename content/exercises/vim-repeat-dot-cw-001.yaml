@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:python
+
+explanation: "cwbar<Esc> changes the first foo to bar. ww moves to the second foo, since the = is a word in between, and . repeats the whole change there: one key instead of six. Only the last change is repeated, so make the edit before using the dot."

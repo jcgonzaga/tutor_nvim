@@ -1,0 +1,7 @@
+id: shell-create-archive-001
+title: "Una carpeta y un archivo dentro"
+instruction: "Crea una carpeta llamada archive dentro de logs, y un archivo vacío today.log dentro de ella."
+hints:
+  - "Primero la carpeta, luego el archivo dentro."
+  - "mkdir logs/archive, y después touch logs/archive/today.log."
+explanation: "El orden importa: un archivo solo se puede crear dentro de una carpeta que ya existe. Primero mkdir logs/archive crea la carpeta, y después touch logs/archive/today.log crea el archivo vacío dentro. Al revés, touch fallaría porque logs/archive aún no existe."

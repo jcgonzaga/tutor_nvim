@@ -49,3 +49,4 @@ metadata:
   context: notes
   estimatedSeconds: 20
   transferTags: []
+explanation: "The last items are at the end of the file, so use tail, not head. tail -n 2 todo.txt prints the final two lines, buy bread and book dentist. head -n 2 would show the first two instead."

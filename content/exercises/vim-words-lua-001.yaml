@@ -55,3 +55,5 @@ metadata:
   estimatedSeconds: 10
   transferTags:
     - context:lua
+
+explanation: "For w, symbols are words of their own, so the = and the opening quote each count as a stop. From local you stop at name, =, the quote and finally tutor: four w presses. With only three you would be standing on the quote."

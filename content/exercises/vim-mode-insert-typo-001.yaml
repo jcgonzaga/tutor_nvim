@@ -54,3 +54,5 @@ metadata:
   context: source-code
   estimatedSeconds: 8
   transferTags: []
+
+explanation: "The cursor is on the n of prnt, and the missing i belongs just before it. The first i is the command that starts inserting before the cursor, the second i is the letter you type, and Esc ends the insertion. That is why the sequence reads ii<Esc>."

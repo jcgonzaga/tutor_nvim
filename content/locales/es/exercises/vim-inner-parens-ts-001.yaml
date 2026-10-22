@@ -1,0 +1,7 @@
+id: vim-inner-parens-ts-001
+title: "Cambia una lista de parámetros"
+instruction: "Cambia el parámetro por user: User."
+hints:
+  - "El cursor está dentro de los paréntesis."
+  - "ci("
+explanation: "ci( reemplaza toda la lista de parámetros name: string por user: User y deja intactos los paréntesis y la { que les sigue. El objeto de texto toma todo lo que hay entre ( y ), así que no borras el nombre y el tipo en pasos separados."

@@ -58,3 +58,5 @@ metadata:
   estimatedSeconds: 12
   transferTags:
     - context:typescript
+
+explanation: "da( deletes (a, b) including the parentheses, leaving max + 1. di( would leave max() + 1. The cursor is on a, inside the parentheses, so the object is found without moving."

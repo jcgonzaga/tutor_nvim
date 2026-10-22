@@ -1,0 +1,10 @@
+id: vim-navigation-atomic
+title: "Muévete con h j k l"
+description: "Muévete un carácter o una línea cada vez con las teclas de la fila base."
+lesson:
+  - title: "h j k l mueven un paso"
+    body: "En lugar de las flechas, tus manos se quedan en la fila base: h va a la izquierda, j baja, k sube y l va a la derecha. Cada pulsación mueve un carácter o una línea en modo NORMAL."
+  - title: "Recuérdalas por su posición"
+    body: "h es la de más a la izquierda de las cuatro y l la de más a la derecha. j tiene un gancho que apunta hacia abajo y k es la de al lado, que sube."
+  - title: "Solo para pasos cortos"
+    body: "Pulsar l diez veces es un mal hábito. Usa h j k l para uno o dos pasos y los movimientos más rápidos (w, b, 0, $, f) para saltos largos."

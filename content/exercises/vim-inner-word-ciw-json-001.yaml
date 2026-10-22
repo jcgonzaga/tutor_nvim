@@ -59,3 +59,5 @@ metadata:
   transferTags:
     - context:json
     - context:config-file
+
+explanation: "Quotes are punctuation, not part of a word, so iw on nmae is exactly nmae. ciw replaces the whole typo from the m in the middle. cw would only change mae and leave the n in front, giving nname."

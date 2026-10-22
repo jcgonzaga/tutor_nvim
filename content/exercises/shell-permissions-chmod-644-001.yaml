@@ -43,3 +43,4 @@ metadata:
   transferTags:
     - context:bash
     - context:logs
+explanation: "The owner keeps read and write (4 + 2 = 6) and the group and others only read (4), giving 644. The file starts at 600, so chmod 644 logs/app.log opens it up. chmod a+r logs/app.log also works: it adds read for everyone and keeps the rest."

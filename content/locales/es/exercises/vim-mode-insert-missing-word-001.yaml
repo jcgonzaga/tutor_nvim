@@ -1,0 +1,7 @@
+id: vim-mode-insert-missing-word-001
+title: "Inserta una palabra que falta"
+instruction: "Añade la palabra brown (y un espacio) antes de fox."
+hints:
+  - "Pon el cursor sobre fox y empieza a insertar antes de esa palabra."
+  - "i, luego escribe brown y un espacio, y después Esc."
+explanation: "El cursor ya está sobre la f de fox, así que i inserta justo antes. Escribe brown seguido de un espacio para que las palabras queden separadas y pulsa Esc. El espacio va después de brown porque todo el texto se inserta delante de fox."

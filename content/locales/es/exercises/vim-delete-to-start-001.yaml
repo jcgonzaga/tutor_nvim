@@ -1,0 +1,7 @@
+id: vim-delete-to-start-001
+title: "Borra hasta el inicio de la línea"
+instruction: "Borra todo lo que hay antes de la f de fix."
+hints:
+  - "0 también es un movimiento: va al inicio de la línea."
+  - "d0"
+explanation: "0 es un movimiento al primer carácter de la línea, y d0 borra desde ahí hasta el carácter bajo el cursor, sin incluirlo. Así desaparece # TODO: y el cursor se queda en la f de fix. Con x serían ocho pulsaciones."

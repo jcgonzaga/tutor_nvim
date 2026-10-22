@@ -1,0 +1,7 @@
+id: vim-ci-quotes-002
+title: "Cambia dentro de comillas (Python)"
+instruction: 'Cambia solo el texto dentro de las comillas por "db.internal".'
+hints:
+  - "La misma habilidad, otro lenguaje: Cambiar + Dentro + comillas."
+  - 'ci" encuentra la cadena aunque el cursor esté antes de ella.'
+explanation: 'Cuando el cursor está antes de la primera comilla de la línea, ci" busca hacia delante el siguiente par de comillas, así que no necesitas moverte antes. Reemplaza localhost y conserva las comillas. Llegar con w o l costaría teclas de más.'

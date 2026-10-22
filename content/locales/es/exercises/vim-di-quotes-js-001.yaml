@@ -1,0 +1,7 @@
+id: vim-di-quotes-js-001
+title: "Vacía una cadena"
+instruction: "Borra el texto entre las comillas pero conserva las comillas."
+hints:
+  - "Borrar + dentro + comillas."
+  - 'di"'
+explanation: 'di" significa borrar dentro de las comillas: quita el texto entre el par de comillas que rodea al cursor, desde cualquier punto de la cadena, y conserva las comillas. No necesitas moverte antes al inicio del texto.'

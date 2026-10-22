@@ -53,3 +53,5 @@ metadata:
   context: plain-text
   estimatedSeconds: 12
   transferTags: []
+
+explanation: "The three x removed a, b and c. The two u presses put back c and b, which is one step too far: bcd. <C-r> redoes the last undone change, removing b again, and leaves cd. Undo and redo move along the same history, so you can fix an overshoot."

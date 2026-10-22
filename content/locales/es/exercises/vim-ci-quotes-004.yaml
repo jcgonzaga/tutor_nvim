@@ -1,0 +1,7 @@
+id: vim-ci-quotes-004
+title: "Cambia dentro de comillas (JSON)"
+instruction: 'Cambia el valor de "environment" por "production", no la clave.'
+hints:
+  - "El cursor está dentro del valor, así que Cambiar + Dentro + comillas edita el valor."
+  - "Comprueba en qué par de comillas está el cursor."
+explanation: 'La línea tiene dos cadenas, la clave y el valor. i" usa el par en el que está el cursor, que es el valor, así que ci" cambia development y deja la clave intacta. Con el cursor en la clave, el mismo comando cambiaría la clave: la posición del cursor elige la cadena.'

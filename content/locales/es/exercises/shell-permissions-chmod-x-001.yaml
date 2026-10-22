@@ -1,0 +1,7 @@
+id: shell-permissions-chmod-x-001
+title: "Hazlo ejecutable"
+instruction: "Escribe chmod +x run.sh para hacer ejecutable el script."
+hints:
+  - "chmod cambia el modo de un archivo."
+  - "+x añade el permiso de ejecución."
+explanation: "chmod cambia los permisos de un archivo. +x añade el permiso de ejecución sin tocar lectura ni escritura, así que chmod +x run.sh convierte un script normal 644 en 755, que la shell puede ejecutar. Sin x, un script no se puede ejecutar."

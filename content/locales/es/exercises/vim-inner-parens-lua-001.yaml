@@ -1,0 +1,7 @@
+id: vim-inner-parens-lua-001
+title: "Cambia argumentos en Lua"
+instruction: "Cambia los argumentos por x, y."
+hints:
+  - "La misma habilidad, otro lenguaje."
+  - "ci("
+explanation: "ci( reemplaza todo lo que hay entre los paréntesis, a, b, por x, y en un solo comando, coma y espacio incluidos. Es igual que en JavaScript: el objeto de texto encuentra el par que rodea al cursor, sea cual sea el lenguaje. Cambiar cada argumento por separado requeriría varios comandos."

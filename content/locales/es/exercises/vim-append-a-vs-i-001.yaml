@@ -1,0 +1,7 @@
+id: vim-append-a-vs-i-001
+title: "¿a o i?"
+instruction: "Convierte user en users."
+hints:
+  - "El cursor está sobre la última letra de user."
+  - "Inserta después de ella, no antes."
+explanation: "El cursor está sobre la r, la última letra de user, y la s va después. a inserta después del cursor, así que as y Esc bastan. Con i primero tienes que pulsar l para pasar la r (lis<Esc>), lo que cuesta una tecla más."

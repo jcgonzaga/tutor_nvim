@@ -1,0 +1,12 @@
+id: linux-shell-view
+title: "Leer archivos"
+description: "Mira dentro de los archivos sin abrir un editor: cat, head, tail y wc."
+lesson:
+  - title: "Lee sin un editor"
+    body: "Cuatro comandos pequeños te dejan mirar dentro de un archivo desde el shell: cat, head, tail y wc. Úsalos cuando solo necesitas ver algo, no cambiarlo."
+  - title: "cat imprime todo el archivo"
+    body: "cat archivo imprime el contenido completo. Puedes dar una ruta como carpeta/archivo para leer un archivo desde donde estás, sin moverte antes."
+  - title: "head y tail: los extremos"
+    body: "head muestra el principio de un archivo y tail el final. Imprimen 10 líneas por defecto; -n indica cuántas."
+  - title: "wc cuenta"
+    body: "wc archivo imprime líneas, palabras y bytes, seguidos del nombre del archivo. Añade -l para obtener solo el número de líneas."
