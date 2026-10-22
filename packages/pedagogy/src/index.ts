@@ -149,3 +149,4 @@ export {
   type XpKind,
   type XpPart,
 } from "./gamification";
+export { lessonsToShow, type LessonQuery } from "./lessons";

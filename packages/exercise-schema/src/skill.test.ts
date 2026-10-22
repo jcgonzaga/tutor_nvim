@@ -28,6 +28,7 @@ describe("skill schema v1", () => {
   it("parses a minimal skill and applies defaults", () => {
     expect(parseSkill(validSkill())).toEqual({
       ...validSkill(),
+      lesson: [],
       prerequisites: [],
       concepts: [],
       tags: [],

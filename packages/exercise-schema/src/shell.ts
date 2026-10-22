@@ -1,6 +1,6 @@
 import { formatKey } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
-import { difficultySchema, idSchema, slugSchema } from "./primitives";
+import { difficultySchema, explanationSchema, idSchema, slugSchema } from "./primitives";
 import {
   EXERCISE_MODES,
   EXERCISE_SCHEMA_VERSION,
@@ -205,6 +205,8 @@ export const shellExerciseSchema = z
       }),
     antiPatterns: z.array(z.enum(SHELL_ANTI_PATTERN_IDS)).default([]),
     hints: hintsSchema.default([]),
+    /** Why the best solution works; shown after a poor or failed attempt. */
+    explanation: explanationSchema.optional(),
     metadata: metadataSchema.default({ transferTags: [] }),
   })
   .transform((exercise) => ({

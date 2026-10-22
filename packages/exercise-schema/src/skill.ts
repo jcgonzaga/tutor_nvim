@@ -1,6 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
-import { difficultySchema, idSchema, slugSchema, tagSchema } from "./primitives";
+import { difficultySchema, idSchema, lessonCardSchema, slugSchema, tagSchema } from "./primitives";
 import { ExerciseValidationError, formatIssues } from "./validate";
 
 /** Version of the skill content format. Bump with an explicit migration. */
@@ -25,6 +25,8 @@ export const skillSchema = z.strictObject({
   concepts: z.array(z.string().min(1)).default([]),
   tags: z.array(tagSchema).default([]),
   difficulty: difficultySchema,
+  /** Theory shown once before the skill's first exercise (1-4 cards). Content tests require it. */
+  lesson: z.array(lessonCardSchema).max(4).default([]),
   enabled: z.boolean().default(true),
 });
 

@@ -62,3 +62,10 @@ export {
   type Run,
   type RunSummary,
 } from "./replay";
+export {
+  DEFAULT_EXPLANATION_CONFIG,
+  planExplanation,
+  type ExplanationConfig,
+  type ExplanationPlan,
+  type ExplanationReason,
+} from "./explain";

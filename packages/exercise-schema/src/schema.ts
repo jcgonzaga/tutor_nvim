@@ -5,7 +5,7 @@ import {
   type VimMode,
 } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
-import { difficultySchema, idSchema, slugSchema, tagSchema } from "./primitives";
+import { difficultySchema, explanationSchema, idSchema, slugSchema, tagSchema } from "./primitives";
 
 /** Version of the exercise content format. Bump with an explicit migration. */
 export const EXERCISE_SCHEMA_VERSION = 1;
@@ -219,6 +219,8 @@ export const vimExerciseSchema = z
       }),
     antiPatterns: z.array(z.enum(ANTI_PATTERN_IDS)).default([]),
     hints: hintsSchema.default([]),
+    /** Why the best solution works; shown after a poor or failed attempt. */
+    explanation: explanationSchema.optional(),
     metadata: metadataSchema.default({ transferTags: [] }),
   })
   .transform((exercise) => ({

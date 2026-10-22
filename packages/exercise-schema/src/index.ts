@@ -54,3 +54,19 @@ export {
   type ContentInput,
   type ContentSource,
 } from "./content";
+export {
+  DEFAULT_LOCALE,
+  LOCALES,
+  SOURCE_LOCALE,
+  exerciseTextSchema,
+  isLocale,
+  localizeBundle,
+  skillTextSchema,
+  validateLocale,
+  type ExerciseText,
+  type Locale,
+  type LocaleInput,
+  type LocaleTexts,
+  type SkillText,
+} from "./locale";
+export { explanationSchema, lessonCardSchema, type LessonCard } from "./primitives";

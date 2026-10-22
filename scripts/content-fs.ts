@@ -1,11 +1,16 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  LOCALES,
+  SOURCE_LOCALE,
   validateContent,
+  validateLocale,
   type ContentBundle,
   type ContentInput,
   type ContentSource,
+  type Locale,
+  type LocaleInput,
 } from "@tutor-nvim/exercise-schema";
 
 export const root = fileURLToPath(new URL("..", import.meta.url));
@@ -24,10 +29,18 @@ function* yamlFiles(dir: string): Generator<string> {
   }
 }
 
-function read(kind: "skills" | "exercises"): ContentSource[] {
-  return [...yamlFiles(join(contentRoot, kind))]
+function read(kind: "skills" | "exercises", base = ""): ContentSource[] {
+  const dir = join(contentRoot, base, kind);
+  if (!existsSync(dir)) return [];
+  return [...yamlFiles(dir)]
     .sort()
     .map((file) => ({ path: relative(contentRoot, file), text: readFileSync(file, "utf8") }));
+}
+
+/** Reads the translation overlays of one language from `content/locales/<locale>`. */
+export function readLocaleInput(locale: Locale): LocaleInput {
+  const base = join("locales", locale);
+  return { skills: read("skills", base), exercises: read("exercises", base) };
 }
 
 /** Reads `content/skills` and `content/exercises` from disk. */
@@ -35,10 +48,19 @@ export function readContentInput(): ContentInput {
   return { skills: read("skills"), exercises: read("exercises") };
 }
 
-/** Loads and cross-validates all content, or prints every problem and exits non-zero. */
+/**
+ * Loads and cross-validates all content and every translation, or prints every problem and exits
+ * non-zero. The source language (English) is the content itself; the others are overlays.
+ */
 export function loadContentOrExit(command: string): ContentBundle {
   const { bundle, errors } = validateContent(readContentInput());
-  if (bundle === null) {
+  if (bundle !== null) {
+    for (const locale of LOCALES) {
+      if (locale === SOURCE_LOCALE) continue;
+      errors.push(...validateLocale(locale, bundle, readLocaleInput(locale)).errors);
+    }
+  }
+  if (bundle === null || errors.length > 0) {
     console.error(errors.join("\n"));
     console.error(
       `\n${command} failed (${errors.length} problem${errors.length === 1 ? "" : "s"})`,
