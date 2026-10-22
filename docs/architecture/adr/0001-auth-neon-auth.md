@@ -31,10 +31,12 @@ Use Neon Auth. One vendor for database and identity, no second account to manage
 
 ## Consequences
 
-- The JWT verification follows Neon's documented flow, but **it has not been run against a live
-  Neon project** (that needs credentials). The things to confirm on first real use: the Auth URL's
-  CORS/trusted-origins setting allows the web origin with credentials, `GET /token` is reachable from
-  the browser, and the token's issuer matches the origin of `NEON_AUTH_BASE_URL`.
+- Verified against a live Neon project on 2026-10-22: sign-up from the deployed web app, a JWT
+  from `GET /token`, accepted by the API (EdDSA, issuer = origin of `NEON_AUTH_BASE_URL`), and the
+  `users` row created on the first authenticated request. The web origin must be listed in the
+  Auth instance's trusted domains. Open: the session cookie is third-party when the web app and
+  Neon Auth are on different sites (Safari, blocked third-party cookies); see
+  [deployment.md](../../deployment.md), "Known limits".
 - Email verification, password reset and social login are left to Neon's configuration; the app has
   no UI for them yet.
 - Replacing the provider means writing one `TokenVerifier` and one `AuthClient`.
