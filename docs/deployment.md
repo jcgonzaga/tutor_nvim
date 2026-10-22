@@ -43,7 +43,11 @@ variables of each project need the URL of the other, which is the only awkward p
 ### 2. Vercel: two projects from this repository
 
 Both: "Include source files outside of the Root Directory" on. The production branch must be
-`main`; any other branch deploys as Preview and only gets the variables enabled for Preview.
+`main` (Settings, Environments, Production, Branch Tracking); any other branch deploys as Preview
+and only gets the variables enabled for Preview, so tick Production on every variable.
+
+GitHub side, for release-time migrations: repository Settings, Secrets and variables, Actions, New
+repository **secret** `DATABASE_URL` with the Neon **direct** string (pooling off).
 
 | Project | Root Directory | Framework preset | Config                                            |
 | ------- | -------------- | ---------------- | ------------------------------------------------- |
