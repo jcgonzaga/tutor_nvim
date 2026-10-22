@@ -7,12 +7,20 @@ import { loadRuntimeContent } from "./content";
 import { connectPglite, connectPostgres } from "./db/client";
 import { syncContent } from "./db/syncContent";
 
+// Boot steps are logged because a serverless platform shows nothing when a start-up hangs: the last
+// line says which step it was.
+const boot = (step: string) => console.log(JSON.stringify({ level: 30, msg: `boot: ${step}` }));
+
 const config = loadConfig();
+boot("config ok");
 const bundle = loadRuntimeContent();
+boot("content ok");
 const handle = config.DATABASE_URL
   ? await connectPostgres(config.DATABASE_URL, { migrate: config.MIGRATE_ON_START })
   : await connectPglite();
+boot("database ready");
 await syncContent(handle.db, bundle);
+boot("content synced");
 
 const verifier =
   config.AUTH_MODE === "fake"

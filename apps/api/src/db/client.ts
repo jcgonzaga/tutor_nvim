@@ -29,7 +29,13 @@ export async function connectPostgres(
   connectionString: string,
   options: { readonly migrate?: boolean } = {},
 ): Promise<DbHandle> {
-  const pool = new pg.Pool({ connectionString, max: 10 });
+  const pool = new pg.Pool({
+    connectionString,
+    max: 10,
+    // Fail with an error instead of hanging when the database cannot be reached (wrong host,
+    // blocked network, a suspended Neon compute that does not wake).
+    connectionTimeoutMillis: 15_000,
+  });
   // An idle connection the server drops (Neon suspends and recycles them) emits `error` on the pool.
   // Unhandled, that would crash the process; the pool simply opens a new connection when needed.
   pool.on("error", () => undefined);
