@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { settingsSchema } from "@tutor-nvim/shared";
-import { callerOf, type RouteContext } from "../app";
+import { callerOf, type RouteContext } from "../build-app";
 import { parse } from "../errors";
 import { getMe, updateSettings } from "../services/users";
 

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { isoDay, sessionSubmissionSchema } from "@tutor-nvim/shared";
-import { callerOf, type RouteContext } from "../app";
+import { callerOf, type RouteContext } from "../build-app";
 import { parse } from "../errors";
 import { getOrCreateDailySession, submitSession } from "../services/sessions";
 

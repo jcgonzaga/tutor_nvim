@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { legacyImportSchema } from "@tutor-nvim/shared";
-import { callerOf, type RouteContext } from "../app";
+import { callerOf, type RouteContext } from "../build-app";
 import { parse } from "../errors";
 import { importLegacyProgress } from "../services/legacy";
 import { buildSnapshot } from "../services/progress";

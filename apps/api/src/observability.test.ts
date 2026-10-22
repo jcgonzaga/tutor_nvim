@@ -37,7 +37,7 @@ describe("liveness and readiness", () => {
       },
     });
     const app = await (
-      await import("./app")
+      await import("./build-app")
     ).buildApp({
       db: broken,
       bundle: (await import("./test-util")).bundle,
@@ -79,7 +79,7 @@ describe("unexpected errors (T-906)", () => {
         return Reflect.get(target, property, receiver);
       },
     });
-    const { buildApp } = await import("./app");
+    const { buildApp } = await import("./build-app");
     const { createFakeVerifier } = await import("./auth/fake");
     const { bundle } = await import("./test-util");
     const logs = capture();

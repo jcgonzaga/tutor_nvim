@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { attemptBatchSchema, attemptSubmissionSchema } from "@tutor-nvim/shared";
-import { callerOf, type RouteContext } from "../app";
+import { callerOf, type RouteContext } from "../build-app";
 import { HttpError, parse } from "../errors";
 import { recordSubmission } from "../services/attempts";
 

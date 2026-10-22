@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { SkillDto } from "@tutor-nvim/shared";
-import type { RouteContext } from "../app";
+import type { RouteContext } from "../build-app";
 import { HttpError } from "../errors";
 
 export function registerSkillRoutes(api: FastifyInstance, { bundle }: RouteContext): void {

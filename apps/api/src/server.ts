@@ -1,6 +1,6 @@
 import { createFakeVerifier } from "./auth/fake";
 import { createNeonVerifier } from "./auth/neon";
-import { buildApp } from "./app";
+import { buildApp } from "./build-app";
 import { loadConfig } from "./config";
 import { productionLoggerOptions } from "./observability";
 import { loadRuntimeContent } from "./content";

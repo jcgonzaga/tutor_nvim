@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import { migrate as migratePg } from "drizzle-orm/node-postgres/migrator";
@@ -17,7 +18,11 @@ export interface DbHandle {
   close(): Promise<void>;
 }
 
-const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
+// From src/db/ when run from source, from dist/ when run from the Vercel bundle (build-vercel.mjs).
+const migrationsFolder =
+  ["../../drizzle", "../drizzle"]
+    .map((path) => fileURLToPath(new URL(path, import.meta.url)))
+    .find((path) => existsSync(path)) ?? fileURLToPath(new URL("../../drizzle", import.meta.url));
 
 /** Postgres over the network (Neon or any Postgres), with migrations applied. */
 export async function connectPostgres(

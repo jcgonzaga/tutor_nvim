@@ -1,4 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install --frozen-lockfile --filter @tutor-nvim/api..."
+  "installCommand": "pnpm install --frozen-lockfile --filter @tutor-nvim/api... && pnpm --filter @tutor-nvim/api bundle"
 }

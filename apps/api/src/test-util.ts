@@ -8,7 +8,7 @@ import {
 import { keysForCommand, type Exercise } from "@tutor-nvim/exercise-schema";
 import { keyInputFromToken } from "@tutor-nvim/vim-engine";
 import type { AttemptSubmissionInput } from "@tutor-nvim/shared";
-import { buildApp, type AppDeps } from "./app";
+import { buildApp, type AppDeps } from "./build-app";
 import { createFakeVerifier, fakeToken } from "./auth/fake";
 import { loadContentBundle } from "./content";
 import pg from "pg";
