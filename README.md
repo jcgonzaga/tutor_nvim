@@ -20,6 +20,7 @@ map, local progress) on top of the pedagogy engine (M4), the exercise platform (
 [`m8-gamification`](docs/architecture/m8-gamification.md),
 [`m9-hardening`](docs/architecture/m9-hardening.md) (+ [deployment](docs/deployment.md)),
 [`m10-linux-simulator`](docs/architecture/m10-linux-simulator.md) (shell exercises mixed into the daily session),
+[`m11-language-and-teaching`](docs/architecture/m11-language-and-teaching.md) (Spanish by default, theory cards, explanations),
 [`visual-design`](docs/architecture/visual-design.md).
 
 ## Commands

@@ -1,20 +1,36 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { loadContent, type Exercise } from "@tutor-nvim/exercise-schema";
-import { readContentInput } from "../../scripts/content-fs";
+import {
+  loadContent,
+  localizeBundle,
+  validateLocale,
+  type Exercise,
+} from "@tutor-nvim/exercise-schema";
+import { readContentInput, readLocaleInput } from "../../scripts/content-fs";
 
-const { exercises } = loadContent(readContentInput());
+const source = loadContent(readContentInput());
+const spanish = validateLocale("es", source, readLocaleInput("es")).texts;
+if (!spanish) throw new Error("The Spanish translation is incomplete");
 
-/** Exercises by the instruction the learner reads, so a test can solve whatever is on screen. */
+/**
+ * Exercises by the instruction the learner reads, in either language, so a test can solve whatever
+ * is on screen. The exercise is the same; only its text differs.
+ */
 const byInstruction = new Map<string, Exercise>();
-for (const exercise of exercises) {
-  if (byInstruction.has(exercise.instruction)) {
-    throw new Error(`Two exercises share the instruction "${exercise.instruction}"`);
+for (const bundle of [source, localizeBundle(source, spanish)]) {
+  const seen = new Set<string>();
+  for (const exercise of bundle.exercises) {
+    if (seen.has(exercise.instruction)) {
+      throw new Error(`Two exercises share the instruction "${exercise.instruction}"`);
+    }
+    seen.add(exercise.instruction);
+    byInstruction.set(exercise.instruction, exercise);
   }
-  byInstruction.set(exercise.instruction, exercise);
 }
 
 export const editor = (page: Page): Locator =>
-  page.getByRole("application", { name: /practice (editor|terminal)/ });
+  page.getByRole("application", {
+    name: /practice (editor|terminal)|(editor|terminal) de práctica/i,
+  });
 
 /** Types key tokens (`c`, `"`, `<Esc>`, `<C-r>`) into the focused editor. */
 export async function pressTokens(page: Page, tokens: readonly string[]): Promise<void> {

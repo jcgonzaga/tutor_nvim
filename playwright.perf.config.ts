@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { seededStorage } from "./tests/e2e/seed";
 
 const PORT = 4174;
 
@@ -13,7 +14,11 @@ export default defineConfig({
   workers: 1,
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? "github" : "list",
-  use: { baseURL: `http://localhost:${PORT}`, trace: "retain-on-failure" },
+  use: {
+    baseURL: `http://localhost:${PORT}`,
+    storageState: seededStorage(`http://localhost:${PORT}`),
+    trace: "retain-on-failure",
+  },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: `pnpm --filter @tutor-nvim/web exec vite preview --port ${PORT} --strictPort`,

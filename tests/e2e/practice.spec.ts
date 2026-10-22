@@ -34,7 +34,7 @@ test.describe("M1 vertical practice slice", () => {
     await expect(mode).toHaveText("NORMAL");
 
     await expect(page.getByTestId("result-outcome")).toHaveText("SUCCESS");
-    await expect(page.getByTestId("result-strategy")).toHaveText("optimal");
+    await expect(page.getByTestId("result-strategy")).toHaveText("Optimal");
     await expect(page.getByTestId("result-keystrokes")).toHaveText("14");
     await expect(page.getByTestId("result-first-input")).toHaveText(/^\d+ ms$/);
     await expect(page.getByTestId("result-duration")).toHaveText(/^\d+ ms$/);
@@ -48,7 +48,7 @@ test.describe("M1 vertical practice slice", () => {
     await page.keyboard.press("Escape");
 
     await expect(page.getByTestId("result-outcome")).toHaveText("SUCCESS");
-    await expect(page.getByTestId("result-strategy")).toHaveText("efficient");
+    await expect(page.getByTestId("result-strategy")).toHaveText("Efficient");
     await expect(page.getByTestId("result-keystrokes")).toHaveText("16");
   });
 
@@ -113,7 +113,7 @@ test.describe("M3 exercise platform in the browser", () => {
     await page.keyboard.type("jjlll");
 
     await expect(page.getByTestId("result-outcome")).toHaveText("SUCCESS");
-    await expect(page.getByTestId("result-strategy")).toHaveText("optimal");
+    await expect(page.getByTestId("result-strategy")).toHaveText("Optimal");
     await expect(page.getByTestId("result-keystrokes")).toHaveText("5");
   });
 
@@ -124,7 +124,7 @@ test.describe("M3 exercise platform in the browser", () => {
     await page.keyboard.type("xxxxx");
 
     await expect(page.getByTestId("result-outcome")).toHaveText("SUCCESS");
-    await expect(page.getByTestId("result-strategy")).toHaveText("anti-pattern");
+    await expect(page.getByTestId("result-strategy")).toHaveText("Bad habit");
     await expect(page.getByTestId("result-anti-patterns")).toContainText("Repeated x");
   });
 

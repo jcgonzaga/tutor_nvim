@@ -13,8 +13,13 @@ import { editor, onboardSkippingCheck, pressTokens, solveCurrent } from "../e2e/
 const KEYPRESS_BUDGET_MS = 50;
 const TRANSITION_BUDGET_MS = 150;
 const LONG_TASK_BUDGET_MS = 200;
-/** Gzipped JavaScript the first load downloads. The content bundle dominates; see m9 notes. */
-const JS_GZIP_BUDGET_BYTES = 260 * 1024;
+/**
+ * Gzipped JavaScript the first load downloads. The content bundle dominates; see m9 notes. Raised
+ * from 260 KB to 300 KB for ADR-0005: the Spanish translation (~28 KB), the interface catalogs in
+ * two languages (~16 KB) and the lessons and explanations (~12 KB) all ship in the one chunk. A
+ * learner uses one language, so splitting the language packs out would save about a third of that.
+ */
+const JS_GZIP_BUDGET_BYTES = 300 * 1024;
 const CSS_GZIP_BUDGET_BYTES = 20 * 1024;
 const FIRST_CONTENTFUL_PAINT_BUDGET_MS = 2000;
 

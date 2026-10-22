@@ -69,12 +69,16 @@ dev server) in headless Chromium, with budgets from AGENTS.md section 2.10:
 | Exercise transition (click to ready editor)     | < 150 ms         | 18 ms, 3 ms           |
 | First contentful paint                          | < 2000 ms        | 412 ms                |
 | Long main-thread tasks while typing / moving on | < 200 ms         | none                  |
-| Gzipped JS / CSS                                | < 260 KB / 20 KB | 181 KB / 4 KB         |
+| Gzipped JS / CSS                                | < 300 KB / 20 KB | 261 KB / 6 KB (1)     |
 | Network requests while typing                   | none             | none                  |
 
 The keypress figure is dominated by waiting for the next frame (16.7 ms); the engine and React
 commit are a small part of it. The JS bundle is one chunk (~680 KB minified) because all 120
 exercises ship with it; splitting content by skill is possible later and not needed for the budget.
+
+(1) The JS limit was 260 KB (181 KB measured at M9). ADR-0005 added Spanish, theory cards and
+explanations, which brought it to 261 KB, so the limit is now 300 KB. Loading each language pack on
+demand would save about a third of that growth per learner; not needed yet.
 
 ## Journeys (T-904)
 

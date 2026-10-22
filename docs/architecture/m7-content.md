@@ -114,3 +114,11 @@ every skill gets to _fluent_, at least five reach _mastered_, sessions of 5–20
 - Content is English only; exercises are short single-/few-line buffers (no scrolling).
 - Contexts are realistic but small; no exercise yet mixes several commands in a longer task (those are M9 missions).
 - The 120 exercises were checked for correctness by the engine, not play-tested with learners.
+
+## Theory, explanations and translation (M11)
+
+Since ADR-0005 every skill needs a `lesson` and every exercise an `explanation` in the English
+source, plus a Spanish overlay under `content/locales/es/` with the same file name. The authoring
+tool in `scripts/author` generates the structure of exercises, not this text; write it by hand and
+let `pnpm content:validate` and `tests/teaching-content.test.ts` list what is missing. See
+[m11-language-and-teaching](m11-language-and-teaching.md).

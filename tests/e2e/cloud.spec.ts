@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { playWholeSession, solveCurrent } from "./helpers";
+import { seededStorage } from "./seed";
 
 /** Each test uses its own account: the API process lives for the whole run. */
 const emailFor = (label: string) =>
@@ -30,7 +31,9 @@ test.describe("M6 cloud persistence", () => {
     const email = emailFor("two-devices");
 
     // --- Laptop: onboard, sign in, play one exercise ---
-    const laptop = await (await browser.newContext()).newPage();
+    const laptop = await (
+      await browser.newContext({ storageState: seededStorage("http://localhost:4173") })
+    ).newPage();
     await skipOnboarding(laptop);
     await expect(laptop.getByTestId("sync-status")).toContainText("Sign in to keep your progress");
     await signIn(laptop, email);
@@ -46,7 +49,9 @@ test.describe("M6 cloud persistence", () => {
     await expect(laptop.getByTestId("progress-attempts")).toHaveText("1");
 
     // --- Phone: a brand-new browser, signs in with the same account ---
-    const phone = await (await browser.newContext()).newPage();
+    const phone = await (
+      await browser.newContext({ storageState: seededStorage("http://localhost:4173") })
+    ).newPage();
     await phone.goto("/");
     await phone.getByRole("link", { name: "I already have an account" }).click();
     await phone.getByLabel("Email").fill(email);
@@ -63,7 +68,9 @@ test.describe("M6 cloud persistence", () => {
 
   test("XP, streak and level follow the account to another device", async ({ browser }) => {
     const email = emailFor("game-sync");
-    const laptop = await (await browser.newContext()).newPage();
+    const laptop = await (
+      await browser.newContext({ storageState: seededStorage("http://localhost:4173") })
+    ).newPage();
     await skipOnboarding(laptop);
     await signIn(laptop, email);
     await expectSynced(laptop);
@@ -77,7 +84,9 @@ test.describe("M6 cloud persistence", () => {
     expect(xp).toMatch(/^[1-9]\d* XP/);
 
     // A brand-new browser signs in: the server recomputed the same numbers from the attempts.
-    const phone = await (await browser.newContext()).newPage();
+    const phone = await (
+      await browser.newContext({ storageState: seededStorage("http://localhost:4173") })
+    ).newPage();
     await phone.goto("/");
     await phone.getByRole("link", { name: "I already have an account" }).click();
     await phone.getByLabel("Email").fill(email);
@@ -92,7 +101,9 @@ test.describe("M6 cloud persistence", () => {
     browser,
   }) => {
     const email = emailFor("offline");
-    const context = await browser.newContext();
+    const context = await browser.newContext({
+      storageState: seededStorage("http://localhost:4173"),
+    });
     const page = await context.newPage();
     await skipOnboarding(page);
     await signIn(page, email);
@@ -110,7 +121,9 @@ test.describe("M6 cloud persistence", () => {
     await expect(page.getByTestId("sync-status")).toHaveAttribute("data-status", "synced");
 
     // A fresh browser with the same account sees the attempt that was made offline.
-    const other = await (await browser.newContext()).newPage();
+    const other = await (
+      await browser.newContext({ storageState: seededStorage("http://localhost:4173") })
+    ).newPage();
     await signIn(other, email);
     await expect(other.getByRole("heading", { name: "Today" })).toBeVisible();
     await other.goto("/#/progress");

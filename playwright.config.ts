@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { seededStorage } from "./tests/e2e/seed";
 
 const PORT = 4173;
 const API_PORT = 8788;
@@ -10,6 +11,7 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
+    storageState: seededStorage(`http://localhost:${PORT}`),
     trace: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

@@ -18,7 +18,7 @@ test.describe("M10 shell exercises in the browser", () => {
 
     await expect(page.getByTestId("terminal-output")).toHaveText("/home/user");
     await expect(page.getByTestId("result-outcome")).toHaveText("SUCCESS");
-    await expect(page.getByTestId("result-strategy")).toHaveText("optimal");
+    await expect(page.getByTestId("result-strategy")).toHaveText("Optimal");
     await expect(page.getByTestId("keystroke-count")).toHaveText("4 keys");
   });
 
@@ -70,7 +70,7 @@ test.describe("M10 shell exercises in the browser", () => {
     }
     await expect(page.getByTestId("result-outcome")).toHaveText("SUCCESS");
     await expect(page.getByTestId("result-anti-patterns")).toContainText("Several cd .. in a row");
-    await expect(page.getByTestId("result-strategy")).toHaveText("anti-pattern");
+    await expect(page.getByTestId("result-strategy")).toHaveText("Bad habit");
   });
 
   test("hints work the same way as in the Vim editor", async ({ page }) => {
