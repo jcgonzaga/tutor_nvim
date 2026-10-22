@@ -56,7 +56,16 @@ const shutdown = async () => {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-await app.listen({ host: config.HOST, port: config.PORT });
-app.log.info(
-  `API listening on :${config.PORT} (auth=${config.AUTH_MODE}, db=${config.DATABASE_URL ? "postgres" : "in-process"})`,
-);
+// Not awaited, as in Vercel's Fastify example: Vercel captures `listen()` to route requests, and the
+// module must finish loading either way.
+app
+  .listen({ host: config.HOST, port: config.PORT })
+  .then(() =>
+    app.log.info(
+      `API listening on :${config.PORT} (auth=${config.AUTH_MODE}, db=${config.DATABASE_URL ? "postgres" : "in-process"})`,
+    ),
+  )
+  .catch((error: unknown) => {
+    app.log.fatal({ err: error }, "listen failed");
+    process.exit(1);
+  });
