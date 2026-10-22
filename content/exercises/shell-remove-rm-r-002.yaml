@@ -3,7 +3,7 @@ kind: shell
 id: shell-remove-rm-r-002
 slug: shell.remove.rm-r-002
 title: Delete the config folder
-instruction: Delete the whole config folder of the project.
+instruction: Delete the whole config folder inside project.
 skillIds:
   - linux.shell.remove
 mode: recall

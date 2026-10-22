@@ -1,6 +1,6 @@
 id: shell-navigation-cd-001
 title: "Entra en una carpeta"
-instruction: "Entra en la carpeta src del proyecto."
+instruction: "Entra en la carpeta src que está dentro de project."
 hints:
   - "cd cambia de directorio."
   - "Una ruta puede tener varias carpetas: project/src."

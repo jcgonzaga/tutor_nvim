@@ -1,6 +1,6 @@
 id: vim-lines-swap-up-001
 title: "Sube una línea"
-instruction: "Intercambia las líneas para que second quede primero."
+instruction: "Intercambia las líneas para que second quede antes de first."
 hints:
   - "Borra la línea, sube y pégala encima."
   - "dd, k, P."

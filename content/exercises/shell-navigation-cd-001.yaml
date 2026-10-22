@@ -3,7 +3,7 @@ kind: shell
 id: shell-navigation-cd-001
 slug: shell.navigation.cd-001
 title: Go into a folder
-instruction: Go into the src folder of the project.
+instruction: Go into the src folder inside project.
 skillIds:
   - linux.shell.navigation
 mode: recall

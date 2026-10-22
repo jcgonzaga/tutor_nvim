@@ -1,6 +1,6 @@
 id: shell-remove-rm-r-003
 title: "Borrar un año antiguo"
-instruction: "Borra la carpeta de fotos de 2023."
+instruction: "Borra la carpeta 2023 que está dentro de photos."
 hints:
   - "Una carpeta: necesitas -r."
   - "rm -r photos/2023"

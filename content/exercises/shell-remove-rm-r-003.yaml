@@ -3,7 +3,7 @@ kind: shell
 id: shell-remove-rm-r-003
 slug: shell.remove.rm-r-003
 title: Delete an old year
-instruction: Delete the 2023 photos folder.
+instruction: Delete the 2023 folder inside photos.
 skillIds:
   - linux.shell.remove
 mode: transfer

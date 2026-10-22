@@ -1,6 +1,6 @@
 id: vim-ci-quotes-ts-001
 title: "Cambia dentro de comillas (TypeScript)"
-instruction: 'Cambia el modo a "production" modificando solo lo que hay entre las comillas.'
+instruction: 'Cambia el valor de mode a "production" modificando solo lo que hay entre las comillas.'
 hints:
   - "La misma habilidad, otro lenguaje."
   - 'ci" encuentra la cadena aunque el cursor esté antes de ella.'
