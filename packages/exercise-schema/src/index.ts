@@ -40,6 +40,8 @@ export {
   KEYMAP_NAMED_KEYS,
   KEYMAP_SCHEMA_VERSION,
   KEYMAP_SURFACES,
+  KEYMAP_TARGETED_ACTIONS,
+  KEYMAP_TARGETS,
   KeymapValidationError,
   isKeymapKeySequence,
   keymapBindingSchema,
@@ -57,6 +59,7 @@ export {
   type KeymapLayerSource,
   type KeymapMode,
   type KeymapSurface,
+  type KeymapTarget,
   type LoadedKeymapLayer,
 } from "./keymap";
 export {

@@ -42,7 +42,7 @@ horizontally" is solved by whichever tool the learner has enabled.
 ```ts
 type Action =
   | "file.open" | "file.find" | "grep.project" | "buffer.next" | "buffer.previous"
-  | "buffer.close" | "file.save" | "window.split-horizontal" | "window.split-vertical"
+  | "buffer.close" | "file.save" | "window.split-side-by-side" | "window.split-stacked"
   | "window.close" | "window.focus-left" | "window.resize-wider" | "pane.zoom"
   | "session.detach" | "session.attach" | "workspace.switch-1" | ... ;
 ```
@@ -58,10 +58,10 @@ owns: multiplexer
 prefix: "C-b"
 bindings:
   - keys: "%"
-    action: window.split-horizontal
+    action: window.split-side-by-side
     description: "Split the current pane side by side."
   - keys: "\""
-    action: window.split-vertical
+    action: window.split-stacked
   - keys: "z"
     action: pane.zoom
   - keys: "d"

@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   ExerciseValidationError,
+  KEYMAP_ACTIONS,
   parseKeymapLayer,
   validateKeymapLayers,
   type KeymapBindingInput,
   type KeymapLayerInput,
 } from "./index";
 
-/** The tmux row of the frozen schema in `odd/tasks/keymap-layers.md`, minus the optional keys. */
+/**
+ * The tmux row of the frozen schema in `odd/tasks/keymap-layers.md`, minus the optional keys, with
+ * the "Vocabulary v2" split action (decision 1).
+ */
 function validLayer(): KeymapLayerInput {
   return {
     schemaVersion: 1,
@@ -18,7 +22,7 @@ function validLayer(): KeymapLayerInput {
     bindings: [
       {
         keys: "%",
-        action: "window.split-horizontal",
+        action: "window.split-side-by-side",
         description: "Split the pane side by side.",
       },
     ],
@@ -75,7 +79,7 @@ describe("keymap layer schema v1", () => {
       bindings: [
         {
           keys: "%",
-          action: "window.split-horizontal",
+          action: "window.split-side-by-side",
           description: "Split the pane side by side.",
           modes: [],
           override: false,
@@ -140,6 +144,65 @@ describe("keymap layer schema v1", () => {
     input.bindings = [binding({ action: "pane.zoom" as never })];
     expect(issuesFor(input).join("\n")).toContain(
       "bindings.0.action: Invalid option: expected one of",
+    );
+  });
+
+  it("names the split actions by the layout they produce, not by \"horizontal\"", () => {
+    for (const action of ["window.split-side-by-side", "window.split-stacked"]) {
+      const input = validLayer();
+      input.bindings = [binding({ action: action as never })];
+      expect(parseKeymapLayer(input).bindings[0]?.action).toBe(action);
+    }
+    expect(KEYMAP_ACTIONS).not.toContain("window.split-horizontal");
+    expect(KEYMAP_ACTIONS).not.toContain("window.split-vertical");
+    for (const action of ["window.split-horizontal", "window.split-vertical"]) {
+      const input = validLayer();
+      input.bindings = [binding({ action: action as never })];
+      expect(issuesFor(input).join("\n")).toContain(
+        "bindings.0.action: Invalid option: expected one of",
+      );
+    }
+  });
+
+  it("parses motion and edit bindings", () => {
+    const input = validLayer();
+    input.bindings = [
+      binding({ keys: "w", action: "motion.word-forward" }),
+      binding({ keys: "i", action: "edit.insert-before" }),
+    ];
+    expect(parseKeymapLayer(input).bindings.map((item) => item.action)).toEqual([
+      "motion.word-forward",
+      "edit.insert-before",
+    ]);
+  });
+
+  it("accepts a target for the three editing actions that take one", () => {
+    const input = validLayer();
+    input.bindings = [
+      binding({ keys: 'ci"', action: "edit.change", target: "inner-quotes" }),
+      binding({ keys: "dd", action: "edit.delete", target: "line" }),
+      binding({ keys: "yy", action: "edit.yank", target: "inner-word" }),
+    ];
+    expect(parseKeymapLayer(input).bindings.map((item) => item.target)).toEqual([
+      "inner-quotes",
+      "line",
+      "inner-word",
+    ]);
+  });
+
+  it("rejects a target on an action that takes none, naming the action and the allowed set", () => {
+    const input = validLayer();
+    input.bindings = [binding({ action: "file.open", target: "word" as never })];
+    expect(issuesFor(input).join("\n")).toContain(
+      'bindings.0.target: "file.open" takes no target: only edit.delete, edit.change, edit.yank do',
+    );
+  });
+
+  it("rejects a target outside the target vocabulary", () => {
+    const input = validLayer();
+    input.bindings = [binding({ action: "edit.delete", target: "around-word" as never })];
+    expect(issuesFor(input).join("\n")).toContain(
+      "bindings.0.target: Invalid option: expected one of",
     );
   });
 

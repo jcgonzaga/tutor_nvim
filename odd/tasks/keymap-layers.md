@@ -88,6 +88,47 @@ Scope of T1: the schema, the parser and its validation, wired into the existing 
 catalogs cannot rot, plus the `linux` catalog. Wiring layers into `loadContent`, the web app and the
 API is T3/T4, and the remaining catalogs are T1b and T2.
 
+## Vocabulary v2 (decided after the sourced research; supersedes v1 where they differ)
+
+The research for T1b found two contradictions that a catalog writer cannot resolve alone. Decided here:
+
+**1. Split actions are named by the resulting layout, not by the word "horizontal".** Tools disagree:
+tmux `%` (`split-window -h`) leaves panes side by side, while Neovim's `:split` splits *horizontally*
+and stacks windows. One name cannot carry both:
+
+- `window.split-side-by-side` replaces `window.split-horizontal` (tmux `%`, nvim `C-wv`).
+- `window.split-stacked` replaces `window.split-vertical` (tmux `"`, nvim `C-ws`).
+
+**2. The `nvim` layer is inexpressible in v1**, because `KEYMAP_ACTIONS` had no motion or edit verbs
+while the engine models exactly those. Added, covering only what `packages/vim-engine` already does:
+
+| Namespace | Actions |
+| --- | --- |
+| `motion.` | `char-left`, `char-right`, `char-up`, `char-down`, `word-forward`, `word-backward`, `word-end`, `word-forward-big`, `word-backward-big`, `word-end-big`, `line-start`, `line-first-non-blank`, `line-end`, `find-char`, `find-char-backward`, `repeat-find`, `repeat-find-reverse` |
+| `edit.` | `insert-before`, `insert-after`, `open-line-below`, `normal-mode`, `delete`, `change`, `yank`, `delete-char`, `put-after`, `put-before`, `undo`, `redo`, `repeat` |
+
+**3. A binding may carry an optional `target`**, so text objects do not explode the vocabulary:
+`target` ∈ `char`, `line`, `word`, `inner-word`, `inner-quotes`, `inner-parens`, `inner-braces`,
+`around-quotes`, `around-parens`, `around-braces`. `target` is allowed only for `edit.delete`,
+`edit.change` and `edit.yank`; anywhere else it is a validation error. Example:
+
+```yaml
+  - keys: 'ci"'
+    action: edit.change
+    target: inner-quotes
+    description: "Change the text inside the double quotes."
+```
+
+**4. Omarchy ships its own tmux configuration** (prefix `Ctrl-Space`, splits on `v`/`h`), so tmux
+*defaults* are factually wrong on the machine the `omarchy` layer models. Two layers, not one:
+`tmux` (upstream defaults, prefix `C-b`) and `tmux-omarchy` (`extends: [tmux]`, prefix `C-Space`,
+overrides only what Omarchy changes).
+
+**5. Accept two notation gaps instead of faking them.** Omarchy has no resize submap and its resize
+chords are bound to physical key codes (`code:20`/`code:21`), which change character with the layout
+(AGENTS.md 2.9); the `keys` notation has no key-code form. Those bindings stay out of the catalog and
+are recorded here as a notation task, not modelled with a wrong character.
+
 ## Log
 
 **L1 — original request (verbatim)**

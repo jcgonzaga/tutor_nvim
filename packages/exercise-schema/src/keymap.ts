@@ -14,10 +14,45 @@ export const KEYMAP_MODES = ["normal", "insert", "visual", "resize", "copy-mode"
 export type KeymapMode = (typeof KEYMAP_MODES)[number];
 
 /**
- * The closed v1 action vocabulary. Exercises will ask for an action (S6) and any enabled layer
- * that provides it solves them, so an action is a shared word across tools, never a keystroke.
+ * The closed action vocabulary (v2, `odd/tasks/keymap-layers.md`). Exercises will ask for an action
+ * (S6) and any enabled layer that provides it solves them, so an action is a shared word across
+ * tools, never a keystroke. Ordered the way a learner meets it: the editor verbs first, then the
+ * surface-level ones.
+ *
+ * Splits are named by the layout they produce, because tools disagree on the word "horizontal":
+ * tmux `%` leaves panes side by side while Neovim `:split` stacks windows.
  */
 export const KEYMAP_ACTIONS = [
+  "motion.char-left",
+  "motion.char-right",
+  "motion.char-up",
+  "motion.char-down",
+  "motion.word-forward",
+  "motion.word-backward",
+  "motion.word-end",
+  "motion.word-forward-big",
+  "motion.word-backward-big",
+  "motion.word-end-big",
+  "motion.line-start",
+  "motion.line-first-non-blank",
+  "motion.line-end",
+  "motion.find-char",
+  "motion.find-char-backward",
+  "motion.repeat-find",
+  "motion.repeat-find-reverse",
+  "edit.insert-before",
+  "edit.insert-after",
+  "edit.open-line-below",
+  "edit.normal-mode",
+  "edit.delete",
+  "edit.change",
+  "edit.yank",
+  "edit.delete-char",
+  "edit.put-after",
+  "edit.put-before",
+  "edit.undo",
+  "edit.redo",
+  "edit.repeat",
   "file.open",
   "file.find",
   "file.save",
@@ -27,8 +62,8 @@ export const KEYMAP_ACTIONS = [
   "buffer.previous",
   "buffer.list",
   "grep.project",
-  "window.split-horizontal",
-  "window.split-vertical",
+  "window.split-side-by-side",
+  "window.split-stacked",
   "window.close",
   "window.focus-left",
   "window.focus-right",
@@ -53,6 +88,27 @@ export const KEYMAP_ACTIONS = [
   "shell.complete",
 ] as const;
 export type KeymapAction = (typeof KEYMAP_ACTIONS)[number];
+
+/**
+ * What a text object acts on, so `di"` and `dap` stay one action instead of one action each (v2,
+ * decision 3). Only the actions in `KEYMAP_TARGETED_ACTIONS` may carry one.
+ */
+export const KEYMAP_TARGETS = [
+  "char",
+  "line",
+  "word",
+  "inner-word",
+  "inner-quotes",
+  "inner-parens",
+  "inner-braces",
+  "around-quotes",
+  "around-parens",
+  "around-braces",
+] as const;
+export type KeymapTarget = (typeof KEYMAP_TARGETS)[number];
+
+/** The only actions a binding may give a `target`: the operator verbs that need one. */
+export const KEYMAP_TARGETED_ACTIONS = ["edit.delete", "edit.change", "edit.yank"] as const;
 
 /** Keys spelled as a name instead of a character, because the character is not printable. */
 export const KEYMAP_NAMED_KEYS = [
@@ -132,17 +188,30 @@ const keymapIdSchema = z
 
 /**
  * One keys → action line of a catalog. `override` must be true to replace an inherited
- * `(keys, modes)` pair; `notModelled` records a binding the simulator cannot exercise yet, so the
- * catalog stays honest instead of pretending.
+ * `(keys, modes)` pair; `target` refines an operator action with the text object it applies to;
+ * `notModelled` records a binding the simulator cannot exercise yet, so the catalog stays honest
+ * instead of pretending.
  */
-export const keymapBindingSchema = z.strictObject({
-  keys: keySchema,
-  action: z.enum(KEYMAP_ACTIONS),
-  description: z.string().min(1),
-  modes: z.array(z.enum(KEYMAP_MODES)).default([]),
-  override: z.boolean().default(false),
-  notModelled: z.string().min(1).optional(),
-});
+export const keymapBindingSchema = z
+  .strictObject({
+    keys: keySchema,
+    action: z.enum(KEYMAP_ACTIONS),
+    /** What the operator acts on; only the editing verbs take one (see `KEYMAP_TARGETED_ACTIONS`). */
+    target: z.enum(KEYMAP_TARGETS).optional(),
+    description: z.string().min(1),
+    modes: z.array(z.enum(KEYMAP_MODES)).default([]),
+    override: z.boolean().default(false),
+    notModelled: z.string().min(1).optional(),
+  })
+  .superRefine((binding, ctx) => {
+    if (binding.target === undefined) return;
+    if ((KEYMAP_TARGETED_ACTIONS as readonly string[]).includes(binding.action)) return;
+    ctx.addIssue({
+      code: "custom",
+      path: ["target"],
+      message: `"${binding.action}" takes no target: only ${KEYMAP_TARGETED_ACTIONS.join(", ")} do`,
+    });
+  });
 
 export type KeymapBinding = z.output<typeof keymapBindingSchema>;
 export type KeymapBindingInput = z.input<typeof keymapBindingSchema>;
