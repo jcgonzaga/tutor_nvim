@@ -16,6 +16,7 @@ export const practice: Messages["practice"] = {
   hintLabel: (level) => `Pista ${level}: `,
   showHint: "Mostrar pista",
   hintSoon: "Pista disponible pronto",
+  giveUp: "No lo sé",
   feedback: {
     perfect: { title: "Perfecto", detail: "Mejor estrategia, sin errores, sin pistas." },
     completed: { title: "Completado", detail: "Resuelto. Hay una forma más limpia." },

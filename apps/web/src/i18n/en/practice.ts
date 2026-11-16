@@ -15,6 +15,8 @@ export const practice = {
   hintLabel: (level: number) => `Hint ${level}: `,
   showHint: "Show hint",
   hintSoon: "Hint available soon",
+  /** Ends the attempt as a failure: free practice needs the same way out a session item has. */
+  giveUp: "I don't know this",
   /** Per-exercise feedback: icon plus words, the outcome is never carried by color alone. */
   feedback: {
     perfect: { title: "Perfect", detail: "Best strategy, no errors, no hints." },

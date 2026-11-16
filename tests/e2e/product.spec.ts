@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { currentExercise, onboardUntilCalibration, solveCurrent } from "./helpers";
+import { currentExercise, onboardSkippingCheck, onboardUntilCalibration, solveCurrent } from "./helpers";
 
 const DAY_ONE = new Date("2026-10-21T09:00:00");
 const DAY_THREE = new Date("2026-10-23T09:00:00");
@@ -219,5 +219,32 @@ test.describe("M5 local product", () => {
     await expect(nodes.first()).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.getByTestId("skill-stage")).toBeVisible();
+  });
+
+  test("a failed exercise can be redone without leaving the session", async ({ page }) => {
+    await page.clock.install({ time: DAY_ONE });
+    await onboardSkippingCheck(page);
+    await page.getByRole("button", { name: "Continue Training" }).click();
+
+    // Fail the first item on purpose.
+    const first = await currentExercise(page);
+    const progress = (await page.getByTestId("practice-progress").textContent()) ?? "";
+    await page.getByRole("button", { name: "I don't know this" }).click();
+    await expect(page.getByTestId("feedback-kind")).toHaveText("Not solved");
+
+    // Redo the same exercise, from its initial state, still at the same session position.
+    await page.getByRole("button", { name: "Try again" }).click();
+    await expect(page.getByTestId("feedback-kind")).toHaveCount(0);
+    await expect(page.getByTestId("practice-progress")).toHaveText(progress);
+    expect((await currentExercise(page)).id).toBe(first.id);
+
+    // Solving the retry reports a result like any other attempt, and a solved attempt has no retry.
+    await solveCurrent(page);
+    await expect(page.getByTestId("feedback-kind")).toHaveText(/Perfect|Completed/);
+    await expect(page.getByRole("button", { name: "Try again" })).toHaveCount(0);
+
+    // The session moves on exactly one step: the retry did not add an item of its own.
+    await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
+    await expect(page.getByTestId("practice-progress")).not.toHaveText(progress);
   });
 });

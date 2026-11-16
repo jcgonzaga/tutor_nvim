@@ -99,6 +99,7 @@ export {
   finishAttempt,
   createProfile,
   endSession,
+  recordRetryAttempt,
   setExperience,
   setKeyboardLayout,
   startSession,

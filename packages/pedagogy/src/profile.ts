@@ -308,6 +308,23 @@ export function finishAttempt(
   };
 }
 
+/**
+ * Records an attempt the learner made by redoing an exercise the session already closed.
+ *
+ * It is evidence like any other attempt — history, mastery, review schedule, personal bests — but
+ * it is not a session item and it pays no XP: `finishAttempt` is the only function that awards XP,
+ * so going through `applyAttempt` here is what keeps the game layer out of a retry (AGENTS 2.7).
+ * The failed or given-up attempt it follows stays in the history untouched.
+ */
+export function recordRetryAttempt(
+  profile: Profile,
+  skills: readonly Skill[],
+  attempt: FinishedAttempt,
+  config: PedagogyConfig = DEFAULT_PEDAGOGY_CONFIG,
+): AppliedAttempt {
+  return applyAttempt(profile, skills, attempt, config);
+}
+
 export function startSession(profile: Profile, plan: DailySession, now: number): Profile {
   return {
     ...profile,

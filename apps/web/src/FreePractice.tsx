@@ -17,5 +17,12 @@ export function FreePractice({ slug }: { readonly slug: string }) {
   const next = exercises[(index + 1) % exercises.length];
 
   if (!exercise) return <p className="p-6">{t.app.noExercises}</p>;
-  return <PracticeScreen key={exercise.id} exercise={exercise} nextSlug={next?.slug ?? null} />;
+  return (
+    <PracticeScreen
+      key={exercise.id}
+      exercise={exercise}
+      giveUpLabel={t.practice.giveUp}
+      nextSlug={next?.slug ?? null}
+    />
+  );
 }

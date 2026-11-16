@@ -8,6 +8,7 @@ import {
   endSession,
   finishAttempt,
   isRunFinished,
+  recordRetryAttempt,
   runProgress,
   startSession,
   summarizeRun,
@@ -70,6 +71,8 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
   const analytics = useAnalytics();
   const { prefs, markLessonSeen } = usePrefs();
   const [held, setHeld] = useState<Held | null>(null);
+  /** How many times the item whose feedback is on screen has been redone. */
+  const [retries, setRetries] = useState(0);
   const today = localDateKey(clock.now());
   const active = activeSessionFor(profile, today);
 
@@ -119,6 +122,25 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
 
   function handleFinish(exercise: Exercise, finished: FinishedPractice) {
     const at = clock.now();
+    // Redoing the item whose feedback is on screen: evidence like any other attempt, but not a
+    // second session item and no XP. The failure recorded a moment ago stays in the history.
+    if (held !== null && held.exercise.id === exercise.id) {
+      cloud.recordAttempt(
+        exercise,
+        { attempt: finished.attempt, success: finished.evaluation.success },
+        at,
+        null,
+      );
+      update((current: Profile) =>
+        recordRetryAttempt(current, skills, {
+          exercise,
+          metrics: finished.evaluation.metrics,
+          at,
+        }).profile,
+      );
+      setRetries((count) => count + 1);
+      return;
+    }
     cloud.recordAttempt(
       exercise,
       { attempt: finished.attempt, success: finished.evaluation.success },
@@ -280,36 +302,53 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
         analytics.track({ name: "hint_used", props: { exerciseId: exercise.id, level } })
       }
       onFinish={(finished) => handleFinish(exercise, finished)}
-      renderResult={(finished) => (
-        <FeedbackPanel
-          finished={finished}
-          exercise={exercise}
-          extras={
-            held ? (
-              <FeedbackExtras
-                exercise={held.exercise}
-                finished={finished}
-                award={held.award}
-                combo={held.combo}
-                previousBest={held.previousBest}
-              />
-            ) : null
-          }
-        >
-          {held && held.improved.length > 0 ? (
-            <p data-testid="personal-best" className="mr-auto self-center text-base text-amber">
-              <span aria-hidden>★ </span>
-              {t.session.newPersonalBest(
-                held.improved.map((metric) => t.session.metrics[metric]).join(", "),
-              )}
-            </p>
-          ) : null}
-          <button type="button" className={`${primaryButton} !pr-3`} onClick={() => setHeld(null)}>
-            {isRunFinished(run) ? t.session.finish : t.session.continue}
-            <KeyHint>Enter</KeyHint>
-          </button>
-        </FeedbackPanel>
-      )}
+      renderResult={(finished, retry) => {
+        // The extras (XP, combo, personal best) belong to the attempt the run recorded, so they are
+        // not shown again for a retry the run never saw.
+        const recorded = held !== null && retries === 0;
+        return (
+          <FeedbackPanel
+            finished={finished}
+            exercise={exercise}
+            extras={
+              recorded && held ? (
+                <FeedbackExtras
+                  exercise={held.exercise}
+                  finished={finished}
+                  award={held.award}
+                  combo={held.combo}
+                  previousBest={held.previousBest}
+                />
+              ) : null
+            }
+          >
+            {recorded && held && held.improved.length > 0 ? (
+              <p data-testid="personal-best" className="mr-auto self-center text-base text-amber">
+                <span aria-hidden>★ </span>
+                {t.session.newPersonalBest(
+                  held.improved.map((metric) => t.session.metrics[metric]).join(", "),
+                )}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className={`${primaryButton} !pr-3`}
+              onClick={() => {
+                setHeld(null);
+                setRetries(0);
+              }}
+            >
+              {isRunFinished(run) ? t.session.finish : t.session.continue}
+              <KeyHint>Enter</KeyHint>
+            </button>
+            {finished.evaluation.success ? null : (
+              <button type="button" className={secondaryButton} onClick={retry}>
+                {t.practice.result.tryAgain}
+              </button>
+            )}
+          </FeedbackPanel>
+        );
+      }}
     />
   );
 }
