@@ -221,6 +221,20 @@ Do not implement until the PRD phase requires it:
 
 Do not “prepare” these by adding premature services or dependencies unless a clear interface is required by current work.
 
+#### Post-MVP phase: tooling layers and the workspace (owner decision)
+
+The phase after the MVP adds, and only adds, this:
+
+- keymap layers for Linux (shell + readline), nvim, LazyVim, tmux, Herdr and Omarchy, which the
+  learner enables one, several or all of;
+- the usual developer workflows over a simulated workspace: pick a file, edit it, switch to another
+  one, and open, close, resize, zoom and swap windows and panes.
+
+These are **still simulated**: the exclusions above stay in force for both the MVP and this phase —
+no containers, no server-side Neovim, no real processes. The design is in
+`docs/architecture/adr/0006-tooling-layers.md` and
+`docs/architecture/m12-tooling-layers-and-workspace.md`; the work items are in `odd/tasks/`.
+
 ---
 
 ## 4. Required repository structure
