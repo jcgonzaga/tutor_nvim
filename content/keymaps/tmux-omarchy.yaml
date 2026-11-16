@@ -1,0 +1,26 @@
+# The tmux layer as Omarchy ships it: upstream's defaults from `tmux.yaml`, behind a different
+# prefix, with its own keys for the two splits.
+#
+# Omarchy leaves `Ctrl + B` working as well, so every inherited binding stays reachable — that is
+# why this layer extends `tmux` instead of replacing it, and only the split keys are overridden.
+#
+# Source: Omarchy's manual, https://omarchy.org/manual/hotkeys/, and the tmux configuration Omarchy
+# ships with it; checked 2026-11-16. Omarchy also binds its own `k`, `r` and `[`, which have no
+# action in the vocabulary yet and are therefore left out.
+schemaVersion: 1
+id: tmux-omarchy
+label: "tmux (Omarchy)"
+owns: [multiplexer]
+extends: [tmux]
+prefix: "C-Space"
+bindings:
+  - keys: "v"
+    action: window.split-side-by-side
+    override: true
+    description: "Split the current pane side by side, one pane next to the other."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to split."
+  - keys: "h"
+    action: window.split-stacked
+    override: true
+    description: "Split the current pane into two, one above the other."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to split."

@@ -104,6 +104,21 @@ describe("content integrity gate (T-907)", () => {
     expect(result.output).toContain("shell.clear-line");
   }, 60_000);
 
+  it("blocks a catalog that repeats an inherited binding without override", () => {
+    const root = copyOfContent();
+    edit(root, "keymaps/tmux-omarchy.yaml", (text) =>
+      // `%` is already claimed by the `tmux` layer this catalog extends.
+      text.replace(
+        '  - keys: "v"\n    action: window.split-side-by-side\n    override: true\n',
+        '  - keys: "%"\n    action: window.split-side-by-side\n',
+      ),
+    );
+    const result = run("content-validate", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("keymaps/tmux-omarchy.yaml");
+    expect(result.output).toContain("set override: true");
+  }, 60_000);
+
   it("blocks a prerequisite cycle", () => {
     const root = copyOfContent();
     edit(root, "skills/vim.navigation.atomic.yaml", (text) =>

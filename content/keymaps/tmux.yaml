@@ -1,0 +1,66 @@
+# The tmux layer: tmux's own default prefix and the keys behind it.
+#
+# Source: tmux's key table, `key-bindings.c#key_bindings_init`
+# (https://github.com/tmux/tmux/blob/master/key-bindings.c), the file the man page describes;
+# checked 2026-11-16.
+#
+# Every binding is pressed after the prefix. None of them can be exercised yet: there is no
+# multiplexer engine (packages/workspace-engine does not exist), so each row says why with
+# `notModelled` instead of pretending (S3).
+#
+# Left out on purpose, real bindings with no action in the vocabulary yet: `o` (next pane),
+# `;` (last pane), `w` (choose-tree), `,` (rename window), `[` (copy mode), `0`-`9`, `s`, `{`/`}`.
+schemaVersion: 1
+id: tmux
+label: "tmux"
+owns: [multiplexer]
+prefix: "C-b"
+bindings:
+  - keys: "%"
+    action: window.split-side-by-side
+    description: "Split the current pane side by side, one pane next to the other."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to split."
+  - keys: '"'
+    action: window.split-stacked
+    description: "Split the current pane into two, one above the other."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to split."
+  - keys: "Up"
+    action: window.focus-up
+    description: "Move focus to the pane above the current one."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no second pane to move to."
+  - keys: "Down"
+    action: window.focus-down
+    description: "Move focus to the pane below the current one."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no second pane to move to."
+  - keys: "Left"
+    action: window.focus-left
+    description: "Move focus to the pane on the left of the current one."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no second pane to move to."
+  - keys: "Right"
+    action: window.focus-right
+    description: "Move focus to the pane on the right of the current one."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no second pane to move to."
+  - keys: "z"
+    action: window.zoom
+    description: "Zoom the current pane to fill the terminal, and press it again to undo."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to zoom."
+  - keys: "x"
+    action: window.close
+    description: "Kill the current pane, after tmux asks you to confirm."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to kill."
+  - keys: "c"
+    action: tab.new
+    description: "Create a new tmux window and switch to it."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no session to add a window to."
+  - keys: "n"
+    action: tab.next
+    description: "Select the next tmux window in the session."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no second window to select."
+  - keys: "p"
+    action: tab.previous
+    description: "Select the previous tmux window in the session."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no second window to select."
+  - keys: "d"
+    action: session.detach
+    description: "Detach from the session and leave it running in the background."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no session to detach from."

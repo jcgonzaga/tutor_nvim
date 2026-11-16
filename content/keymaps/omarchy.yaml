@@ -1,0 +1,86 @@
+# The omarchy layer: the keys Omarchy's window manager answers to, with no prefix to press first.
+#
+# Source: Omarchy's own manual, section "Navigating", https://omarchy.org/manual/hotkeys/; checked
+# 2026-11-16. The manual writes chords the way Hyprland does (`Super + Return`, `Super + Shift +
+# Left`); here they are written in the catalog notation, so `Return` is the named key `Enter` and
+# the extra modifier is `S-`.
+#
+# Resizing is missing on purpose: Omarchy has no resize submap and binds `Super+Minus`/`Super+Equal`
+# to physical key codes (`code:20`/`code:21`), whose characters change with the keyboard layout,
+# and the `keys` notation has no key-code form. Recorded, not invented — see
+# odd/tasks/keymap-catalogs-research.md.
+#
+# Nothing here can be exercised yet: there is no window-manager engine, so every binding says why.
+schemaVersion: 1
+id: omarchy
+label: "Omarchy"
+owns: [window-manager]
+bindings:
+  - keys: "Super-Enter"
+    action: app.launch-terminal
+    description: "Open a terminal window."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-q"
+    action: window.close
+    description: "Close the window you are in."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-w"
+    action: window.close
+    description: "Close the window you are in."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-Left"
+    action: window.focus-left
+    description: "Move focus to the window on the left."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-Right"
+    action: window.focus-right
+    description: "Move focus to the window on the right."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-Up"
+    action: window.focus-up
+    description: "Move focus to the window above."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-Down"
+    action: window.focus-down
+    description: "Move focus to the window below."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-S-Left"
+    action: window.swap
+    description: "Swap this window with the one on the left."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-S-Right"
+    action: window.swap
+    description: "Swap this window with the one on the right."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-S-Up"
+    action: window.swap
+    description: "Swap this window with the one above."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-S-Down"
+    action: window.swap
+    description: "Swap this window with the one below."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-Tab"
+    action: workspace.switch
+    description: "Switch to the next workspace on this monitor."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-1"
+    action: workspace.switch
+    description: "Jump to workspace 1."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-2"
+    action: workspace.switch
+    description: "Jump to workspace 2."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-3"
+    action: workspace.switch
+    description: "Jump to workspace 3."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-4"
+    action: workspace.switch
+    description: "Jump to workspace 4."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-f"
+    action: window.zoom
+    description: "Make the window full screen, and press it again to undo."
+    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."

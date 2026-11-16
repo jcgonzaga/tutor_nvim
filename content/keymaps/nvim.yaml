@@ -1,0 +1,316 @@
+# The nvim layer: the keys Neovim itself answers to, before any LazyVim leader is pressed.
+#
+# Source: Neovim's own help (`:help h`, `:help w`, `:help d`, `:help i_<Esc>`, `:help windows.txt`,
+# `:help editing.txt`), checked 2026-11-16 against odd/tasks/keymap-catalogs-research.md.
+#
+# Two groups. Everything in the first group is behaviour `packages/vim-engine` already executes
+# (its `MOTIONS`, `TEXT_OBJECTS` and `stepNormal`). Everything in the second group is a real Neovim
+# command the simulator cannot run yet, so it says why with `notModelled` (S3).
+schemaVersion: 1
+id: nvim
+label: "Neovim"
+owns: [editor]
+bindings:
+  # --- Motions -----------------------------------------------------------------------------------
+  - keys: "h"
+    action: motion.char-left
+    description: "Move the cursor one character to the left."
+    modes: [normal]
+  - keys: "l"
+    action: motion.char-right
+    description: "Move the cursor one character to the right."
+    modes: [normal]
+  - keys: "j"
+    action: motion.char-down
+    description: "Move the cursor one line down."
+    modes: [normal]
+  - keys: "k"
+    action: motion.char-up
+    description: "Move the cursor one line up."
+    modes: [normal]
+  - keys: "w"
+    action: motion.word-forward
+    description: "Move to the start of the next word."
+    modes: [normal]
+  - keys: "b"
+    action: motion.word-backward
+    description: "Move to the start of the previous word."
+    modes: [normal]
+  - keys: "e"
+    action: motion.word-end
+    description: "Move to the end of the word you are on."
+    modes: [normal]
+  - keys: "W"
+    action: motion.word-forward-big
+    description: "Move to the start of the next WORD, ignoring punctuation."
+    modes: [normal]
+  - keys: "B"
+    action: motion.word-backward-big
+    description: "Move to the start of the previous WORD, ignoring punctuation."
+    modes: [normal]
+  - keys: "E"
+    action: motion.word-end-big
+    description: "Move to the end of the WORD you are on."
+    modes: [normal]
+  - keys: "0"
+    action: motion.line-start
+    description: "Move to the very first column of the line."
+    modes: [normal]
+  - keys: "^"
+    action: motion.line-first-non-blank
+    description: "Move to the first visible character of the line."
+    modes: [normal]
+  - keys: "$"
+    action: motion.line-end
+    description: "Move to the last character of the line."
+    modes: [normal]
+  - keys: "f"
+    action: motion.find-char
+    description: "Jump onto the next occurrence of the character you type on this line."
+    modes: [normal]
+  - keys: "t"
+    action: motion.find-char
+    description: "Jump to just before the next occurrence of the character you type on this line."
+    modes: [normal]
+  - keys: ";"
+    action: motion.repeat-find
+    description: "Repeat the last character search in the same direction."
+    modes: [normal]
+  - keys: ","
+    action: motion.repeat-find-reverse
+    description: "Repeat the last character search in the opposite direction."
+    modes: [normal]
+
+  # --- Insert transitions ------------------------------------------------------------------------
+  - keys: "i"
+    action: edit.insert-before
+    description: "Start inserting text before the cursor."
+    modes: [normal]
+  - keys: "a"
+    action: edit.insert-after
+    description: "Start inserting text after the cursor."
+    modes: [normal]
+  - keys: "o"
+    action: edit.open-line-below
+    description: "Open a new line below and start inserting there."
+    modes: [normal]
+  - keys: "Esc"
+    action: edit.normal-mode
+    description: "Stop inserting and go back to normal mode."
+    modes: [insert]
+
+  # --- Operators ---------------------------------------------------------------------------------
+  - keys: "dd"
+    action: edit.delete
+    target: line
+    description: "Delete the line under the cursor."
+    modes: [normal]
+  - keys: "yy"
+    action: edit.yank
+    target: line
+    description: "Copy the line under the cursor."
+    modes: [normal]
+  - keys: "cw"
+    action: edit.change
+    target: word
+    description: "Change the rest of the word: delete it and start inserting."
+    modes: [normal]
+
+  # --- Text objects, deleted ---------------------------------------------------------------------
+  - keys: "diw"
+    action: edit.delete
+    target: inner-word
+    description: "Delete the word under the cursor."
+    modes: [normal]
+  - keys: 'di"'
+    action: edit.delete
+    target: inner-quotes
+    description: "Delete the text inside the double quotes."
+    modes: [normal]
+  - keys: 'da"'
+    action: edit.delete
+    target: around-quotes
+    description: "Delete the text inside the double quotes together with the quotes."
+    modes: [normal]
+  - keys: "di("
+    action: edit.delete
+    target: inner-parens
+    description: "Delete the text inside the parentheses."
+    modes: [normal]
+  - keys: "da("
+    action: edit.delete
+    target: around-parens
+    description: "Delete the text inside the parentheses together with the parentheses."
+    modes: [normal]
+  - keys: "di{"
+    action: edit.delete
+    target: inner-braces
+    description: "Delete the text inside the braces."
+    modes: [normal]
+  - keys: "da{"
+    action: edit.delete
+    target: around-braces
+    description: "Delete the text inside the braces together with the braces."
+    modes: [normal]
+
+  # --- Text objects, changed ---------------------------------------------------------------------
+  - keys: "ciw"
+    action: edit.change
+    target: inner-word
+    description: "Change the word under the cursor: delete it and start inserting."
+    modes: [normal]
+  - keys: 'ci"'
+    action: edit.change
+    target: inner-quotes
+    description: "Change the text inside the double quotes."
+    modes: [normal]
+  - keys: 'ca"'
+    action: edit.change
+    target: around-quotes
+    description: "Change the text inside the double quotes together with the quotes."
+    modes: [normal]
+  - keys: "ci("
+    action: edit.change
+    target: inner-parens
+    description: "Change the text inside the parentheses."
+    modes: [normal]
+  - keys: "ca("
+    action: edit.change
+    target: around-parens
+    description: "Change the text inside the parentheses together with the parentheses."
+    modes: [normal]
+  - keys: "ci{"
+    action: edit.change
+    target: inner-braces
+    description: "Change the text inside the braces."
+    modes: [normal]
+  - keys: "ca{"
+    action: edit.change
+    target: around-braces
+    description: "Change the text inside the braces together with the braces."
+    modes: [normal]
+
+  # --- Text objects, copied ----------------------------------------------------------------------
+  - keys: "yiw"
+    action: edit.yank
+    target: inner-word
+    description: "Copy the word under the cursor."
+    modes: [normal]
+  - keys: 'yi"'
+    action: edit.yank
+    target: inner-quotes
+    description: "Copy the text inside the double quotes."
+    modes: [normal]
+  - keys: 'ya"'
+    action: edit.yank
+    target: around-quotes
+    description: "Copy the text inside the double quotes together with the quotes."
+    modes: [normal]
+  - keys: "yi("
+    action: edit.yank
+    target: inner-parens
+    description: "Copy the text inside the parentheses."
+    modes: [normal]
+  - keys: "ya("
+    action: edit.yank
+    target: around-parens
+    description: "Copy the text inside the parentheses together with the parentheses."
+    modes: [normal]
+  - keys: "yi{"
+    action: edit.yank
+    target: inner-braces
+    description: "Copy the text inside the braces."
+    modes: [normal]
+  - keys: "ya{"
+    action: edit.yank
+    target: around-braces
+    description: "Copy the text inside the braces together with the braces."
+    modes: [normal]
+
+  # --- Single-key editing ------------------------------------------------------------------------
+  - keys: "x"
+    action: edit.delete-char
+    description: "Delete the character under the cursor."
+    modes: [normal]
+  - keys: "p"
+    action: edit.put-after
+    description: "Put the last copied or deleted text after the cursor."
+    modes: [normal]
+  - keys: "P"
+    action: edit.put-before
+    description: "Put the last copied or deleted text before the cursor."
+    modes: [normal]
+  - keys: "u"
+    action: edit.undo
+    description: "Undo the last change."
+    modes: [normal]
+  - keys: "C-r"
+    action: edit.redo
+    description: "Redo the change you just undid."
+    modes: [normal]
+  - keys: "."
+    action: edit.repeat
+    description: "Repeat the last change."
+    modes: [normal]
+
+  # --- Ex and window commands the simulator cannot run yet ---------------------------------------
+  - keys: ":e"
+    action: file.open
+    description: "Open a file by name, replacing the buffer you are looking at."
+    modes: [normal]
+    notModelled: "The simulator loads one buffer from the exercise: packages/vim-engine parses no Ex command line, so `:edit` cannot run."
+  - keys: ":w"
+    action: file.save
+    description: "Write the buffer back to its file."
+    modes: [normal]
+    notModelled: "Exercises only live in memory: packages/vim-engine has no file behind the buffer, so `:write` cannot run."
+  - keys: ":ls"
+    action: buffer.list
+    description: "List the open buffers."
+    modes: [normal]
+    notModelled: "One buffer, no list: packages/vim-engine models no buffer list, so `:ls` cannot run."
+  - keys: ":bn"
+    action: buffer.next
+    description: "Switch to the next buffer in the list."
+    modes: [normal]
+    notModelled: "One buffer, no list: packages/vim-engine models no buffer list, so `:bnext` cannot run."
+  - keys: ":bp"
+    action: buffer.previous
+    description: "Switch to the previous buffer in the list."
+    modes: [normal]
+    notModelled: "One buffer, no list: packages/vim-engine models no buffer list, so `:bprevious` cannot run."
+  - keys: "C-wv"
+    action: window.split-side-by-side
+    description: "Split the window in two side by side."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so the split cannot be exercised."
+  - keys: "C-ws"
+    action: window.split-stacked
+    description: "Split the window in two, one above the other."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so the split cannot be exercised."
+  - keys: "C-wh"
+    action: window.focus-left
+    description: "Move to the window on the left."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no window to move to."
+  - keys: "C-wj"
+    action: window.focus-down
+    description: "Move to the window below."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no window to move to."
+  - keys: "C-wk"
+    action: window.focus-up
+    description: "Move to the window above."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no window to move to."
+  - keys: "C-wl"
+    action: window.focus-right
+    description: "Move to the window on the right."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no window to move to."
+  - keys: "C-wq"
+    action: window.close
+    description: "Close the window you are in."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no window to close."

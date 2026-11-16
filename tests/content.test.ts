@@ -93,6 +93,7 @@ describe("curriculum coverage", () => {
  */
 describe("keymap catalogs", () => {
   const layers = parseKeymapLayers(readKeymapInput());
+  const byId = new Map(layers.map((layer) => [layer.id, layer] as const));
 
   it("parses the linux shell layer", () => {
     const linux = layers.find((layer) => layer.id === "linux");
@@ -102,6 +103,56 @@ describe("keymap catalogs", () => {
     // Completion is not modelled by the shell engine, so the catalog says so instead of pretending.
     const completion = linux?.bindings.find((binding) => binding.action === "shell.complete");
     expect(completion?.notModelled).toBeTruthy();
+  });
+
+  it("parses every catalog with an id of its own", () => {
+    const ids = layers.map((layer) => layer.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("ships the nvim, tmux, tmux-omarchy and omarchy catalogs, each owning its surface", () => {
+    const expected: readonly (readonly [string, readonly string[]])[] = [
+      ["nvim", ["editor"]],
+      ["tmux", ["multiplexer"]],
+      ["tmux-omarchy", ["multiplexer"]],
+      ["omarchy", ["window-manager"]],
+    ];
+    for (const [id, owns] of expected) expect([id, byId.get(id)?.owns]).toEqual([id, owns]);
+  });
+
+  it("makes tmux-omarchy build on tmux and override only the two splits it changes", () => {
+    const omarchyTmux = byId.get("tmux-omarchy");
+    expect(omarchyTmux?.extends).toEqual(["tmux"]);
+    expect(omarchyTmux?.prefix).toBe("C-Space");
+    expect(byId.get("tmux")?.prefix).toBe("C-b");
+
+    const overrides = (omarchyTmux?.bindings ?? []).filter((binding) => binding.override);
+    expect(overrides.map((binding) => [binding.keys, binding.action])).toEqual([
+      ["v", "window.split-side-by-side"],
+      ["h", "window.split-stacked"],
+    ]);
+  });
+
+  it("keeps the surfaces with no engine honest: every tmux and omarchy binding says why", () => {
+    const unmarked = ["tmux", "tmux-omarchy", "omarchy"].flatMap((id) =>
+      (byId.get(id)?.bindings ?? [])
+        .filter((binding) => binding.notModelled === undefined)
+        .map((binding) => `${id}: ${binding.keys}`),
+    );
+    expect(unmarked).toEqual([]);
+  });
+
+  it("marks only the nvim commands the vim engine cannot run as notModelled", () => {
+    const bindings = byId.get("nvim")?.bindings ?? [];
+    const namespaces = (marked: "modelled" | "not-modelled"): string[] =>
+      bindings
+        .filter((binding) => (binding.notModelled === undefined) === (marked === "modelled"))
+        .map((binding) => binding.action.split(".")[0] as string);
+
+    // Motions, insert transitions, operators, text objects and edits are what the engine executes.
+    expect(new Set(namespaces("modelled"))).toEqual(new Set(["motion", "edit"]));
+    // Files, buffers and windows do not exist in packages/vim-engine yet, so those rows must say so.
+    expect(new Set(namespaces("not-modelled"))).toEqual(new Set(["file", "buffer", "window"]));
   });
 });
 
