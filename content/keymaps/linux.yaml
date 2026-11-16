@@ -1,0 +1,22 @@
+# The linux layer: what the shell and readline do with the keys before any other tool sees them.
+#
+# Every binding here is behaviour `packages/shell-engine/src/keys.ts` already models, or says with
+# `notModelled` why it cannot be exercised yet. Keep it honest and small (S3).
+schemaVersion: 1
+id: linux
+label: "Linux"
+owns: [shell]
+bindings:
+  - keys: "C-u"
+    action: shell.clear-line
+    description: "Clear the line you are typing without running it."
+  - keys: "Up"
+    action: shell.history-search
+    description: "Replace the line with the previous command from the history."
+  - keys: "Down"
+    action: shell.history-search
+    description: "Move forward through the command history, back to the line you were typing."
+  - keys: "Tab"
+    action: shell.complete
+    description: "Complete the command or path you are typing."
+    notModelled: "The shell simulator ignores Tab: packages/shell-engine/src/keys.ts does not complete words yet."

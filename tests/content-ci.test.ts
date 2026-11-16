@@ -92,6 +92,18 @@ describe("content integrity gate (T-907)", () => {
     expect(result.output).toMatch(/duplicate exercise slug/);
   }, 60_000);
 
+  it("blocks a keymap catalog that breaks the layer schema", () => {
+    const root = copyOfContent();
+    edit(root, "keymaps/linux.yaml", (text) =>
+      // `pane.zoom` is the ADR sketch; v1 calls the action `window.zoom`.
+      text.replace("action: shell.clear-line", "action: pane.zoom"),
+    );
+    const result = run("content-validate", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("keymaps/linux.yaml");
+    expect(result.output).toContain("shell.clear-line");
+  }, 60_000);
+
   it("blocks a prerequisite cycle", () => {
     const root = copyOfContent();
     edit(root, "skills/vim.navigation.atomic.yaml", (text) =>

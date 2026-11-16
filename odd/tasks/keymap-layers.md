@@ -44,6 +44,50 @@ YAML file and its exercises, not a new engine.
 | T6 | S1, S5 | settings UI (one / several / all) and the "next key belongs to" indicator | pending |
 | T7 | S1-S7 | CI: every catalog binding resolves; every declared solution replays | pending |
 
+## Frozen schema for T1 (keymap layer v1)
+
+This is the interface T1 implements and later tasks consume. Decided here, not by the implementer.
+
+```yaml
+schemaVersion: 1              # required, literal 1
+id: tmux                      # stable public id, ^[a-z][a-z0-9-]*$, unique across files
+label: "tmux"                 # learner-facing name, non-empty
+owns: [multiplexer]           # non-empty, unique, from SURFACES
+extends: []                   # optional layer ids this one builds on (no cycles)
+prefix: "C-b"                 # optional: the key(s) that open this layer's command group
+leader: " "                   # optional: the leader this layer's bindings are written after
+bindings:                     # required, non-empty
+  - keys: "%"                  # required: what is pressed AFTER prefix/leader, when the layer has one
+    action: window.split-horizontal   # required, from ACTIONS
+    description: "Split the pane side by side."   # required, one line, learner-facing
+    modes: [normal]            # optional subset of MODES; empty means any mode
+    override: false            # optional; must be true to replace an inherited (keys, modes) pair
+    notModelled: "needs a running tmux server"     # optional; why this binding cannot be exercised yet
+```
+
+- `SURFACES` = `shell`, `editor`, `multiplexer`, `window-manager`.
+- `MODES` = `normal`, `insert`, `visual`, `resize`, `copy-mode`.
+- `ACTIONS` (v1, closed set, kebab-case within a dotted namespace): `file.open`, `file.find`,
+  `file.save`, `file.new`, `file.close-buffer`, `buffer.next`, `buffer.previous`, `buffer.list`,
+  `grep.project`, `window.split-horizontal`, `window.split-vertical`, `window.close`,
+  `window.focus-left`, `window.focus-right`, `window.focus-up`, `window.focus-down`,
+  `window.resize-wider`, `window.resize-narrower`, `window.resize-taller`,
+  `window.resize-shorter`, `window.zoom`, `window.swap`, `window.new`, `app.launch-terminal`,
+  `workspace.switch`, `session.detach`, `session.attach`, `tab.new`, `tab.next`, `tab.previous`,
+  `shell.clear-line`, `shell.history-search`, `shell.complete`.
+- Key notation: a single printable character as-is (`%`, `"`, `z`), or `+`-joined modifiers `C-`,
+  `S-`, `M-`, `Super-`, or one named key (`Enter`, `Esc`, `Left`…`Down`, `Space`). When a layer
+  declares `leader`, its bindings are written after the leader (`ff` means `<leader>ff`).
+
+Validation must reject: `schemaVersion` other than 1; a malformed or duplicate `id`; unknown surface,
+modes or action; empty `label`, `bindings` or `description`; keys that do not match the notation;
+`extends` pointing at an unknown layer or forming a cycle; and a binding that repeats an inherited
+`(keys, modes)` pair without `override: true`.
+
+Scope of T1: the schema, the parser and its validation, wired into the existing content CI so the
+catalogs cannot rot, plus the `linux` catalog. Wiring layers into `loadContent`, the web app and the
+API is T3/T4, and the remaining catalogs are T1b and T2.
+
 ## Log
 
 **L1 — original request (verbatim)**

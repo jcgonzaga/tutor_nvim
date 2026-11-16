@@ -3,9 +3,9 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { checkContent, evaluateAttempt, simulateSolution } from "@tutor-nvim/evaluation";
-import { loadContent } from "@tutor-nvim/exercise-schema";
+import { loadContent, parseKeymapLayers } from "@tutor-nvim/exercise-schema";
 import { bufferToText } from "@tutor-nvim/vim-engine";
-import { readContentInput } from "../scripts/content-fs";
+import { readContentInput, readKeymapInput } from "../scripts/content-fs";
 
 const bundle = loadContent(readContentInput());
 
@@ -86,6 +86,22 @@ describe("curriculum coverage", () => {
     expect(transfer.length).toBeGreaterThanOrEqual(3);
     expect(contexts.size).toBeGreaterThanOrEqual(3);
     expect(transfer.every((exercise) => exercise.metadata.transferTags.length > 0)).toBe(true);
+  });
+});
+
+/** Keymap layers are content too (S2/S3): the catalogs live in `content/keymaps` and validate.
+ */
+describe("keymap catalogs", () => {
+  const layers = parseKeymapLayers(readKeymapInput());
+
+  it("parses the linux shell layer", () => {
+    const linux = layers.find((layer) => layer.id === "linux");
+    expect(linux).toBeDefined();
+    expect(linux?.owns).toEqual(["shell"]);
+    expect(linux?.bindings.map((binding) => binding.action)).toContain("shell.clear-line");
+    // Completion is not modelled by the shell engine, so the catalog says so instead of pretending.
+    const completion = linux?.bindings.find((binding) => binding.action === "shell.complete");
+    expect(completion?.notModelled).toBeTruthy();
   });
 });
 

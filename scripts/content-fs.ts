@@ -2,13 +2,17 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  KeymapValidationError,
   LOCALES,
   SOURCE_LOCALE,
+  parseKeymapLayers,
   validateContent,
   validateLocale,
   type ContentBundle,
   type ContentInput,
   type ContentSource,
+  type KeymapLayer,
+  type KeymapLayerSource,
   type Locale,
   type LocaleInput,
 } from "@tutor-nvim/exercise-schema";
@@ -29,7 +33,7 @@ function* yamlFiles(dir: string): Generator<string> {
   }
 }
 
-function read(kind: "skills" | "exercises", base = ""): ContentSource[] {
+function read(kind: string, base = ""): ContentSource[] {
   const dir = join(contentRoot, base, kind);
   if (!existsSync(dir)) return [];
   return [...yamlFiles(dir)]
@@ -48,9 +52,26 @@ export function readContentInput(): ContentInput {
   return { skills: read("skills"), exercises: read("exercises") };
 }
 
+/** Reads `content/keymaps`: one catalog per tool layer (`keymap-layers.md`, spec S2). */
+export function readKeymapInput(): KeymapLayerSource[] {
+  return read("keymaps");
+}
+
+/** Parses the keymap catalogs, or reports every problem and exits non-zero. */
+function readKeymapLayersOrExit(command: string): readonly KeymapLayer[] {
+  try {
+    return parseKeymapLayers(readKeymapInput());
+  } catch (error) {
+    console.error(error instanceof KeymapValidationError ? error.message : String(error));
+    console.error(`\n${command} failed (invalid keymap catalog)`);
+    process.exit(1);
+  }
+}
+
 /**
  * Loads and cross-validates all content and every translation, or prints every problem and exits
- * non-zero. The source language (English) is the content itself; the others are overlays.
+ * non-zero. The source language (English) is the content itself; the others are overlays. Keymap
+ * catalogs are validated on the same pass: an invalid layer blocks the same CI gate.
  */
 export function loadContentOrExit(command: string): ContentBundle {
   const { bundle, errors } = validateContent(readContentInput());
@@ -67,5 +88,6 @@ export function loadContentOrExit(command: string): ContentBundle {
     );
     process.exit(1);
   }
+  readKeymapLayersOrExit(command);
   return bundle;
 }
