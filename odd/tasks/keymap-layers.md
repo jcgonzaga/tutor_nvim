@@ -1,6 +1,6 @@
 # Keymap layers — choose which tool owns the keys (Linux, nvim, LazyVim, Herdr, tmux, Omarchy)
 
-Feature 2 of 3 requested by the owner. Status: **in progress** (T1, T1b, T1c, T2, T3 done; T4 next). Design: [ADR-0006](../../docs/architecture/adr/0006-tooling-layers.md),
+Feature 2 of 3 requested by the owner. Status: **in progress** (T1, T1b, T1c, T2, T3, T4 done; T5 next). Design: [ADR-0006](../../docs/architecture/adr/0006-tooling-layers.md),
 [M12](../../docs/architecture/m12-tooling-layers-and-workspace.md).
 
 ## Specs
@@ -41,7 +41,7 @@ YAML file and its exercises, not a new engine.
 | T1b | S3 | `nvim`, `tmux`, `tmux-omarchy`, `omarchy` catalogs from sourced research | 184c01e |
 | T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending commit |
 | T3 | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer` | pending commit |
-| T4 | S5 | key resolution across layers with `pending` prefix state; "not accepted" report | pending |
+| T4 | S5 | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit |
 | T5 | S6 | action-based solutions in `packages/exercise-schema` + evaluation | pending |
 | T6 | S1, S5 | settings UI (one / several / all) and the "next key belongs to" indicator | pending |
 | T7 | S1-S7 | CI: every catalog binding resolves; every declared solution replays | pending |
@@ -180,3 +180,21 @@ are recorded here as a notation task, not modelled with a wrong character.
 - Applying the filter at the practice entry points (free practice, session builder) ships with T6: it is
   the screen that can change the set, and no existing exercise declares a layer yet, so wiring it today
   would be unreachable code with no observable behaviour.
+
+**L6 — design decisions (T4)**
+
+- Resolution lives in a new domain package, `packages/keymap` (no React, no storage), because
+  `packages/exercise-schema` owns schemas and validation, not behaviour. The caller passes the enabled
+  layers already in capture order, so the resolver never reads prefs.
+- **A prefix is global to its surface; a leader is local to the layer that declares it.** Omarchy ships
+  tmux with `C-Space`, so an inherited tmux binding must open with `C-Space` on that machine; Neovim's
+  `h` must stay one key inside LazyVim. Decided from behaviour, recorded here because it looks
+  asymmetric until you know why. This closes the L4 gap "a leader layer cannot hold direct keys":
+  inherited bindings keep the opener they were written with.
+- Ties (two enabled layers owning the same surface, tmux and Herdr both on `C-b`) resolve in the order
+  the learner enabled them; the outcome still names the layer, so the UI can show the owner. Enabling
+  both is allowed and documented, not a content error.
+- `not-accepted` carries the key and a reset state; a pending sequence that a key breaks closes
+  instead of guessing (S5). Modes filter candidates (`modes: []` means any mode).
+- Wiring the resolver into the practice screen, the notation bridge (keymap notation to `KeyInput` to
+  `KeyInput`) and the "next key belongs to" indicator ship with T6, for the same reason as T3.

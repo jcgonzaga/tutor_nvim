@@ -1,7 +1,7 @@
 # ADR-0006: Tooling layers — exercises speak actions, keymaps resolve keys (post-MVP phase)
 
 Status: accepted (product owner, scope expanded 2025-11); planning record for
-[M12](m12-tooling-layers-and-workspace.md). Implemented so far: decision 2's content side — the `KeymapLayer` schema, the six catalogs and `environment.layers` (see `odd/tasks/keymap-layers.md`). Key resolution, workspace objectives and the settings UI are not implemented yet.
+[M12](m12-tooling-layers-and-workspace.md). Implemented so far: decision 2's content side (the `KeymapLayer` schema, the six catalogs, `environment.layers`) and key resolution as a pure package (`packages/keymap`). The settings UI, the practice-screen wiring, workspace objectives and action-based solutions are not implemented yet. See `odd/tasks/keymap-layers.md`.
 
 ## Context
 
