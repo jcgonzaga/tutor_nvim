@@ -116,6 +116,8 @@ describe("keymap catalogs", () => {
       ["tmux", ["multiplexer"]],
       ["tmux-omarchy", ["multiplexer"]],
       ["omarchy", ["window-manager"]],
+      ["lazyvim", ["editor"]],
+      ["herdr", ["multiplexer"]],
     ];
     for (const [id, owns] of expected) expect([id, byId.get(id)?.owns]).toEqual([id, owns]);
   });
@@ -133,8 +135,30 @@ describe("keymap catalogs", () => {
     ]);
   });
 
-  it("keeps the surfaces with no engine honest: every tmux and omarchy binding says why", () => {
-    const unmarked = ["tmux", "tmux-omarchy", "omarchy"].flatMap((id) =>
+  it("makes lazyvim add its leader bindings on top of nvim", () => {
+    const lazyvim = byId.get("lazyvim");
+    expect(lazyvim?.extends).toEqual(["nvim"]);
+    expect(lazyvim?.leader).toBe("Space");
+    expect(lazyvim?.prefix).toBeUndefined();
+    const actions = (lazyvim?.bindings ?? []).map((binding) => [binding.keys, binding.action]);
+    expect(actions).toContainEqual(["ff", "file.find"]);
+    expect(actions).toContainEqual(["-", "window.split-stacked"]);
+    expect(actions).toContainEqual(["|", "window.split-side-by-side"]);
+  });
+
+  it("keeps herdr a multiplexer of its own: its own prefix and splits, nothing inherited from tmux", () => {
+    const herdr = byId.get("herdr");
+    expect(herdr?.extends ?? []).toEqual([]);
+    expect(herdr?.prefix).toBe("C-b");
+    const actions = (herdr?.bindings ?? []).map((binding) => [binding.keys, binding.action]);
+    expect(actions).toContainEqual(["v", "window.split-side-by-side"]);
+    expect(actions).toContainEqual(["-", "window.split-stacked"]);
+    // tmux's own split keys are not Herdr's: inheriting them would invent bindings (S3).
+    expect(actions.map(([keys]) => keys)).not.toContain("%");
+  });
+
+  it("keeps the surfaces with no engine honest: every tmux, omarchy, herdr and lazyvim binding says why", () => {
+    const unmarked = ["tmux", "tmux-omarchy", "omarchy", "herdr", "lazyvim"].flatMap((id) =>
       (byId.get(id)?.bindings ?? [])
         .filter((binding) => binding.notModelled === undefined)
         .map((binding) => `${id}: ${binding.keys}`),

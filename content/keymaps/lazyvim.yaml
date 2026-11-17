@@ -1,0 +1,88 @@
+# The LazyVim layer: LazyVim's leader bindings, added on top of the nvim layer.
+#
+# Sources: LazyVim's own keymaps, lua/lazyvim/config/keymaps.lua
+# (https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua) for bd, fn, -, |, wd,
+# wm and the Tab rows, and its keymap reference
+# (https://github.com/LazyVim/lazyvim.github.io/blob/main/docs/keymaps.md, snacks.nvim section) for
+# ff, sg, / and fb; the leader is Space (lua/lazyvim/config/options.lua: vim.g.mapleader = " ").
+# Checked 2026-11-17.
+#
+# `extends: [nvim]`: enabling LazyVim adds these to Neovim's own keys instead of replacing them (S3).
+# Every binding is written after the leader, so `ff` means <leader>ff.
+#
+# Left out, because a layer with a leader can only write bindings after it: LazyVim's direct keys
+# S-h / S-l (previous / next buffer), [b / ]b, C-h/C-j/C-k/C-l (window focus) and C-s (save).
+# Also left out: <leader>, (buffers) because the set validator compares raw keys and would read it as
+# nvim's `,`; that is recorded as a T4 gap, not worked around.
+schemaVersion: 1
+id: lazyvim
+label: "LazyVim"
+owns: [editor]
+extends: [nvim]
+leader: "Space"
+bindings:
+  - keys: "ff"
+    action: file.find
+    description: "Find files in the project root (Find Files (Root Dir))."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "fn"
+    action: file.new
+    description: "Open a new, empty file."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "sg"
+    action: grep.project
+    description: "Search text across the project root (Grep (Root Dir))."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "/"
+    action: grep.project
+    description: "Search text across the project root (Grep (Root Dir))."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "fb"
+    action: buffer.list
+    description: "List the open buffers to pick one."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "bd"
+    action: file.close-buffer
+    description: "Close the current buffer and keep the window layout."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "-"
+    action: window.split-stacked
+    description: "Split the window below, one window above the other."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "|"
+    action: window.split-side-by-side
+    description: "Split the window to the right, one window next to the other."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "wd"
+    action: window.close
+    description: "Close the current window."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "wm"
+    action: window.zoom
+    description: "Toggle zoom on the current window."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "TabTab"
+    action: tab.new
+    description: "Open a new tab page."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "Tab]"
+    action: tab.next
+    description: "Go to the next tab page."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."
+  - keys: "Tab["
+    action: tab.previous
+    description: "Go to the previous tab page."
+    modes: [normal]
+    notModelled: "vim-engine has no leader, buffers, windows, tabs or pickers yet, so this cannot be exercised."

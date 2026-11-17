@@ -1,0 +1,89 @@
+# The Herdr layer: Herdr's own default prefix and the keys behind it.
+#
+# Source: Herdr's own keyboard guide, https://herdr.dev/tui/docs/keyboard/ ("Learn these five
+# first" and "The rest, by task"); checked 2026-11-17.
+#
+# Herdr is a terminal multiplexer of its own (Rust, https://github.com/herdrdev/herdr), not a tmux
+# configuration: it shares tmux's default prefix C-b but not its keys (splits are v and -, not % and
+# "). So it does not extend tmux; inheriting tmux's rows would invent bindings Herdr does not have (S3).
+#
+# Every binding is pressed after the prefix. None can be exercised yet: there is no multiplexer
+# engine, so each row says why with `notModelled`.
+#
+# Left out on purpose, real bindings with no action in the vocabulary yet: `r` (resize mode),
+# `[` (copy mode), `1`-`9` (jump to tab), `g` (goto picker), `b` (toggle sidebar), `?` (help),
+# `S-t`/`S-x` (rename/close tab), `S-n`/`S-w`/`S-d` (new/rename/close workspace).
+schemaVersion: 1
+id: herdr
+label: "Herdr"
+owns: [multiplexer]
+prefix: "C-b"
+bindings:
+  - keys: "c"
+    action: tab.new
+    description: "Open a new tab in the current workspace."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "n"
+    action: tab.next
+    description: "Go to the next tab."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "p"
+    action: tab.previous
+    description: "Go to the previous tab."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "v"
+    action: window.split-side-by-side
+    description: "Split the focused pane to the right, one pane next to the other."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "-"
+    action: window.split-stacked
+    description: "Split the focused pane downwards, one pane above the other."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "h"
+    action: window.focus-left
+    description: "Move focus to the pane on the left."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "j"
+    action: window.focus-down
+    description: "Move focus to the pane below."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "k"
+    action: window.focus-up
+    description: "Move focus to the pane above."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "l"
+    action: window.focus-right
+    description: "Move focus to the pane on the right."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "z"
+    action: window.zoom
+    description: "Zoom the focused pane to fill the tab."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "x"
+    action: window.close
+    description: "Close the focused pane."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "S-h"
+    action: window.swap
+    description: "Swap the focused pane with the one on the left."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "S-j"
+    action: window.swap
+    description: "Swap the focused pane with the one below."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "S-k"
+    action: window.swap
+    description: "Swap the focused pane with the one above."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "S-l"
+    action: window.swap
+    description: "Swap the focused pane with the one on the right."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "w"
+    action: workspace.switch
+    description: "Open workspace navigation to move to another workspace."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  - keys: "q"
+    action: session.detach
+    description: "Detach and leave everything running."
+    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."

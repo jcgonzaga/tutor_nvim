@@ -1,7 +1,6 @@
 # Keymap layers — choose which tool owns the keys (Linux, nvim, LazyVim, Herdr, tmux, Omarchy)
 
-Feature 2 of 3 requested by the owner. Status: **planned** (specs and tasks frozen; implementation not
-started). Design: [ADR-0006](../../docs/architecture/adr/0006-tooling-layers.md),
+Feature 2 of 3 requested by the owner. Status: **in progress** (T1, T1b, T1c, T2 done; T3 next). Design: [ADR-0006](../../docs/architecture/adr/0006-tooling-layers.md),
 [M12](../../docs/architecture/m12-tooling-layers-and-workspace.md).
 
 ## Specs
@@ -16,7 +15,8 @@ it reaches the app: id, label, the surface it owns, an optional prefix or leader
 
 **S3** — The six catalogs are `linux`, `nvim`, `lazyvim`, `tmux`, `herdr`, `omarchy`. `lazyvim` and
 `herdr` declare `extends`, so enabling them adds to a base instead of replacing it. A binding that
-cannot be verified against the tool's own documentation is left out, not invented.
+cannot be verified against the tool's own documentation is left out, not invented. (Amended by L4:
+`herdr` is a multiplexer of its own and extends nothing.)
 
 **S4** — An exercise declares `environment.layers`. It stays available only while every layer it
 needs is enabled; disabling a layer hides its exercises instead of failing them.
@@ -36,8 +36,10 @@ YAML file and its exercises, not a new engine.
 
 | ID | Spec | Route | Commit |
 | --- | --- | --- | --- |
-| T1 | S2, S3 | schema + validation, `content/keymaps/*.yaml` for `linux`, `nvim`, `tmux`, `omarchy` | pending |
-| T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending |
+| T1 | S2, S3 | schema + validation, `content/keymaps/linux.yaml` | 6b5c33d |
+| T1c | S3 | vocabulary v2: layout-named splits, `motion.*`/`edit.*`, binding `target` | f860f89 |
+| T1b | S3 | `nvim`, `tmux`, `tmux-omarchy`, `omarchy` catalogs from sourced research | 184c01e |
+| T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending commit |
 | T3 | S1, S4 | prefs: the enabled layer set; content filtering by exercise requirements | pending |
 | T4 | S5 | key resolution across layers with `pending` prefix state; "not accepted" report | pending |
 | T5 | S6 | action-based solutions in `packages/exercise-schema` + evaluation | pending |
@@ -152,3 +154,16 @@ are recorded here as a notation task, not modelled with a wrong character.
   concept exists anywhere in the code base.
 - Content covers Linux commands and core Vim only; there is no LazyVim, tmux, Herdr or Omarchy
   content, and no per-tool keymap catalog.
+
+**L4 — evidence and decision (T2)**
+
+- Herdr's own keyboard guide (<https://herdr.dev/tui/docs/keyboard/>) shows a standalone multiplexer
+  that shares tmux's default prefix `ctrl+b` but not its keys (splits `v` / `minus`, focus `h/j/k/l`,
+  detach `q`). Making `herdr` extend `tmux` would inherit `%` and `"`, bindings Herdr does not have,
+  which S3 forbids. Decision: `herdr` declares no `extends`; S3 amended accordingly. `lazyvim` keeps
+  `extends: [nvim]` with `leader: "Space"`.
+- Gaps handed to T4: a leader layer cannot hold direct keys (LazyVim `S-h`, `C-s`), and the
+  inherited-pair check compares raw keys without the leader (`<leader>,` vs nvim `,`). Details in
+  `keymap-catalogs-research.md`.
+- `herdr` and `tmux` both own `multiplexer` with prefix `C-b`; enabling both is a conflict T3/T4 must
+  resolve (S5), not a catalog error.

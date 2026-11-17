@@ -74,6 +74,35 @@ Not modelled (`vim-engine` has one buffer and one window and parses no Ex comman
 | `C-wh/j/k/l` | `window.focus-left/down/up/right` | `windows.txt` section 4 |
 | `C-wq` | `window.close` | `windows.txt` `CTRL-W q` |
 
+## herdr — `owns: [multiplexer]`, `prefix: "C-b"`, no `extends` (T2)
+
+Source: Herdr's own keyboard guide, <https://herdr.dev/tui/docs/keyboard/> (checked 2026-11-17).
+Herdr is a standalone Rust multiplexer (<https://github.com/herdrdev/herdr>), not a tmux config: it
+shares the default prefix `ctrl+b` but not tmux's keys, so it extends nothing.
+
+| keys | action | guide row |
+| --- | --- | --- |
+| `c` / `n` / `p` | `tab.new` / `tab.next` / `tab.previous` | New tab; Next / previous tab |
+| `v` / `-` | `window.split-side-by-side` / `window.split-stacked` | Split right / down (`prefix+minus`) |
+| `h` `j` `k` `l` | `window.focus-left/down/up/right` | Move between panes |
+| `S-h` `S-j` `S-k` `S-l` | `window.swap` | Swap panes |
+| `z` / `x` | `window.zoom` / `window.close` | Zoom the focused pane; Close pane |
+| `w` | `workspace.switch` | Workspace navigation |
+| `q` | `session.detach` | Detach, leave everything running |
+
+Left out (no vocabulary): `r` resize mode, `[` copy mode, `1`-`9`, `g` goto picker, `b` sidebar, `?`
+help, `S-t`/`S-x` rename/close tab, `S-n`/`S-w`/`S-d` new/rename/close workspace.
+
+## lazyvim — `owns: [editor]`, `extends: [nvim]`, `leader: "Space"` (T2)
+
+Sources: `lua/lazyvim/config/keymaps.lua` (`bd`, `fn`, `-`, `|`, `wd`, `wm`, `<tab><tab>`,
+`<tab>]`, `<tab>[`), `docs/keymaps.md` snacks.nvim section (`ff`, `sg`, `/`, `fb`), and
+`lua/lazyvim/config/options.lua` (`vim.g.mapleader = " "`); all on `main`, checked 2026-11-17.
+
+Left out: the direct (non-leader) keys `S-h`/`S-l`, `[b`/`]b`, `C-h`…`C-l`, `C-s`, because a layer
+with `leader` writes every binding after it; and `<leader>,`, because the set validator compares raw
+keys and would flag it as an un-`override`n repeat of nvim's `,` (see gaps).
+
 ## Vocabulary and notation gaps found
 
 - No action yet for: `window.focus-next` (tmux `o`), `window.focus-last` (tmux `;`), `tab.list`
@@ -85,6 +114,11 @@ Not modelled (`vim-engine` has one buffer and one window and parses no Ex comman
 - Notation: no named key for `-`, `=`, `\`` yet, and `keys` is a *sequence* — a literal space is a
   key, so write `C-wh` and never `C-w h`.
 - `modes` has no value for "after the tmux prefix": leave `modes` empty and rely on `prefix`.
+- A layer cannot mix leader and direct bindings (LazyVim `S-h`, `C-s`), and the inherited-pair check
+  compares raw `keys` without the leader, so `<leader>,` collides with nvim's `,`. Both belong to T4
+  (key resolution owns the full pressed sequence).
+- No action for `workspace.new` / `workspace.rename` / `workspace.close`, `tab.close`, `tab.rename`,
+  `window.resize-mode`, `app.help` (Herdr).
 
 ## Not verified
 
