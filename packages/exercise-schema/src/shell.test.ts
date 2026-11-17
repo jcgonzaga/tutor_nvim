@@ -65,7 +65,7 @@ describe("shell exercise schema", () => {
         { type: "cwd_equals", path: "project" },
       ],
     });
-    expect(exercise.environment).toEqual({ type: "simulator", profile: "shell-basic-v1" });
+    expect(exercise.environment).toEqual({ type: "simulator", profile: "shell-basic-v1", layers: [] });
   });
 
   it("turns each command into the keys that type it, ending with Enter", () => {

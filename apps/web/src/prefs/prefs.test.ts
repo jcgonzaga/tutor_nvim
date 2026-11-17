@@ -7,6 +7,7 @@ import {
   savePrefs,
   withAnalytics,
   withLanguage,
+  withLayer,
   withLessonSeen,
 } from "./prefs";
 import { CUES, cueFor } from "./sound";
@@ -27,6 +28,29 @@ describe("preferences", () => {
     };
     expect(savePrefs(storage, prefs)).toBe(true);
     expect(loadPrefs(storage)).toEqual(prefs);
+  });
+
+  it("remember which tool layers were enabled, in the order they were turned on (S1)", () => {
+    const storage = memoryStorage();
+    const one = withLayer(DEFAULT_PREFS, "nvim", true);
+    const two = withLayer(one, "tmux", true);
+    expect(two.enabledLayers).toEqual(["nvim", "tmux"]);
+    // Turning on a layer that is already on changes nothing, so React sees the same object.
+    expect(withLayer(two, "nvim", true)).toBe(two);
+    expect(savePrefs(storage, two)).toBe(true);
+    expect(loadPrefs(storage).enabledLayers).toEqual(["nvim", "tmux"]);
+    // And turning one off leaves the rest, so a reload cannot bring it back.
+    const off = withLayer(loadPrefs(storage), "nvim", false);
+    expect(savePrefs(storage, off)).toBe(true);
+    expect(loadPrefs(storage).enabledLayers).toEqual(["tmux"]);
+  });
+
+  it("keep no layer enabled when the stored set is not a layer list", () => {
+    const storage = memoryStorage();
+    storage.setItem(PREFS_KEY, JSON.stringify({ ...DEFAULT_PREFS, enabledLayers: ["Nvim"] }));
+    expect(loadPrefs(storage)).toEqual(DEFAULT_PREFS);
+    storage.setItem(PREFS_KEY, JSON.stringify({ ...DEFAULT_PREFS, enabledLayers: ["tmux", "tmux"] }));
+    expect(loadPrefs(storage)).toEqual(DEFAULT_PREFS);
   });
 
   it("fall back to the defaults when the stored value is damaged", () => {

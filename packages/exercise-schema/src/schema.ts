@@ -5,7 +5,14 @@ import {
   type VimMode,
 } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
-import { difficultySchema, explanationSchema, idSchema, slugSchema, tagSchema } from "./primitives";
+import {
+  difficultySchema,
+  environmentSchema,
+  explanationSchema,
+  idSchema,
+  slugSchema,
+  tagSchema,
+} from "./primitives";
 
 /** Version of the exercise content format. Bump with an explicit migration. */
 export const EXERCISE_SCHEMA_VERSION = 1;
@@ -179,11 +186,6 @@ export const hintsSchema = z.array(hintSchema).superRefine((hints, ctx) => {
   });
 });
 
-const environmentSchema = z.strictObject({
-  type: z.literal("simulator"),
-  profile: z.string().min(1),
-});
-
 export const metadataSchema = z.strictObject({
   /** Language of the buffer, e.g. `javascript`. */
   language: z.string().min(1).optional(),
@@ -207,7 +209,7 @@ export const vimExerciseSchema = z
     skillIds: z.array(slugSchema).min(1),
     mode: z.enum(EXERCISE_MODES),
     difficulty: difficultySchema,
-    environment: environmentSchema.default({ type: "simulator", profile: "vim-basic-v1" }),
+    environment: environmentSchema,
     initialState: initialStateSchema,
     objective: objectiveSchema,
     evaluation: evaluationSchema,

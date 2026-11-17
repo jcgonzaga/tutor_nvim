@@ -20,6 +20,28 @@ export const tagSchema = z
 
 export const difficultySchema = z.number().int().min(1).max(5);
 
+/** A tool layer id, the same rule `content/keymaps/<id>.yaml` follows (`keymap-layers.md` S2). */
+export const layerIdSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9-]*$/, "must be a keymap layer id (lowercase letters, digits, -)");
+
+/**
+ * What the exercise runs in, plus the tool layers it needs (S4). `layers` is empty for the content
+ * that needs no particular tool, and an exercise stays available only while every one is enabled.
+ */
+export const environmentSchema = z
+  .strictObject({
+    type: z.literal("simulator"),
+    profile: z.string().min(1),
+    layers: z
+      .array(layerIdSchema)
+      .max(8)
+      .default([])
+      .refine((layers) => new Set(layers).size === layers.length, "repeats a layer"),
+  })
+  .default({ type: "simulator", profile: "vim-basic-v1", layers: [] });
+export type ExerciseEnvironment = z.output<typeof environmentSchema>;
+
 /** One screen of theory (PRD §8, Discover): a single idea, short enough to read in seconds. */
 export const lessonCardSchema = z.strictObject({
   title: z.string().min(1).max(70),

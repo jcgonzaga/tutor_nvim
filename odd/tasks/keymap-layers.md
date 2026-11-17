@@ -1,6 +1,6 @@
 # Keymap layers — choose which tool owns the keys (Linux, nvim, LazyVim, Herdr, tmux, Omarchy)
 
-Feature 2 of 3 requested by the owner. Status: **in progress** (T1, T1b, T1c, T2 done; T3 next). Design: [ADR-0006](../../docs/architecture/adr/0006-tooling-layers.md),
+Feature 2 of 3 requested by the owner. Status: **in progress** (T1, T1b, T1c, T2, T3 done; T4 next). Design: [ADR-0006](../../docs/architecture/adr/0006-tooling-layers.md),
 [M12](../../docs/architecture/m12-tooling-layers-and-workspace.md).
 
 ## Specs
@@ -40,7 +40,7 @@ YAML file and its exercises, not a new engine.
 | T1c | S3 | vocabulary v2: layout-named splits, `motion.*`/`edit.*`, binding `target` | f860f89 |
 | T1b | S3 | `nvim`, `tmux`, `tmux-omarchy`, `omarchy` catalogs from sourced research | 184c01e |
 | T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending commit |
-| T3 | S1, S4 | prefs: the enabled layer set; content filtering by exercise requirements | pending |
+| T3 | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer` | pending commit |
 | T4 | S5 | key resolution across layers with `pending` prefix state; "not accepted" report | pending |
 | T5 | S6 | action-based solutions in `packages/exercise-schema` + evaluation | pending |
 | T6 | S1, S5 | settings UI (one / several / all) and the "next key belongs to" indicator | pending |
@@ -167,3 +167,16 @@ are recorded here as a notation task, not modelled with a wrong character.
   `keymap-catalogs-research.md`.
 - `herdr` and `tmux` both own `multiplexer` with prefix `C-b`; enabling both is a conflict T3/T4 must
   resolve (S5), not a catalog error.
+
+**L5 — evidence and decision (T3)**
+
+- `environment.layers` is part of the shared `environmentSchema` (`packages/exercise-schema/src/primitives.ts`),
+  so the Vim and shell exercises declare it the same way; it defaults to `[]`, which keeps the
+  existing 168 exercises available whatever is enabled. Both defaults now carry `layers: []`, and the
+  two assertions that compared the whole environment were updated instead of loosened.
+- The filter is domain code, not React: `isExerciseAvailable` requires *every* declared layer,
+  `availableExercises` keeps the order. `prefs.enabledLayers` stores the choice and `withLayer` toggles
+  one id idempotently, so the object identity React sees does not change when nothing changed.
+- Applying the filter at the practice entry points (free practice, session builder) ships with T6: it is
+  the screen that can change the set, and no existing exercise declares a layer yet, so wiring it today
+  would be unreachable code with no observable behaviour.

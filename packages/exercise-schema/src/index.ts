@@ -97,4 +97,12 @@ export {
   type LocaleTexts,
   type SkillText,
 } from "./locale";
-export { explanationSchema, lessonCardSchema, type LessonCard } from "./primitives";
+export {
+  environmentSchema,
+  explanationSchema,
+  layerIdSchema,
+  lessonCardSchema,
+  type ExerciseEnvironment,
+  type LessonCard,
+} from "./primitives";
+export { availableExercises, exerciseLayers, isExerciseAvailable } from "./layers";

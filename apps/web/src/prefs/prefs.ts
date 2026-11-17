@@ -18,6 +18,12 @@ export interface Prefs {
   readonly language: Locale;
   /** Skills whose theory cards were already shown here: they appear once (ADR-0005). */
   readonly seenLessons: readonly string[];
+  /**
+   * The tool layers the learner enabled (keymap-layers.md S1): Linux, nvim, LazyVim, tmux, Herdr,
+   * Omarchy — one, several or all. Empty means none chosen yet, which keeps every exercise that
+   * declares no layer available (S4).
+   */
+  readonly enabledLayers: readonly string[];
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -26,6 +32,7 @@ export const DEFAULT_PREFS: Prefs = {
   installId: null,
   language: DEFAULT_LOCALE,
   seenLessons: [],
+  enabledLayers: [],
 };
 export const PREFS_KEY = "tutor-nvim:prefs";
 
@@ -36,6 +43,11 @@ const prefsSchema = z.object({
   // Preferences saved before these existed still load: the missing fields take their defaults.
   language: z.enum(LOCALES).default(DEFAULT_LOCALE),
   seenLessons: z.array(z.string().min(1).max(100)).max(500).default([]),
+  enabledLayers: z
+    .array(z.string().regex(/^[a-z][a-z0-9-]*$/))
+    .max(16)
+    .default([])
+    .refine((ids) => new Set(ids).size === ids.length, "repeats a layer"),
 });
 
 export function loadPrefs(storage: KeyValueStorage): Prefs {
@@ -65,6 +77,18 @@ export function withAnalytics(prefs: Prefs, allowed: boolean, newId: () => strin
 }
 
 export const withLanguage = (prefs: Prefs, language: Locale): Prefs => ({ ...prefs, language });
+
+/** Enables or disables one tool layer. Idempotent, and keeps the order layers were enabled in. */
+export function withLayer(prefs: Prefs, layerId: string, enabled: boolean): Prefs {
+  const present = prefs.enabledLayers.includes(layerId);
+  if (present === enabled) return prefs;
+  return {
+    ...prefs,
+    enabledLayers: enabled
+      ? [...prefs.enabledLayers, layerId]
+      : prefs.enabledLayers.filter((id) => id !== layerId),
+  };
+}
 
 /** Remembers that a skill's theory was shown. Idempotent. */
 export function withLessonSeen(prefs: Prefs, skillId: string): Prefs {
