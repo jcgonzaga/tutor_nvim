@@ -237,6 +237,12 @@ importers:
 
   packages/vim-engine: {}
 
+  packages/workspace-engine:
+    dependencies:
+      '@tutor-nvim/vim-engine':
+        specifier: workspace:*
+        version: link:../vim-engine
+
 packages:
 
   '@axe-core/playwright@4.10.2':

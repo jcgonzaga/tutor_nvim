@@ -50,7 +50,7 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 
 | ID | Spec | Route | Commit |
 | --- | --- | --- | --- |
-| T1 | S4 | `packages/workspace-engine`: file tree + buffers + focus, oracle tests | pending |
+| T1 | S4 | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests | pending commit |
 | T2 | S2, S4 | window tree, splits, resize, zoom, swap, workspaces | pending |
 | T3 | S1, S2 | schema objectives: `active_file`, `buffers`, `layout`, `focus`, `buffer_text` | pending |
 | T4 | S5 | evaluation: action solutions, strategy classification, CI replay | pending |
@@ -83,3 +83,103 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
   (`packages/shell-engine/src/fs.ts`, `commands/files.ts`).
 - Objectives today can assert buffer text, the file tree, the working directory and the last output
   (`packages/exercise-schema/src/schema.ts`); none of them can assert focus or layout.
+
+## Design for T1 (workspace engine v1)
+
+Decided here, not by the implementer. T2 (windows) and T3 (objectives) build on it.
+
+**The package never edits text itself.** `packages/vim-engine` already owns buffer text, cursor,
+modes and undo. A workspace holds one `VimState` per open buffer and delegates every editing key to
+`dispatch`; duplicating that logic in a second package would give two answers to "what does `ci"` do"
+and the exercise could only be wrong. What the workspace owns is everything *around* the buffer: the
+files on disk, which buffers are open, which one is active, and (from T2) where they are shown.
+
+```ts
+interface WorkspaceState {
+  readonly files: Readonly<Record<string, string>>;   // path -> text, the simulated disk
+  readonly cwd: string;                               // where a shell command would run
+  readonly buffers: readonly WorkspaceBuffer[];       // open buffers, in the order they were opened
+  readonly activeBufferId: string;                    // never empty: opening one creates it
+  readonly pending: PendingWorkspaceCommand | null;   // a half-typed `:e ` or `<C-w>`
+}
+interface WorkspaceBuffer {
+  readonly id: string;          // stable, derived from the path: "buf:src/main.ts"
+  readonly path: string;        // path on the simulated disk
+  readonly editor: VimState;    // the text, cursor, mode and undo of that buffer
+  readonly modified: boolean;   // true when the buffer differs from the file
+}
+```
+
+- `createWorkspace(input)` takes the files, the starting path and the cwd, and opens one buffer.
+- `dispatchWorkspace(state, key: KeyInput)` is pure and total: it never throws on a key it does not
+  know, it returns `{ state, accepted }` the way the other engines do, and `accepted: false` means
+  the key was not consumed and the caller may still ignore it.
+- Command entry is a pending state, mirroring `vim-engine`'s `pending`: `:` opens a command line,
+  printable keys and Backspace edit it, `Esc` cancels, `Enter` runs it. T1 runs `:e <path>`,
+  `:w`, `:bn`, `:bp` and `:ls`; an unknown command is `accepted: false` with the reason kept for the
+  UI, never a silent no-op.
+- **No clock, no I/O, no id generation from randomness**: buffer ids come from paths, so a replay is
+  the same state. Saving writes into `files`; nothing touches a real filesystem.
+- Editing keys go to the active buffer's `editor` through `vim-engine`'s `dispatch`. NORMAL-mode
+  keys the workspace owns (`:`) are intercepted *before* the editor sees them; everything else
+  reaches it unchanged, so an exercise can never be wrong because two key paths disagree.
+- Oracle tests: for each supported command, replay a recorded key sequence and assert the whole
+  resulting state (files, buffers, active id, buffer text, cursor, modified flags), not one field.
+  The same sequence replayed twice must give the same state (determinism), and a rejected key must
+  leave the state identical.
+
+Out of scope for T1: window tree and layout (T2), workspace objectives in the schema (T3), the web
+view (T8), anything that needs a real file, process, timer or container (S6).
+
+**L4 — evidence (T1)**
+
+- `packages/workspace-engine` exists with the state fixed in "Design for T1": files, cwd, open buffers
+  (one `VimState` each), the active buffer, the command-line pending state and the last command result.
+  22 oracle tests assert the whole state per command, determinism, a rejected key leaving the state
+  byte-identical, and `:e` focusing an already open buffer instead of duplicating it.
+- Known limits, decided rather than discovered later: paths are matched verbatim (no `cwd` resolution,
+  no normalisation, no spaces) until T3 or T8 needs it; `createWorkspace` opens a starting path that is
+  not on disk as an empty buffer while `:e` rejects a missing path, because both are what the
+  spec's stories need; a rejected command records itself in `lastCommand`, so "nothing changed" holds
+  for the editor and the command line, not for that record.
+- Independent verification found one real defect and it is fixed: opening the command line left the
+  editor's pending operator armed (`d` then `:` then `:w` saved a buffer with `delete` still waiting),
+  where Vim cancels it. `:` now cancels through the editor and stores the result; pinned test-first.
+- The verifier's own probes became `workspace.regression.test.ts`: purity (frozen input, unknown keys,
+  identical replays), parity with `vim-engine` on `ci"production<Esc>`, `modified` clearing on undo, an
+  off-disk starting path opened as an empty buffer, and paths matched verbatim.
+- Not touched: windows (T2), objectives (T3), the web view (T8), any real file, process, timer or
+  container (S6).
+
+## Design for T2 (windows, panes and sessions)
+
+Decided here. T2 extends the T1 state; T3 asserts it, T8 renders it.
+
+**Window operations are actions, not keys.** The layer catalogs already map keys to actions
+(`window.split-side-by-side`, `window.zoom`, `tab.next`, `workspace.switch`, …) and
+`packages/keymap` already resolves an enabled layer's keys to one of them (S5, S6). So the engine
+exposes `applyWorkspaceAction(state, action, options?)` and never learns about prefixes: tmux's
+`C-b %` and Herdr's `C-b v` reach the same action and therefore the same split. `dispatchWorkspace`
+from T1 keeps owning text and the `:` command line; window keys go through the resolver first.
+
+```ts
+type WindowNode =
+  | { kind: "leaf"; bufferId: string }
+  | { kind: "split"; layout: "side-by-side" | "stacked"; ratio: number; first: WindowNode; second: WindowNode };
+interface WorkspaceTab { readonly id: string; readonly root: WindowNode; readonly focus: readonly ("first" | "second")[] }
+```
+
+- `ratio` is a number in `[0.1, 0.9]`: the engine models *what changed*, never pixels, so a resize is a
+  ratio step of 0.05 and stays deterministic.
+- `focus` is the path from the root to the focused leaf. `activeBufferId` follows it: focusing another
+  window focuses its buffer. Closing the focused leaf hands focus to its sibling's last leaf.
+- `zoom` is `{ tabId, leafPath }` or `null`: zooming does not change the tree, so restoring it is free.
+- `swap` exchanges the two leaves' buffers, leaving the tree shape and the ratios alone.
+- `tabs` and `activeTabId` live in the state; `workspace.switch` selects a tab, matching how the
+  catalogs name it (`tab.next`, `tab.new`, `workspace.switch`).
+- Every operation is total: an action that cannot apply (no sibling to focus, one leaf to close,
+  a ratio already at its bound) returns the same state with `applied: false` and a reason, never a
+  throw and never a silent no-op.
+- Oracle tests: whole-state assertions for each action, an invariant suite (focus path always reaches
+  a leaf, `activeBufferId` always equals that leaf's buffer, ratios inside their bounds, no empty
+  split), determinism, and parity between two layers' keys reaching the same action.
