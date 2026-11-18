@@ -51,7 +51,7 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 | ID | Spec | Route | Commit |
 | --- | --- | --- | --- |
 | T1 | S4 | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests | pending commit |
-| T2 | S2, S4 | window tree, splits, resize, zoom, swap, workspaces | pending |
+| T2 | S2, S4 | window tree, splits, resize, zoom, swap, tabs and workspaces as actions | pending commit |
 | T3 | S1, S2 | schema objectives: `active_file`, `buffers`, `layout`, `focus`, `buffer_text` | pending |
 | T4 | S5 | evaluation: action solutions, strategy classification, CI replay | pending |
 | T5 | S3 | content: stories 1-8 (files and buffers) | pending |
@@ -183,3 +183,21 @@ interface WorkspaceTab { readonly id: string; readonly root: WindowNode; readonl
 - Oracle tests: whole-state assertions for each action, an invariant suite (focus path always reaches
   a leaf, `activeBufferId` always equals that leaf's buffer, ratios inside their bounds, no empty
   split), determinism, and parity between two layers' keys reaching the same action.
+
+**L5 — evidence (T2)**
+
+- The window tree, tabs, focus paths and zoom are in `packages/workspace-engine`, behind
+  `applyWorkspaceAction` with the eighteen window/tab/workspace actions of the vocabulary; the
+  engine still knows nothing about keys or prefixes. 42 oracle tests plus an invariant suite
+  (focus reaches a leaf, `activeBufferId` equals that leaf's buffer, ratios in [0.1, 0.9], both
+  children present, no buffer registered twice, every leaf on an open buffer) and determinism.
+- **Owner decision, because the T2 design was silent and it could not be inferred:** a split shows the
+  focused buffer in *both* panes, which is what tmux and nvim do and what stories 9-10 need. The
+  invariant is therefore "no buffer id twice in `state.buffers`", not "never shown twice". Changing it
+  later is a behaviour change, not a test tweak.
+- Also decided here: buffers stay open after `window.close`; `window.new` needs `options.path` on disk
+  because no applications are modelled (S6), so story 15 (a new terminal window) stays unmodelled until
+  a terminal exists; `workspace.switch` takes `options.tabId` and falls back to cycling; zoom toggles and
+  survives a tab switch while its window still exists.
+- The T1 command line follows the focused window now (`:e`, `:bn`, `:bp`), pinned by a differential
+  over eleven command scripts against the T1 code: no differences.

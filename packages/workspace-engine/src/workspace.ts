@@ -4,7 +4,9 @@ import type {
   WorkspaceCommandResult,
   WorkspaceInit,
   WorkspaceState,
+  WorkspaceTab,
 } from "./types";
+import { leafNode } from "./windows";
 
 /*
  * The simulated workspace around the text: files, open buffers and which one is active. Everything
@@ -27,11 +29,16 @@ const diskText = (files: Readonly<Record<string, string>>, path: string): string
 export function createWorkspace(input: WorkspaceInit): WorkspaceState {
   const files = { ...input.files };
   const buffer = openBuffer(files, input.path);
+  // One tab of one window, focus at its root: a window tree with a single leaf is still a tree.
+  const tab: WorkspaceTab = { id: "tab:1", root: leafNode(buffer.id), focus: [] };
   return {
     files,
     cwd: input.cwd,
     buffers: [buffer],
     activeBufferId: buffer.id,
+    tabs: [tab],
+    activeTabId: tab.id,
+    zoom: null,
     pending: null,
     lastCommand: null,
   };

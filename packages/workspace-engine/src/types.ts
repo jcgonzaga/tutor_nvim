@@ -16,6 +16,52 @@ export interface WorkspaceBuffer {
   readonly modified: boolean;
 }
 
+/** Which child of a split a focus path step enters. */
+export type FocusStep = "first" | "second";
+
+/**
+ * The layout a split produces. Named by the result, because tools disagree on the word "horizontal":
+ * tmux `%` leaves panes side by side while Neovim `:split` stacks windows.
+ */
+export type WindowLayout = "side-by-side" | "stacked";
+
+/** A window showing one buffer. The same buffer may be shown by more than one leaf (a split does). */
+export interface LeafWindow {
+  readonly kind: "leaf";
+  readonly bufferId: string;
+}
+
+/** Two windows, one on each side or one above the other, with the share the first one takes. */
+export interface SplitWindow {
+  readonly kind: "split";
+  readonly layout: WindowLayout;
+  /** Share of the tab the first child takes, inside [0.1, 0.9]: a ratio, never pixels. */
+  readonly ratio: number;
+  readonly first: WindowNode;
+  readonly second: WindowNode;
+}
+
+/** The window tree of one tab: leaves are windows, splits are the layout between them. */
+export type WindowNode = LeafWindow | SplitWindow;
+
+/** One tab: a tree plus the path from its root to the focused leaf. */
+export interface WorkspaceTab {
+  /** Stable and derived from the position in the state, so a replay is the same state. */
+  readonly id: string;
+  readonly root: WindowNode;
+  /** The path from the root to the leaf holding the keys: `[]` is a tab of one window. */
+  readonly focus: readonly FocusStep[];
+}
+
+/**
+ * The window filling the tab, if any. Zooming changes nothing in the tree, so restoring it is free:
+ * the zoom is a note beside the tree, not a shape of it.
+ */
+export interface WorkspaceZoom {
+  readonly tabId: string;
+  readonly leafPath: readonly FocusStep[];
+}
+
 /**
  * Half-typed command, mirroring `vim-engine`'s `PendingCommand`: `:` opens the command line and
  * printable keys and Backspace edit `text` until Enter runs it or Esc drops it.
@@ -38,19 +84,26 @@ export interface WorkspaceCommandResult {
 }
 
 /**
- * The simulated workspace: the files on disk, the open buffers and which one is active.
+ * The simulated workspace: the files on disk, the open buffers, which one is active and where the
+ * open buffers are shown.
  *
  * Plain data, no clock, no I/O and no globals, so a story can be replayed in a test without a
- * browser. `activeBufferId` always names an open buffer, because opening the workspace opens one.
+ * browser. `activeBufferId` always names an open buffer and always follows the focused window of
+ * the active tab, because opening the workspace opens one.
  */
 export interface WorkspaceState {
   /** The simulated disk: path -> text. Nothing here touches a real filesystem. */
   readonly files: Readonly<Record<string, string>>;
   /** Where a shell command would run. Carried for later tasks; T1 runs no shell command. */
   readonly cwd: string;
-  /** Open buffers, in the order they were opened. */
+  /** Open buffers, in the order they were opened. A buffer is registered here once. */
   readonly buffers: readonly WorkspaceBuffer[];
   readonly activeBufferId: string;
+  /** One per tab, in the order they were opened; a tab holds the window tree of that tab. */
+  readonly tabs: readonly WorkspaceTab[];
+  readonly activeTabId: string;
+  /** The window a `window.zoom` selected, or `null`; the tree itself is never changed by zooming. */
+  readonly zoom: WorkspaceZoom | null;
   readonly pending: PendingWorkspaceCommand | null;
   readonly lastCommand: WorkspaceCommandResult | null;
 }
@@ -70,4 +123,20 @@ export interface WorkspaceDispatchResult {
    * consumed and a command that failed are `false`; a failed command still records its reason.
    */
   readonly accepted: boolean;
+}
+
+/** What a window action may need: the tab to select and the path to open in a new pane. */
+export interface WorkspaceActionOptions {
+  /** `workspace.switch`: the tab to select. Without it the action cycles to the next tab. */
+  readonly tabId?: string;
+  /** `window.new`: the file to show in the new pane; the simulation launches no applications. */
+  readonly path?: string;
+}
+
+export interface WorkspaceActionResult {
+  readonly state: WorkspaceState;
+  /** `false` when the action could not apply; `state` is then the same object it was given. */
+  readonly applied: boolean;
+  /** Why the action could not apply. Absent when it did. */
+  readonly reason?: string;
 }

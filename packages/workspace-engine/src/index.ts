@@ -1,10 +1,19 @@
 export type {
+  FocusStep,
+  LeafWindow,
   PendingWorkspaceCommand,
+  SplitWindow,
+  WindowLayout,
+  WindowNode,
+  WorkspaceActionOptions,
+  WorkspaceActionResult,
   WorkspaceBuffer,
   WorkspaceCommandResult,
   WorkspaceDispatchResult,
   WorkspaceInit,
   WorkspaceState,
+  WorkspaceTab,
+  WorkspaceZoom,
 } from "./types";
 export {
   activeBuffer,
@@ -16,3 +25,5 @@ export {
   openBufferPaths,
 } from "./workspace";
 export { dispatchWorkspace, runWorkspaceKeys } from "./keys";
+export { WORKSPACE_ACTIONS, applyWorkspaceAction, type WorkspaceActionName } from "./actions";
+export { activeTab, focusLeaf, leafBufferIds } from "./windows";
