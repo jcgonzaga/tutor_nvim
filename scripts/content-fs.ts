@@ -11,11 +11,12 @@ import {
   type ContentBundle,
   type ContentInput,
   type ContentSource,
-  type KeymapLayer,
   type KeymapLayerSource,
+  type LoadedKeymapLayer,
   type Locale,
   type LocaleInput,
 } from "@tutor-nvim/exercise-schema";
+import { checkKeymapCatalogs } from "./keymap-ci";
 
 export const root = fileURLToPath(new URL("..", import.meta.url));
 
@@ -57,15 +58,29 @@ export function readKeymapInput(): KeymapLayerSource[] {
   return read("keymaps");
 }
 
-/** Parses the keymap catalogs, or reports every problem and exits non-zero. */
-function readKeymapLayersOrExit(command: string): readonly KeymapLayer[] {
+/**
+ * Parses the keymap catalogs, or reports every problem and exits non-zero. Each layer is paired with
+ * the file it came from, because a problem with one binding has to name that file.
+ */
+function readKeymapLayersOrExit(command: string): readonly LoadedKeymapLayer[] {
+  const sources = readKeymapInput();
   try {
-    return parseKeymapLayers(readKeymapInput());
+    const layers = parseKeymapLayers(sources);
+    // `parseKeymapLayers` returns one layer per catalog file, in the order they were read, so the
+    // source at the same index is the file that declared this layer.
+    return layers.map((layer, index) => ({ layer, source: sources[index]?.path ?? layer.id }));
   } catch (error) {
     console.error(error instanceof KeymapValidationError ? error.message : String(error));
     console.error(`\n${command} failed (invalid keymap catalog)`);
     process.exit(1);
   }
+}
+
+/** Prints every problem and exits non-zero: the one failure shape the content scripts share. */
+function fail(command: string, errors: readonly string[]): never {
+  console.error(errors.join("\n"));
+  console.error(`\n${command} failed (${errors.length} problem${errors.length === 1 ? "" : "s"})`);
+  process.exit(1);
 }
 
 /**
@@ -81,13 +96,11 @@ export function loadContentOrExit(command: string): ContentBundle {
       errors.push(...validateLocale(locale, bundle, readLocaleInput(locale)).errors);
     }
   }
-  if (bundle === null || errors.length > 0) {
-    console.error(errors.join("\n"));
-    console.error(
-      `\n${command} failed (${errors.length} problem${errors.length === 1 ? "" : "s"})`,
-    );
-    process.exit(1);
-  }
-  readKeymapLayersOrExit(command);
+  if (bundle === null || errors.length > 0) fail(command, errors);
+
+  // The catalogs and their exercises are checked last: a binding nothing can press and an exercise
+  // no catalog can solve are content problems like any other, reported the same way.
+  const problems = checkKeymapCatalogs(readKeymapLayersOrExit(command), bundle.exercises);
+  if (problems.length > 0) fail(command, problems);
   return bundle;
 }

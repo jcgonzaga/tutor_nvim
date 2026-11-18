@@ -1,17 +1,22 @@
-import { execFileSync } from "node:child_process";
+import { execFile } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 
 /**
  * T-907: a production deploy is blocked when the content is broken. The deploy job depends on
  * `pnpm content:ci`, which is these two scripts, so what must hold is that each one exits non-zero
  * for each kind of defect. This runs the real scripts against a copy of the real content.
+ *
+ * The scripts are spawned asynchronously on purpose: they take seconds each, and a synchronous
+ * spawn blocks the worker's event loop long enough for vitest's own RPC heartbeats to time out.
  */
 const repo = fileURLToPath(new URL("..", import.meta.url));
 const tsx = join(repo, "node_modules/.bin/tsx");
+const execFileAsync = promisify(execFile);
 
 let workdir: string | null = null;
 afterEach(() => {
@@ -25,18 +30,20 @@ function copyOfContent(): string {
   return workdir;
 }
 
-function run(script: "content-validate" | "content-test", root: string) {
+async function run(script: "content-validate" | "content-test", root: string) {
   try {
-    const stdout = execFileSync(tsx, [join(repo, "scripts", `${script}.ts`)], {
+    const { stdout } = await execFileAsync(tsx, [join(repo, "scripts", `${script}.ts`)], {
       cwd: repo,
       env: { ...process.env, CONTENT_ROOT: root },
       encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
     });
     return { code: 0, output: stdout };
   } catch (error) {
-    const failure = error as { status?: number; stdout?: string; stderr?: string };
-    return { code: failure.status ?? 1, output: `${failure.stdout ?? ""}${failure.stderr ?? ""}` };
+    const failure = error as { code?: number | string; stdout?: string; stderr?: string };
+    return {
+      code: typeof failure.code === "number" ? failure.code : 1,
+      output: `${failure.stdout ?? ""}${failure.stderr ?? ""}`,
+    };
   }
 }
 
@@ -46,65 +53,65 @@ const edit = (root: string, file: string, transform: (text: string) => string) =
 };
 
 describe("content integrity gate (T-907)", () => {
-  it("passes on the real content", () => {
+  it("passes on the real content", async () => {
     const root = copyOfContent();
-    expect(run("content-validate", root).code).toBe(0);
-    expect(run("content-test", root).code).toBe(0);
+    expect((await run("content-validate", root)).code).toBe(0);
+    expect((await run("content-test", root)).code).toBe(0);
   }, 60_000);
 
-  it("blocks an exercise that breaks the schema", () => {
+  it("blocks an exercise that breaks the schema", async () => {
     const root = copyOfContent();
     edit(root, "exercises/vim-delete-001.yaml", (text) => `${text}\nbogus_field: true\n`);
-    const result = run("content-validate", root);
+    const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("vim-delete-001.yaml");
   }, 60_000);
 
-  it("blocks a declared solution that does not reach the objective", () => {
+  it("blocks a declared solution that does not reach the objective", async () => {
     const root = copyOfContent();
     edit(root, "exercises/vim-delete-001.yaml", (text) =>
       text.replace(/sequence: "dd"/, 'sequence: "x"'),
     );
-    const result = run("content-test", root);
+    const result = await run("content-test", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("does not reach the objective");
   }, 60_000);
 
-  it("blocks a prerequisite that points at no skill", () => {
+  it("blocks a prerequisite that points at no skill", async () => {
     const root = copyOfContent();
     edit(root, "skills/vim.navigation.words.yaml", (text) =>
       text.replace("  - vim.navigation.atomic", "  - vim.navigation.does-not-exist"),
     );
-    const result = run("content-validate", root);
+    const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("vim.navigation.does-not-exist");
   }, 60_000);
 
-  it("blocks a duplicate slug", () => {
+  it("blocks a duplicate slug", async () => {
     const root = copyOfContent();
     const original = readFileSync(join(root, "exercises/vim-delete-001.yaml"), "utf8");
     writeFileSync(
       join(root, "exercises/vim-delete-copy.yaml"),
       original.replace(/^id: .*$/m, "id: vim-delete-copy"),
     );
-    const result = run("content-validate", root);
+    const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toMatch(/duplicate exercise slug/);
   }, 60_000);
 
-  it("blocks a keymap catalog that breaks the layer schema", () => {
+  it("blocks a keymap catalog that breaks the layer schema", async () => {
     const root = copyOfContent();
     edit(root, "keymaps/linux.yaml", (text) =>
       // `pane.zoom` is the ADR sketch; v1 calls the action `window.zoom`.
       text.replace("action: shell.clear-line", "action: pane.zoom"),
     );
-    const result = run("content-validate", root);
+    const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("keymaps/linux.yaml");
     expect(result.output).toContain("shell.clear-line");
   }, 60_000);
 
-  it("blocks a catalog that repeats an inherited binding without override", () => {
+  it("blocks a catalog that repeats an inherited binding without override", async () => {
     const root = copyOfContent();
     edit(root, "keymaps/tmux-omarchy.yaml", (text) =>
       // `%` is already claimed by the `tmux` layer this catalog extends.
@@ -113,13 +120,45 @@ describe("content integrity gate (T-907)", () => {
         '  - keys: "%"\n    action: window.split-side-by-side\n',
       ),
     );
-    const result = run("content-validate", root);
+    const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("keymaps/tmux-omarchy.yaml");
     expect(result.output).toContain("set override: true");
   }, 60_000);
 
-  it("blocks a prerequisite cycle", () => {
+  it("blocks a catalog binding that can never be reached", async () => {
+    const root = copyOfContent();
+    edit(root, "keymaps/tmux.yaml", (text) =>
+      // `%` already completes the first binding of the catalog, so a second one on the same keys
+      // is shadowed by it and can never fire.
+      text.replace(
+        '  - keys: "z"\n    action: window.zoom',
+        '  - keys: "%"\n    action: window.zoom',
+      ),
+    );
+    const result = await run("content-validate", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("keymaps/tmux.yaml");
+    expect(result.output).toContain('"C-b %"');
+    expect(result.output).toContain("window.zoom");
+  }, 60_000);
+
+  it("blocks an action solution no catalog provides", async () => {
+    const root = copyOfContent();
+    edit(
+      root,
+      "exercises/vim-delete-001.yaml",
+      (text) =>
+        // No catalog in content/keymaps binds a resize, so this exercise could never be solved.
+        `${text}\nactionSolutions:\n  - action: window.resize-wider\n    classification: optimal\n`,
+    );
+    const result = await run("content-validate", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("vim-delete-001");
+    expect(result.output).toContain("window.resize-wider");
+  }, 60_000);
+
+  it("blocks a prerequisite cycle", async () => {
     const root = copyOfContent();
     edit(root, "skills/vim.navigation.atomic.yaml", (text) =>
       text.replace(
@@ -127,7 +166,7 @@ describe("content integrity gate (T-907)", () => {
         "prerequisites:\n  - vim.navigation.words",
       ),
     );
-    const result = run("content-validate", root);
+    const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toMatch(/cycle/);
   }, 60_000);

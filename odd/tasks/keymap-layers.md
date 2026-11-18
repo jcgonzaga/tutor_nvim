@@ -42,9 +42,9 @@ YAML file and its exercises, not a new engine.
 | T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending commit |
 | T3 | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer` | pending commit |
 | T4 | S5 | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit |
-| T5 | S6 | `actionSolutions` + `planActionSolutions` (schema and planner) | b2e13ee; adjudication half open |
+| T5 | S6 | `actionSolutions`, `planActionSolutions`, `traceKeymapActions`, `evaluateActionAttempt` | b2e13ee + pending commit |
 | T6 | S1, S5 | layer rail in the practice screen: toggles, "next key belongs to", cost table | f69aa25 (design `app-shell/02-practica-capas.html` chosen) |
-| T7 | S1-S7 | CI: every catalog binding resolves; every declared solution replays | pending |
+| T7 | S1-S7 | CI: every catalog binding resolves to itself; every declared action solution is provided | pending commit |
 
 ## Frozen schema for T1 (keymap layer v1)
 
@@ -253,3 +253,27 @@ are recorded here as a notation task, not modelled with a wrong character.
   already reported in L9 stand as the evidence.
 - Delivery consequence, recorded for the owner: the change is too large to review as one unit, so it
   should ship as a chained sequence of those four slices rather than one pull request.
+
+**L11 — T5 closed and T7 done**
+
+- T5's missing half is in domain code: `traceKeymapActions` replays a recorded sequence through the
+  resolver (per-token modes, because an attempt changes mode), and `evaluateActionAttempt` decides an
+  attempt against the exercise's declared actions, classifying by the attempt's keystrokes against the
+  cheapest layer that provides the action. The efficiency bands were extracted as
+  `efficiencyClassification` and reused, so there is one scale, not two; `classifyStrategy`,
+  `optimalKeystrokes` and `advanceAttempt` are behaviourally unchanged (differential over 2808 contexts,
+  0 mismatches).
+- The catalog notation bridge now lives in `packages/keymap`, and `apps/web/src/input/keymap-notation.ts`
+  is a re-export: one copy, and `packages/evaluation` gained the `@tutor-nvim/keymap` dependency to use
+  it. The root workspace declares it too now, so `scripts/` imports the package instead of reaching into
+  `packages/keymap/src`.
+- Still not wired: no UI calls `evaluateActionAttempt` and no content declares `actionSolutions`, because
+  no workspace engine can run a split. Decisions pending for that slice: the cost unit is
+  `events.length` (wasted keys lower the grade, like the existing efficiency rule), and with several
+  declared actions the first performed one sets the cost.
+- T7 guards both catalogs and content in the existing gate: every catalog binding must resolve to
+  itself under its own layer (a shadowed or unexpressible row fails naming file, keys and action), and
+  every declared action solution must be provided by some catalog. `notModelled` rows are exempt from
+  the browser-notation rule but still checked for reachability.
+- Known gap, not fixed here: `isKeymapKeySequence` accepts a space-separated opener like `"C-b C-c"`
+  while the resolver reads the space as a literal key press; fixing it needs a schema decision.
