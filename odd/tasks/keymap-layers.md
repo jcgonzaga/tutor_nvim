@@ -238,3 +238,18 @@ are recorded here as a notation task, not modelled with a wrong character.
 - Verification: focused suites 143 tests green, `typecheck` green, `lint` green after one fix (an unused
   type import). Independent verifier confirmed the resolver never touches adjudication, the rail list
   comes from content, and manifest/lockfile/node_modules agree on the new dependency.
+
+**L10 — native review: split, then not due**
+
+- The first native review attempt over the whole branch stopped with
+  `lens_context_budget_exceeded` before creating any authority (54 paths, 9 commits): the candidate is
+  larger than one reviewer context, and retrying the same target cannot succeed.
+- Owner decision: split into chained slices instead of disabling the switch. Four branch pointers mark
+  the review ranges, in order: `review/keymap-schema` (`b600e62..f860f89`),
+  `review/keymap-catalogs` (`f860f89..10d8caf`), `review/layers-and-resolver` (`10d8caf..0e3de09`),
+  `review/layer-rail` (`0e3de09..2c049ae`). No history was rewritten.
+- Assessed slice by slice, all four are medium risk and `reviewDue: false` (`under_budget`), so no
+  native review starts; the risk-gated path applies and the independent verifier and the focused suites
+  already reported in L9 stand as the evidence.
+- Delivery consequence, recorded for the owner: the change is too large to review as one unit, so it
+  should ship as a chained sequence of those four slices rather than one pull request.
