@@ -3,13 +3,13 @@
   "chosen": "02-practica-capas.html",
   "handoffs": {
     "02-practica-capas.html": {
-      "status": "in_progress",
+      "status": "implemented",
       "queued": false,
       "sentAt": "2026-11-18T19:50:22.845Z",
       "startedAt": "2026-11-18T19:50:39.442Z",
-      "implementedAt": null,
+      "implementedAt": "2026-11-18T20:22:42.769Z",
       "feature": "odd/tasks/keymap-layers.md",
-      "note": "Implementando el raíl de capas en la pantalla de práctica real"
+      "note": "Raíl de capas en la pantalla de práctica: toggles persistidos, dueño de la próxima tecla y costo por capa"
     }
   }
 }

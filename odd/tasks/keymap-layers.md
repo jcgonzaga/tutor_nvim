@@ -42,8 +42,8 @@ YAML file and its exercises, not a new engine.
 | T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending commit |
 | T3 | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer` | pending commit |
 | T4 | S5 | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit |
-| T5 | S6 | action-based solutions in `packages/exercise-schema` + evaluation | pending |
-| T6 | S1, S5 | settings UI (one / several / all), the "next key belongs to" indicator, and the layer rail of `design/app-shell/02-practica-capas.html` in the practice screen | **in progress** |
+| T5 | S6 | `actionSolutions` + `planActionSolutions` (schema and planner) | b2e13ee; adjudication half open |
+| T6 | S1, S5 | layer rail in the practice screen: toggles, "next key belongs to", cost table | f69aa25 (design `app-shell/02-practica-capas.html` chosen) |
 | T7 | S1-S7 | CI: every catalog binding resolves; every declared solution replays | pending |
 
 ## Frozen schema for T1 (keymap layer v1)
@@ -219,3 +219,22 @@ are recorded here as a notation task, not modelled with a wrong character.
   yet (no `packages/workspace-engine`), so the rail is shown next to the practice the app has today.
 - Explicitly out of this cut: changing how an attempt is adjudicated. The resolver only labels the
   pressed key; evaluation keeps using the engine that already decides (`packages/evaluation`).
+
+**L9 — implemented (design handoff and what verification found)**
+
+- `design/app-shell/02-practica-capas.html` is implemented as `apps/web/src/practice/LayerRail.tsx`
+  (`f69aa25`): switches from the parsed catalogs, owner of the next key, cost table. `design/app-shell/01`
+  and `03` stay as alternatives.
+- T5 landed in half. The declaration `actionSolutions` and the planner `planActionSolutions` exist
+  (`b2e13ee`); adjudication still reads declared-key solutions, so "the keys of any enabled layer that
+  provides the action solve it" is not yet true for a real attempt, and no content declares an action
+  yet. This is open, not done.
+- `packages/exercise-schema/src/keymap-vocabulary.ts` exists because moving the action vocabulary
+  through `keymap.ts` closed a cycle (`keymap -> validate -> schema -> action-solutions -> keymap`) and
+  made `z.enum` run before its list existed, breaking every importer of the schema root.
+- Note for T4: with `tmux` enabled before `herdr`, the shared `C-b` pending state belongs to the first
+  layer, so Herdr's `C-b v` is unreachable in that order. Consistent with L6 (order decides), recorded
+  because it is now visible in the UI.
+- Verification: focused suites 143 tests green, `typecheck` green, `lint` green after one fix (an unused
+  type import). Independent verifier confirmed the resolver never touches adjudication, the rail list
+  comes from content, and manifest/lockfile/node_modules agree on the new dependency.
