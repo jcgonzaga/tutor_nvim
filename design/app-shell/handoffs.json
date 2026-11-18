@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "02-practica-capas.html",
+  "handoffs": {
+    "02-practica-capas.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-11-18T19:50:22.845Z",
+      "startedAt": "2026-11-18T19:50:39.442Z",
+      "implementedAt": null,
+      "feature": "odd/tasks/keymap-layers.md",
+      "note": "Implementando el raíl de capas en la pantalla de práctica real"
+    }
+  }
+}

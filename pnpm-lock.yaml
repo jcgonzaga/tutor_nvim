@@ -138,6 +138,9 @@ importers:
       '@tutor-nvim/exercise-schema':
         specifier: workspace:*
         version: link:../../packages/exercise-schema
+      '@tutor-nvim/keymap':
+        specifier: workspace:*
+        version: link:../../packages/keymap
       '@tutor-nvim/pedagogy':
         specifier: workspace:*
         version: link:../../packages/pedagogy

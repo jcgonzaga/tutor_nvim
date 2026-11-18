@@ -1,0 +1,9 @@
+{ "title": "Tutor NeoVim — shell de práctica, capas y progreso",
+  "brief": "Tres artboards del shell web de Tutor NeoVim: la práctica en foco absoluto, la práctica con el rail de capas de keymap que muestra quién es dueño de la próxima tecla y cuánto cuesta, y el hub de mapa de habilidades más la sesión del día. Tema grafito + ámbar, español primero, el color nunca carga un estado solo.",
+  "feature": "odd/tasks/keymap-layers.md",
+  "artboards": [
+    { "file": "01-practica-foco.html", "title": "Práctica — foco absoluto", "tradeoff": "Una sola columna y cero navegación durante el ejercicio: el foco es total, pero el avance de la sesión queda reducido a una barra de siete segmentos.", "width": 1440, "height": 900 },
+    { "file": "02-practica-capas.html", "title": "Práctica — capas activas a la vista", "tradeoff": "Mostrar el dueño de cada tecla y el precio comparado de cada capa enseña la resolución en el momento, a cambio de 300 px de rail que el editor con split necesita para respirar.", "width": 1440, "height": 900 },
+    { "file": "03-mapa-y-sesion.html", "title": "Mapa y sesión — hub de progreso", "tradeoff": "Reunir el mapa de habilidades y la sesión de hoy en una sola vista da contexto para elegir qué practicar, pero deja menos superficie para mirar el buffer que la vista de foco.", "width": 1440, "height": 900 }
+  ]
+}

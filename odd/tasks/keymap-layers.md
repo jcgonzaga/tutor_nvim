@@ -43,7 +43,7 @@ YAML file and its exercises, not a new engine.
 | T3 | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer` | pending commit |
 | T4 | S5 | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit |
 | T5 | S6 | action-based solutions in `packages/exercise-schema` + evaluation | pending |
-| T6 | S1, S5 | settings UI (one / several / all) and the "next key belongs to" indicator | pending |
+| T6 | S1, S5 | settings UI (one / several / all), the "next key belongs to" indicator, and the layer rail of `design/app-shell/02-practica-capas.html` in the practice screen | **in progress** |
 | T7 | S1-S7 | CI: every catalog binding resolves; every declared solution replays | pending |
 
 ## Frozen schema for T1 (keymap layer v1)
@@ -198,3 +198,24 @@ are recorded here as a notation task, not modelled with a wrong character.
   instead of guessing (S5). Modes filter candidates (`modes: []` means any mode).
 - Wiring the resolver into the practice screen, the notation bridge (keymap notation to `KeyInput` to
   `KeyInput`) and the "next key belongs to" indicator ship with T6, for the same reason as T3.
+
+**L7 — design source (no code change)**
+
+- `design/system.md` y `design/system.html` sincronizados desde `apps/web/src/index.css`: sólo los
+  tokens que el código declara (grafito y ámbar, Atkinson Hyperlegible Next + JetBrains Mono), sin
+  escalas de espaciado, radios ni sombras, que el proyecto no tiene tokenizadas.
+- `design/app-shell/` (`design.json` adentro): tres láminas de la app con la feature incluida —
+  `01-practica-foco` (práctica en una columna, sin navegación), `02-practica-capas` (raíl de capas
+  activas, dueño de la próxima tecla y costo en teclas por capa) y `03-mapa-y-sesion` (mapa de
+  habilidades y sesión del día). Son alternativas entre sí; ninguna se implementó.
+
+**L8 — handoff (design → code)**
+
+- Owner handed off `design/app-shell/02-practica-capas.html` for implementation in `apps/web`. It maps
+  onto T6: the rail of active layers, the owner of the next key, the cost of each layer's binding for
+  the requested action, and the "no layer claims this key" state.
+- Bound in this cut: the rail and its toggles (persisted with `prefs.enabledLayers`), the owner
+  indicator and the cost table, both read from the real catalogs. The split exercise itself cannot run
+  yet (no `packages/workspace-engine`), so the rail is shown next to the practice the app has today.
+- Explicitly out of this cut: changing how an attempt is adjudicated. The resolver only labels the
+  pressed key; evaluation keeps using the engine that already decides (`packages/evaluation`).

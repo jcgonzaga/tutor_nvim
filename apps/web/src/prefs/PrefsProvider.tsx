@@ -6,6 +6,7 @@ import {
   savePrefs,
   withAnalytics,
   withLanguage,
+  withLayer,
   withLessonSeen,
   type Prefs,
 } from "./prefs";
@@ -17,6 +18,8 @@ interface PrefsContextValue {
   setLanguage(language: Locale): void;
   /** Records that a skill's theory cards were shown, so they do not appear again. */
   markLessonSeen(skillId: string): void;
+  /** Turns one tool layer on or off (S1); saved at once, so it survives a reload. */
+  setLayer(layerId: string, enabled: boolean): void;
 }
 
 const PrefsContext = createContext<PrefsContextValue | null>(null);
@@ -49,6 +52,7 @@ export function PrefsProvider({
         apply((current) => withAnalytics(current, on, () => crypto.randomUUID())),
       setLanguage: (language) => apply((current) => withLanguage(current, language)),
       markLessonSeen: (skillId) => apply((current) => withLessonSeen(current, skillId)),
+      setLayer: (layerId, enabled) => apply((current) => withLayer(current, layerId, enabled)),
     }),
     [prefs, apply],
   );

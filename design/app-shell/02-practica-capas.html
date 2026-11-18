@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práctica — capas activas a la vista</title>
+<style>
+  :root {
+    --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --canvas: #0f1113; --sunken: #131619; --surface: #16191c; --panel: #1a1d21; --raised: #1d2125;
+    --line: #2b3036; --line-strong: #3a4048; --line-faint: #22262b; --dash: #4a515a;
+    --ink: #edeff2; --ink-2: #b0b7c0; --ink-3: #848c96;
+    --amber: #f4b740; --amber-hi: #ffd27a; --amber-ink: #17130a;
+    --azure: #7cc4ff; --ember: #e5683e; --ember-ink: #ff9b78; --ember-bg: #2a1810; --ember-line: #5a2e1c;
+    --string: #d7b98a;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); font-size: 17px; line-height: 1.5; }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+  .app { max-width: 1440px; margin: 0 auto; padding: 18px 36px 20px; min-height: 900px; display: flex; flex-direction: column; }
+
+  header.top { display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--line-faint); padding-bottom: 12px; }
+  .session { font-size: 14px; font-weight: 600; color: var(--ink-2); letter-spacing: .02em; }
+  .segments { display: flex; gap: 4px; }
+  .segments i { width: 26px; height: 5px; border-radius: 999px; background: var(--line-strong); display: block; }
+  .segments i.done { background: var(--amber); }
+  .segments i.now { background: var(--amber-hi); }
+  header.top .spacer { flex: 1; }
+  .stat { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+  .stat b { color: var(--ink); font-weight: 700; }
+
+  .layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 26px; align-items: start; padding-top: 16px; }
+
+  .chips { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .chip { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .dots { display: inline-flex; gap: 4px; }
+  .dots i { width: 7px; height: 7px; border-radius: 999px; background: var(--line-strong); }
+  .dots i.on { background: var(--amber); }
+
+  h1 { font-size: 28px; line-height: 1.25; font-weight: 800; letter-spacing: -.02em; margin: 0 0 4px; }
+  .instruction-note { color: var(--ink-3); font-size: 14px; margin: 0 0 12px; }
+
+  /* Editor with two panes */
+  .editor { background: var(--sunken); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .editor-bar { display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-bottom: 1px solid var(--line-faint); background: var(--panel); }
+  .mode { font-family: var(--font-mono); font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--amber-ink); background: var(--amber); border-radius: 4px; padding: 2px 8px; }
+  .file { font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); }
+  .editor-bar .spacer { flex: 1; }
+  .pending { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); }
+  .pending b { color: var(--amber-hi); font-weight: 500; }
+  .windows { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 4px; padding: 1px 7px; }
+
+  .split { display: grid; grid-template-columns: 1.25fr 1fr; }
+  .pane { min-width: 0; }
+  .pane + .pane { border-left: 1px solid var(--line-strong); background: var(--canvas); }
+  .buffer { font-family: var(--font-mono); font-size: 15.5px; line-height: 1.8; padding: 12px 0; }
+  .row { display: grid; grid-template-columns: 38px 1fr; }
+  .row .n { text-align: right; padding-right: 12px; color: var(--dash); font-size: 13px; }
+  .str { color: var(--string); }
+  .com { color: var(--ink-3); }
+  .cursor { background: var(--amber); color: var(--amber-ink); border-radius: 2px; }
+  .pane-empty { height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 14px 18px; }
+  .pane-tag { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-3); letter-spacing: .04em; }
+  .pane-hint { margin: 0; font-size: 14.5px; color: var(--ink-2); font-weight: 600; }
+  .pane-sub { margin: 0; font-size: 13px; color: var(--ink-3); }
+
+  .goal { display: flex; gap: 24px; border-top: 1px solid var(--line-faint); padding: 9px 16px; background: rgba(19,22,25,.7); font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-3); }
+  .goal span b { color: var(--ink-2); font-weight: 500; }
+
+  /* Owner indicator */
+  .owner { margin-top: 12px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); padding: 10px 14px; display: flex; align-items: center; gap: 16px; }
+  .owner-body { min-width: 0; }
+  .owner-tag { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .owner-line { margin: 1px 0 0; font-size: 16px; font-weight: 600; color: var(--ink-2); }
+  .owner-line b { color: var(--ink); font-weight: 800; }
+  .owner .spacer { flex: 1; }
+  .owner-keys { display: inline-flex; gap: 5px; align-items: center; }
+  .owner-capture { font-size: 12px; color: var(--ink-3); max-width: 28ch; text-align: right; }
+
+  kbd { font-family: var(--font-mono); font-size: 12.5px; background: var(--raised); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; padding: 2px 6px; color: var(--ink); }
+
+  /* Cost comparison */
+  .cost { margin-top: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 12px 14px 10px; }
+  .cost-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .cost-head h2 { font-size: 15px; font-weight: 800; margin: 0; letter-spacing: -.01em; }
+  .cost-sub { font-size: 12px; color: var(--ink-3); }
+  .cost-table { width: 100%; border-collapse: collapse; }
+  .cost-table caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .cost-table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--line-faint); padding: 3px 0 5px; }
+  .cost-table th:last-child, .cost-table td:last-child { text-align: right; }
+  .cost-table td { padding: 6px 0; border-bottom: 1px solid var(--line-faint); vertical-align: middle; font-size: 14px; }
+  .cost-table tr:last-child td { border-bottom: 0; }
+  .c-layer { font-weight: 700; color: var(--ink); }
+  .c-keys kbd { margin-right: 4px; }
+  .c-cost { font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); }
+  .rank { font-size: 12px; font-weight: 700; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+  .rank-opt { color: var(--amber-ink); background: var(--amber); border: 1px solid var(--amber-hi); border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 800; }
+  .cost-note { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-3); }
+  .cost-table .cost-empty td { text-align: left; color: var(--ink-2); font-size: 13.5px; padding: 8px 0; }
+
+  /* Not-accepted example */
+  .reject { margin-top: 12px; border: 1px solid var(--ember-line); background: var(--ember-bg); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; }
+  .reject .mark { width: 26px; height: 26px; flex: none; border-radius: 999px; border: 1px solid var(--ember); color: var(--ember-ink); display: grid; place-items: center; font-weight: 800; }
+  .reject .headline { font-size: 14.5px; font-weight: 700; color: var(--ember-ink); }
+  .reject .detail { font-size: 12.5px; color: var(--ink-2); }
+  .reject .spacer { flex: 1; }
+  .reject .k { font-family: var(--font-mono); font-size: 13px; color: var(--ember-ink); border: 1px solid var(--ember-line); border-radius: 5px; padding: 2px 7px; background: rgba(229,104,62,.12); }
+  .reject-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+
+  /* Layer rail */
+  .rail { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 14px 14px 12px; }
+  .rail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .rail-head h2 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+  .rail-count { font-size: 12px; font-weight: 600; color: var(--ink-3); }
+  .rail-note { margin: 4px 0 10px; font-size: 12.5px; color: var(--ink-3); }
+  .layers { list-style: none; margin: 0; padding: 0; }
+  .layer { border-top: 1px solid var(--line-faint); padding: 8px 0; }
+  .layer:first-child { border-top: 0; }
+  .layer-top { display: flex; align-items: center; gap: 8px; }
+  .layer-name { font-size: 15px; font-weight: 700; color: var(--ink-2); }
+  .layer.on .layer-name { color: var(--ink); }
+  .layer-top .spacer { flex: 1; }
+  .switch { flex: none; width: 36px; height: 20px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--panel); padding: 0; cursor: pointer; position: relative; }
+  .switch .knob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 999px; background: var(--ink-3); }
+  .layer.on .switch { background: var(--amber); border-color: var(--amber-hi); }
+  .layer.on .switch .knob { left: 18px; background: var(--amber-ink); }
+  .layer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-size: 11.5px; color: var(--ink-3); }
+  .layer-meta .owner-word { letter-spacing: .08em; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
+  .layer-meta .sep { color: var(--dash); }
+  .layer-meta .layer-state { font-weight: 700; }
+  .layer.on .layer-meta .layer-state { color: var(--amber-hi); }
+  .layer-meta .layer-keys { font-family: var(--font-mono); color: var(--ink-2); margin-left: auto; white-space: nowrap; }
+  .rail-foot { margin-top: 10px; border-top: 1px solid var(--line-faint); padding-top: 8px; font-size: 12px; color: var(--ink-3); }
+
+  footer.tag { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line-faint); color: var(--ink-3); font-size: 12.5px; display: flex; justify-content: space-between; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <span class="session">Sesión diaria</span>
+    <div class="segments" aria-label="Ejercicio 4 de 7">
+      <i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i>
+    </div>
+    <span class="spacer"></span>
+    <span class="stat">Racha <b>6</b> días</span>
+    <span class="stat">Nivel <b>4</b></span>
+    <span class="stat"><b>1 240</b> XP</span>
+  </header>
+
+  <div class="layout">
+    <main>
+      <div class="chips">
+        <span class="chip">Paneles y ventanas</span>
+        <span class="dots" aria-label="Dificultad 3 de 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+      </div>
+
+      <h1>Dividí la ventana al costado.</h1>
+      <p class="instruction-note">Dos ventanas, una al lado de la otra. Cualquier capa activa que sepa dividir sirve; el puntaje de estrategia compara lo que cuestan sus teclas.</p>
+
+      <section class="editor" aria-label="Editor simulado con dos ventanas">
+        <div class="editor-bar">
+          <span class="mode">NORMAL</span>
+          <span class="file">buffer.js</span>
+          <span class="spacer"></span>
+          <span class="pending">pendiente <b id="pending-key">C-w</b></span>
+          <span class="windows">2 ventanas</span>
+        </div>
+        <div class="split">
+          <div class="pane">
+            <div class="buffer">
+              <div class="row"><span class="n">1</span><span class="com">// comparar dos archivos es dividir</span></div>
+              <div class="row"><span class="n">2</span><span>const layout = <span class="str">"lado a lado"</span>;</span></div>
+              <div class="row"><span class="n">3</span><span>const foco = <span class="str">"ventana nueva"</span>;</span></div>
+              <div class="row"><span class="n">4</span><span><span class="cursor"> </span></span></div>
+            </div>
+          </div>
+          <div class="pane pane-new">
+            <div class="pane-empty">
+              <span class="pane-tag">[No Name]</span>
+              <p class="pane-hint">La ventana nueva aparece acá.</p>
+              <p class="pane-sub">Abrí un archivo con <kbd>:e notas.md</kbd> o quedate en el buffer de al lado.</p>
+            </div>
+          </div>
+        </div>
+        <div class="goal">
+          <span><b>Objetivo</b> 2 ventanas lado a lado</span>
+          <span><b>Foco</b> ventana nueva</span>
+          <span><b>Modo</b> normal</span>
+        </div>
+      </section>
+
+      <section class="owner" aria-labelledby="owner-h">
+        <div class="owner-body">
+          <span class="owner-tag" id="owner-h">Dueño de la próxima tecla</span>
+          <p class="owner-line" id="next-key-line" aria-live="polite">La próxima tecla es de <b>Neovim</b>.</p>
+        </div>
+        <span class="spacer"></span>
+        <div class="owner-keys" id="next-key-caps" aria-label="Teclas de la capa dueña"><kbd>C-w</kbd><kbd>v</kbd></div>
+        <p class="owner-capture">captura: editor → multiplexor → gestor de ventanas → shell</p>
+      </section>
+
+      <section class="cost" aria-labelledby="cost-h">
+        <div class="cost-head">
+          <h2 id="cost-h">Lo que cuestan las teclas</h2>
+          <span class="cost-sub">misma acción, distinto precio</span>
+        </div>
+        <table class="cost-table">
+          <caption>Coste de dividir la ventana al costado en cada capa activa</caption>
+          <thead>
+            <tr><th scope="col">Capa</th><th scope="col">Atajo</th><th scope="col">Coste</th><th scope="col">Clasificación</th></tr>
+          </thead>
+          <tbody id="cost-body"></tbody>
+        </table>
+        <p class="cost-note" id="cost-note">La estrategia se clasifica comparando este coste, no contando teclas sueltas.</p>
+      </section>
+
+      <section class="reject" aria-labelledby="reject-h">
+        <span class="mark" aria-hidden="true">×</span>
+        <div>
+          <div class="headline" id="reject-h">Q no aceptada · ninguna capa activa la reclama</div>
+          <div class="detail">La tecla se descarta, la secuencia pendiente se reinicia y el intento sigue vivo.</div>
+        </div>
+        <span class="spacer"></span>
+        <span class="k" aria-hidden="true">Q</span>
+        <span class="reject-label">ejemplo de estado</span>
+      </section>
+    </main>
+
+    <aside class="rail" aria-labelledby="rail-h">
+      <div class="rail-head">
+        <h2 id="rail-h">Capas activas</h2>
+        <span class="rail-count" id="rail-count">3 de 6 activas</span>
+      </div>
+      <p class="rail-note">Cada capa es un perfil de keymap. Activá una, varias o todas: se guarda solo y sobrevive a recargar.</p>
+
+      <ul class="layers" role="list">
+        <li class="layer on" data-layer="linux">
+          <div class="layer-top">
+            <span class="layer-name">Linux</span>
+            <span class="spacer"></span>
+            <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Linux, shell"><span class="knob" aria-hidden="true"></span></button>
+          </div>
+          <div class="layer-meta"><span class="owner-word">shell</span><span class="sep">·</span><span class="layer-state">activa</span><span class="layer-keys">sin atajo</span></div>
+        </li>
+        <li class="layer on" data-layer="nvim">
+          <div class="layer-top">
+            <span class="layer-name">Neovim</span>
+            <span class="spacer"></span>
+            <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Neovim, editor"><span class="knob" aria-hidden="true"></span></button>
+          </div>
+          <div class="layer-meta"><span class="owner-word">editor</span><span class="sep">·</span><span class="layer-state">activa</span><span class="layer-keys">C-wv</span></div>
+        </li>
+        <li class="layer on" data-layer="lazyvim">
+          <div class="layer-top">
+            <span class="layer-name">LazyVim</span>
+            <span class="spacer"></span>
+            <button class="switch" type="button" role="switch" aria-checked="true" aria-label="LazyVim, editor"><span class="knob" aria-hidden="true"></span></button>
+          </div>
+          <div class="layer-meta"><span class="owner-word">editor</span><span class="sep">·</span><span class="layer-state">activa</span><span class="layer-keys">Space |</span></div>
+        </li>
+        <li class="layer" data-layer="tmux">
+          <div class="layer-top">
+            <span class="layer-name">tmux</span>
+            <span class="spacer"></span>
+            <button class="switch" type="button" role="switch" aria-checked="false" aria-label="tmux, multiplexor"><span class="knob" aria-hidden="true"></span></button>
+          </div>
+          <div class="layer-meta"><span class="owner-word">multiplexor</span><span class="sep">·</span><span class="layer-state">apagada</span><span class="layer-keys">C-b %</span></div>
+        </li>
+        <li class="layer" data-layer="herdr">
+          <div class="layer-top">
+            <span class="layer-name">Herdr</span>
+            <span class="spacer"></span>
+            <button class="switch" type="button" role="switch" aria-checked="false" aria-label="Herdr, multiplexor"><span class="knob" aria-hidden="true"></span></button>
+          </div>
+          <div class="layer-meta"><span class="owner-word">multiplexor</span><span class="sep">·</span><span class="layer-state">apagada</span><span class="layer-keys">C-b v</span></div>
+        </li>
+        <li class="layer" data-layer="omarchy">
+          <div class="layer-top">
+            <span class="layer-name">Omarchy</span>
+            <span class="spacer"></span>
+            <button class="switch" type="button" role="switch" aria-checked="false" aria-label="Omarchy, gestor de ventanas"><span class="knob" aria-hidden="true"></span></button>
+          </div>
+          <div class="layer-meta"><span class="owner-word">gestor de ventanas</span><span class="sep">·</span><span class="layer-state">apagada</span><span class="layer-keys">sin atajo</span></div>
+        </li>
+      </ul>
+
+      <p class="rail-foot">tmux y Herdr comparten el prefijo <kbd>C-b</kbd>: si activás las dos, la tecla la gana la que activaste primero. El indicador siempre dice cuál fue.</p>
+    </aside>
+  </div>
+
+  <footer class="tag"><span>Dirección 02 · capas a la vista</span><span>Rail de 300 px: el dueño de cada tecla y su precio, sin salir de la práctica</span></footer>
+</div>
+
+<script>
+  (function () {
+    var LAYERS = [
+      { id: "linux", label: "Linux", owner: "shell", tokens: null },
+      { id: "nvim", label: "Neovim", owner: "editor", tokens: ["C-w", "v"], cost: 1 },
+      { id: "lazyvim", label: "LazyVim", owner: "editor", tokens: ["Space", "|"], cost: 2 },
+      { id: "tmux", label: "tmux", owner: "multiplexor", tokens: ["C-b", "%"], cost: 2 },
+      { id: "herdr", label: "Herdr", owner: "multiplexor", tokens: ["C-b", "v"], cost: 2 },
+      { id: "omarchy", label: "Omarchy", owner: "gestor de ventanas", tokens: null }
+    ];
+    // Capture order for window.split-side-by-side: focused surface first, then outward.
+    var ORDER = ["nvim", "lazyvim", "tmux", "herdr"];
+    var enabled = { linux: true, nvim: true, lazyvim: true, tmux: false, herdr: false, omarchy: false };
+
+    var rows = Array.prototype.slice.call(document.querySelectorAll(".layer"));
+    var countEl = document.getElementById("rail-count");
+    var lineEl = document.getElementById("next-key-line");
+    var capsEl = document.getElementById("next-key-caps");
+    var pendingEl = document.getElementById("pending-key");
+    var bodyEl = document.getElementById("cost-body");
+    var noteEl = document.getElementById("cost-note");
+
+    function byId(id) {
+      for (var i = 0; i < LAYERS.length; i++) { if (LAYERS[i].id === id) return LAYERS[i]; }
+      return null;
+    }
+    function keycaps(tokens) {
+      var out = "";
+      for (var i = 0; i < tokens.length; i++) { out += "<kbd>" + tokens[i] + "</kbd>"; }
+      return out;
+    }
+    function costWord(n) { return n === 1 ? "1 tecla" : n + " teclas"; }
+
+    function render() {
+      var active = LAYERS.filter(function (l) { return enabled[l.id]; });
+      countEl.textContent = active.length + " de " + LAYERS.length + " activas";
+
+      rows.forEach(function (row) {
+        var id = row.getAttribute("data-layer");
+        var on = !!enabled[id];
+        row.classList.toggle("on", on);
+        var sw = row.querySelector(".switch");
+        sw.setAttribute("aria-checked", on ? "true" : "false");
+        row.querySelector(".layer-state").textContent = on ? "activa" : "apagada";
+      });
+
+      var owner = null;
+      for (var i = 0; i < ORDER.length; i++) {
+        var cand = byId(ORDER[i]);
+        if (cand && enabled[cand.id]) { owner = cand; break; }
+      }
+      if (owner) {
+        lineEl.innerHTML = "La próxima tecla es de <b>" + owner.label + "</b>.";
+        capsEl.innerHTML = keycaps(owner.tokens);
+        pendingEl.textContent = owner.tokens[0];
+      } else {
+        lineEl.textContent = "Ninguna capa activa la reclama.";
+        capsEl.innerHTML = "<span class=\"cost-sub\">sin dueño</span>";
+        pendingEl.textContent = "—";
+      }
+
+      var offers = LAYERS.filter(function (l) { return enabled[l.id] && l.tokens; });
+      bodyEl.innerHTML = "";
+      if (offers.length === 0) {
+        var empty = document.createElement("tr");
+        empty.className = "cost-empty";
+        empty.innerHTML = "<td colspan=\"4\">Ninguna capa activa ofrece dividir la ventana. Activá Neovim, LazyVim, tmux o Herdr.</td>";
+        bodyEl.appendChild(empty);
+        noteEl.textContent = "Sin capas que ofrezcan la acción no hay nada que comparar; la tecla queda sin dueño.";
+        return;
+      }
+
+      var min = Math.min.apply(null, offers.map(function (l) { return l.cost; }));
+      var max = Math.max.apply(null, offers.map(function (l) { return l.cost; }));
+      offers.forEach(function (l) {
+        var tr = document.createElement("tr");
+        var rank = l.cost === min
+          ? "<span class=\"rank-opt\">óptima</span>"
+          : "<span class=\"rank\">válida</span>";
+        tr.innerHTML = "<td class=\"c-layer\">" + l.label + "</td>" +
+          "<td class=\"c-keys\">" + keycaps(l.tokens) + "</td>" +
+          "<td class=\"c-cost\">" + costWord(l.cost) + "</td>" +
+          "<td>" + rank + "</td>";
+        bodyEl.appendChild(tr);
+      });
+
+      if (offers.length === 1) {
+        noteEl.textContent = offers[0].label + " es la única capa activa que ofrece la acción: " + costWord(offers[0].cost) + " y no hay con qué comparar.";
+      } else if (min === max) {
+        noteEl.textContent = "Todas las capas activas cuestan " + costWord(min) + ": la estrategia empata y ninguna se marca por encima de otra.";
+      } else {
+        noteEl.textContent = "La más barata cuesta " + costWord(min) + "; la más cara, " + costWord(max) + ". La estrategia se clasifica comparando este coste.";
+      }
+    }
+
+    rows.forEach(function (row) {
+      var sw = row.querySelector(".switch");
+      sw.addEventListener("click", function () {
+        var id = row.getAttribute("data-layer");
+        enabled[id] = !enabled[id];
+        render();
+      });
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>
