@@ -106,3 +106,8 @@ export {
   type LessonCard,
 } from "./primitives";
 export { availableExercises, exerciseLayers, isExerciseAvailable } from "./layers";
+export {
+  actionSolutionSchema,
+  actionSolutionsSchema,
+  type ActionSolution,
+} from "./action-solutions";

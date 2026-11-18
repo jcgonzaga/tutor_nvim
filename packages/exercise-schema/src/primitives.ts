@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+export const SOLUTION_CLASSIFICATIONS = [
+  "optimal",
+  "efficient",
+  "valid",
+  "inefficient",
+  "anti-pattern",
+] as const;
+export type SolutionClassification = (typeof SOLUTION_CLASSIFICATIONS)[number];
+
 /** Stable public identifier: `vim-ci-quotes-001`. */
 export const idSchema = z
   .string()

@@ -1,5 +1,6 @@
 import { formatKey } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
+import { actionSolutionsSchema } from "./action-solutions";
 import { difficultySchema, environmentSchema, explanationSchema, idSchema, slugSchema } from "./primitives";
 import {
   EXERCISE_MODES,
@@ -192,6 +193,7 @@ export const shellExerciseSchema = z
     skillIds: z.array(slugSchema).min(1),
     mode: z.enum(EXERCISE_MODES),
     difficulty: difficultySchema,
+    actionSolutions: actionSolutionsSchema,
     environment: environmentSchema.default({
       type: "simulator",
       profile: "shell-basic-v1",

@@ -5,7 +5,11 @@ import {
   type VimMode,
 } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
+import { actionSolutionsSchema } from "./action-solutions";
+
+export { SOLUTION_CLASSIFICATIONS, type SolutionClassification } from "./primitives";
 import {
+  SOLUTION_CLASSIFICATIONS,
   difficultySchema,
   environmentSchema,
   explanationSchema,
@@ -18,14 +22,6 @@ import {
 export const EXERCISE_SCHEMA_VERSION = 1;
 
 /** Classifications a known solution can declare (`failed` is only ever computed). */
-export const SOLUTION_CLASSIFICATIONS = [
-  "optimal",
-  "efficient",
-  "valid",
-  "inefficient",
-  "anti-pattern",
-] as const;
-export type SolutionClassification = (typeof SOLUTION_CLASSIFICATIONS)[number];
 
 export const EXERCISE_MODES = [
   "learn",
@@ -210,6 +206,7 @@ export const vimExerciseSchema = z
     mode: z.enum(EXERCISE_MODES),
     difficulty: difficultySchema,
     environment: environmentSchema,
+    actionSolutions: actionSolutionsSchema,
     initialState: initialStateSchema,
     objective: objectiveSchema,
     evaluation: evaluationSchema,

@@ -10,3 +10,9 @@ export {
   type KeymapState,
   type ResolveOptions,
 } from "./resolve";
+export {
+  cheapestAction,
+  planActionSolutions,
+  planExerciseActions,
+  type PlannedActionSolution,
+} from "./actions";
