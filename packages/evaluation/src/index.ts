@@ -31,6 +31,7 @@ export {
   DEFAULT_STRATEGY_CONFIG,
   DEFAULT_STRATEGY_RULES,
   classifyStrategy,
+  efficiencyClassification,
   type StrategyClassification,
   type StrategyConfig,
   type StrategyContext,
@@ -51,6 +52,14 @@ export {
   type EvaluationConfig,
 } from "./evaluate";
 export { simulateSolution } from "./simulate";
+export {
+  evaluateActionAttempt,
+  type ActionAttempt,
+  type ActionAttemptEvaluation,
+  type DeclaredActions,
+  type PerformedAction,
+  type RecordedInput,
+} from "./action-attempt";
 export { checkContent, checkExercise } from "./content-check";
 export { describeFeedback, type Feedback, type FeedbackKind } from "./feedback";
 export {

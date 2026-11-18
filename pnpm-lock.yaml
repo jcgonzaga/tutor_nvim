@@ -29,6 +29,9 @@ importers:
       '@tutor-nvim/exercise-schema':
         specifier: workspace:*
         version: link:packages/exercise-schema
+      '@tutor-nvim/keymap':
+        specifier: workspace:*
+        version: link:packages/keymap
       '@tutor-nvim/pedagogy':
         specifier: workspace:*
         version: link:packages/pedagogy
@@ -187,6 +190,9 @@ importers:
       '@tutor-nvim/exercise-schema':
         specifier: workspace:*
         version: link:../exercise-schema
+      '@tutor-nvim/keymap':
+        specifier: workspace:*
+        version: link:../keymap
       '@tutor-nvim/shell-engine':
         specifier: workspace:*
         version: link:../shell-engine

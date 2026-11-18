@@ -16,3 +16,16 @@ export {
   planExerciseActions,
   type PlannedActionSolution,
 } from "./actions";
+export {
+  traceKeymapActions,
+  type KeymapTrace,
+  type TraceOptions,
+  type TracedAction,
+  type UnclaimedKey,
+} from "./trace";
+export {
+  keyInputToKeymapToken,
+  keymapTokenToKeyInput,
+  type NotedInput,
+  type NotedKey,
+} from "./notation";
