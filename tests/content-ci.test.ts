@@ -126,6 +126,24 @@ describe("content integrity gate (T-907)", () => {
     expect(result.output).toContain("set override: true");
   }, 60_000);
 
+  it("blocks a catalog that declares the same row twice", async () => {
+    const root = copyOfContent();
+    // A byte-identical copy of the `z` row: same keys, action, modes and target, so the second one
+    // can never be pressed and the catalog would be lying about what it offers.
+    const row = [
+      '  - keys: "z"',
+      "    action: window.zoom",
+      '    description: "Zoom the current pane to fill the terminal, and press it again to undo."',
+      '    notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to zoom."',
+      "",
+    ].join("\n");
+    edit(root, "keymaps/tmux.yaml", (text) => text.replace(row, row + row));
+    const result = await run("content-validate", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("keymaps/tmux.yaml");
+    expect(result.output).toMatch(/declared twice|repeats/);
+  }, 60_000);
+
   it("blocks a catalog binding that can never be reached", async () => {
     const root = copyOfContent();
     edit(root, "keymaps/tmux.yaml", (text) =>

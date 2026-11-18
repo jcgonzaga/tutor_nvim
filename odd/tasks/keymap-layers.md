@@ -44,7 +44,7 @@ YAML file and its exercises, not a new engine.
 | T4 | S5 | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit |
 | T5 | S6 | `actionSolutions`, `planActionSolutions`, `traceKeymapActions`, `evaluateActionAttempt` | b2e13ee + pending commit |
 | T6 | S1, S5 | layer rail in the practice screen: toggles, "next key belongs to", cost table | f69aa25 (design `app-shell/02-practica-capas.html` chosen) |
-| T7 | S1-S7 | CI: every catalog binding resolves to itself; every declared action solution is provided | pending commit |
+| T7 | S1-S7 | CI: every catalog binding resolves to itself; every declared action solution is provided | 48be2b7 + pending commit |
 
 ## Frozen schema for T1 (keymap layer v1)
 
@@ -277,3 +277,15 @@ are recorded here as a notation task, not modelled with a wrong character.
   the browser-notation rule but still checked for reachability.
 - Known gap, not fixed here: `isKeymapKeySequence` accepts a space-separated opener like `"C-b C-c"`
   while the resolver reads the space as a literal key press; fixing it needs a schema decision.
+
+**L12 — the two verification advisories, closed**
+
+- **A catalog can no longer declare the same row twice.** The schema's set validator refuses a repeat of
+  an *inherited* pair without `override`, and the reachability rule cannot tell a byte-identical copy
+  from the row above it (both complete as themselves), so the gate accepted it. `duplicateProblems`
+  now compares each file's rows by `(keys, modes)`, exactly the pair the override rule reads, and says
+  the second row can never be pressed. Pinned by a content-gate case that duplicates tmux's `z` row.
+- **The cost baseline is compared like with like.** An action solution that names no target took any
+  binding of that action, so `diw` (three keys, deletes a word) could be graded against `dd` (two keys,
+  deletes a line). The baseline now uses the target the attempt performed. Pinned by a test with both
+  operators in one catalog.

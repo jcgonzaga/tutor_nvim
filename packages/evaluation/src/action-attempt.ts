@@ -127,8 +127,17 @@ export function evaluateActionAttempt(
   });
 
   const solvedBy = performed[0] ?? null;
-  const cheapestCost =
-    solvedBy === null ? null : (planActionSolutions([solvedBy.solution], catalogs)[0]?.cost ?? null);
+  // The baseline is the cheapest way to do *this* thing: a solution that names no target takes any
+  // target, so it is compared with the target the attempt actually performed (`diw` is not graded
+  // against `dd`: a word and a line are different edits).
+  const baseline =
+    solvedBy === null
+      ? []
+      : planActionSolutions(
+          [{ ...solvedBy.solution, target: solvedBy.solution.target ?? solvedBy.target }],
+          catalogs,
+        );
+  const cheapestCost = solvedBy === null ? null : (baseline[0]?.cost ?? null);
   const classification: StrategyClassification =
     solvedBy === null || cheapestCost === null
       ? "failed"

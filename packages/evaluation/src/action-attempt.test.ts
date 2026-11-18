@@ -259,4 +259,36 @@ describe("deciding an action attempt (S6)", () => {
     // 0.7 no longer reaches the raised efficient band, so it falls to the next one down.
     expect(evaluation.classification).toBe("valid");
   });
+
+  it("compares the keys with the same target, not with a cheaper unrelated operator", () => {
+    // `dd` deletes a line in two keys, `iw` deletes a word in three. An exercise that asks to delete a
+    // word must not be graded against the line operator: the two do different things.
+    const NVIM = `
+schemaVersion: 1
+id: nvim
+label: "Neovim"
+owns: [editor]
+bindings:
+  - keys: "dd"
+    action: edit.delete
+    target: line
+    description: "Delete the line."
+  - keys: "diw"
+    action: edit.delete
+    target: inner-word
+    description: "Delete the word under the cursor."
+`;
+    const word = { action: "edit.delete" as const, classification: "optimal" as const };
+    const evaluation = solved(
+      evaluateActionAttempt(
+        { actionSolutions: [word] },
+        typed("d", "i", "w"),
+        catalogsOf(NVIM),
+      ),
+    );
+    expect(evaluation.solvedBy?.target).toBe("inner-word");
+    // Three keys is the cheapest way to delete a word here, so three keys is the optimal cost.
+    expect(evaluation.cheapestCost).toBe(3);
+    expect(evaluation.classification).toBe("optimal");
+  });
 });

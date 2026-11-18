@@ -121,9 +121,32 @@ function openerProblems({ layer, source }: LoadedKeymapLayer): string[] {
  * contributes exactly the rows written in its file: the inherited set is another catalog's content
  * and is checked against its own file, not here.
  */
+/**
+ * Rows a catalog declares twice. The schema's set validator already refuses a repeat of an
+ * *inherited* pair without `override`, but a byte-identical copy inside one file slips through: the
+ * second row answers the same keys and can never be pressed, so the catalog would promise a binding
+ * nobody can reach. Keys and modes identify a row, exactly as the override rule reads them.
+ */
+function duplicateProblems({ layer, source }: LoadedKeymapLayer): string[] {
+  const seen = new Map<string, KeymapBinding>();
+  const problems: string[] = [];
+  for (const binding of layer.bindings) {
+    const identity = `${binding.keys}\u0000${[...binding.modes].sort().join(",")}`;
+    const first = seen.get(identity);
+    if (first === undefined) {
+      seen.set(identity, binding);
+      continue;
+    }
+    problems.push(
+      `${source}: binding "${binding.keys}" -> ${actionText(binding)} is declared twice: the second row can never be pressed, because "${first.keys}" already answers those keys`,
+    );
+  }
+  return problems;
+}
+
 function checkLayer(loaded: LoadedKeymapLayer): string[] {
   const { layer, source } = loaded;
-  const problems = openerProblems(loaded);
+  const problems = [...openerProblems(loaded), ...duplicateProblems(loaded)];
   const catalog = catalogFor([layer])[0];
   // A parsed layer always has bindings, so the catalog exists; the guard is for the type, not for
   // content.
