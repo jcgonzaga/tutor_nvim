@@ -1,0 +1,83 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-session-detach-001
+slug: neovim.session.detach.001
+title: "Detach from the session and find the editor still open"
+instruction: 'Put src/lib/format.ts beside src/main.ts, add the comment "// Helpers shared by the app." as its first line and save it, then run pnpm test in a terminal beside it. Detach from the session and attach again: the two files in their panes, the saved comment and what the tests printed must all be exactly where you left them.'
+skillIds:
+  - neovim.session.detach
+mode: transfer
+difficulty: 4
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/main.ts: |
+      import { format } from "./lib/format";
+
+      console.log(format(42));
+    src/lib/format.ts: |
+      export const format = (value: number) => String(value);
+    src/lib/format.test.ts: |
+      import { format } from "./format";
+
+      export const tests = [() => format(42) === "42"];
+  path: src/main.ts
+  cwd: /project
+  terminal:
+    title: tests
+    cwd: /project
+    commands:
+      pnpm test:
+        - "PASS src/lib/format.test.ts (3 tests)"
+        - "Tests: 3 passed"
+objective:
+  type: all
+  goals:
+    # Attached again, not left frozen: the session you come back to is the one you left.
+    - { type: session, state: attached }
+    # The tree of windows survived the freeze, split for split.
+    - { type: layout, text: "side(leaf, side(leaf, leaf))" }
+    - { type: windows, paths: [src/main.ts, src/lib/format.ts, terminal:tests] }
+    - { type: focus, leaf: 2 }
+    - { type: active_file, path: src/lib/format.ts }
+    - { type: open_buffers, paths: [src/main.ts, src/lib/format.ts] }
+    # The comment was written to disk before the freeze and is still there after it.
+    - type: file_text
+      path: src/lib/format.ts
+      text: |
+        // Helpers shared by the app.
+        export const format = (value: number) => String(value);
+    # And so is what the suite printed in the session.
+    - type: terminal_output
+      lines:
+        - "PASS src/lib/format.test.ts (3 tests)"
+        - "Tests: 3 passed"
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/lib/format.ts
+      - action: edit.insert
+        text: "// Helpers shared by the app.\n"
+      - action: file.save
+      - action: app.launch-terminal
+      - action: shell.run
+        command: pnpm test
+      - action: session.detach
+      - action: session.attach
+    classification: optimal
+hints:
+  - afterMs: 6000
+    level: 1
+    text: "Detaching freezes the workspace instead of closing it: every window, buffer and scrollback stays, and the keys are refused until you attach again."
+  - afterMs: 12000
+    level: 2
+    text: "C-b d detaches in tmux and tmux a attaches to the session again; nothing inside the session moves while you are away."
+explanation: "Detaching keeps the whole workspace behind a flag: the tabs, every split, the open buffers, the saved file and the terminal's scrollback are the same objects while you are away, so attaching finds them field for field rather than rebuilt. The keys are refused in between, so a session you cannot see cannot be half-changed, and that is what makes the promise keepable. Saving before detaching is why the comment is on disk after it: the session restores state, it does not redo edits."
+metadata:
+  language: typescript
+  context: terminal
+  estimatedSeconds: 45
+  transferTags: []

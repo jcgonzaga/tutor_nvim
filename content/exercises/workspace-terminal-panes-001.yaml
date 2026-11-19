@@ -1,0 +1,80 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-terminal-panes-001
+slug: neovim.terminal.panes.001
+title: "Split a pane, run the tests there and read what printed"
+instruction: "Open a terminal beside src/main.ts, split that pane so the suite gets one of its own, run pnpm test in the new pane, and close that pane once it has printed. The shell left beside the editor is where the results stay readable, and src/main.ts is still the file you are on."
+skillIds:
+  - neovim.terminal.panes
+mode: learn
+difficulty: 4
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/main.ts: |
+      import { format } from "./lib/format";
+
+      console.log(format(42));
+    src/lib/format.ts: |
+      export const format = (value: number) => String(value);
+    src/lib/format.test.ts: |
+      import { format } from "./format";
+
+      export const tests = [() => format(42) === "42"];
+  path: src/main.ts
+  cwd: /project
+  # What the simulated machine prints for the suite: content, because there is no process to ask (S6).
+  terminal:
+    title: tests
+    cwd: /project
+    commands:
+      pnpm test:
+        - "PASS src/lib/format.test.ts (3 tests)"
+        - "Tests: 3 passed"
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: windows, paths: [src/main.ts, terminal:tests] }
+    # The keys are on the shell that still shows the run, next to the file.
+    - { type: focus, leaf: 1 }
+    - { type: active_file, path: src/main.ts }
+    - { type: open_buffers, paths: [src/main.ts] }
+    # The scrollback of the session that ran the suite, line by line.
+    - type: terminal_output
+      lines:
+        - "PASS src/lib/format.test.ts (3 tests)"
+        - "Tests: 3 passed"
+solutions:
+  - actions:
+      - action: app.launch-terminal
+      - action: window.split-stacked
+      - action: shell.run
+        command: pnpm test
+      - action: window.close
+    classification: optimal
+  # The long way: back to the editor while the suite is there, then over to the pane to close it.
+  - actions:
+      - action: app.launch-terminal
+      - action: window.split-stacked
+      - action: shell.run
+        command: pnpm test
+      - action: window.focus-left
+      - action: window.focus-right
+      - action: window.close
+    classification: valid
+hints:
+  - afterMs: 5000
+    level: 1
+    text: "A terminal window splits like any other one, and the command runs in the pane that has the keys, not in the pane beside it."
+  - afterMs: 10000
+    level: 2
+    text: "C-b % splits a tmux pane and C-b x closes the one you are in. What the suite printed is in the session, so the shell beside the editor still shows it."
+explanation: "A split of a terminal window is a second view on one session, so the suite's output lands in that session's scrollback instead of in the pane, and the pane you close does not take it with it: the lines stay readable beside the editor. In real tmux those two panes would be two shells and C-b x would take the scrollback away, so read the results before you kill the pane. Here the goal asserts the lines the session printed and the window that ran nothing but shows them."
+metadata:
+  language: typescript
+  context: tests
+  estimatedSeconds: 35
+  transferTags: []

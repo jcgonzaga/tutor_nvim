@@ -1,0 +1,54 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-terminal-launch-001
+slug: neovim.terminal.launch.001
+title: "Open a terminal window and take the keys"
+instruction: "You are editing src/main.ts and want a shell beside it without losing the file. Open a terminal window so the editor keeps src/main.ts in the left pane and the new terminal is the window with the keys."
+skillIds:
+  - neovim.terminal.launch
+mode: learn
+difficulty: 2
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/main.ts: |
+      import { format } from "./lib/format";
+
+      console.log(format(42));
+    src/lib/format.ts: |
+      export const format = (value: number) => String(value);
+  path: src/main.ts
+  cwd: /project
+  # The session this story may open. It declares no output, because the story runs no command (S6).
+  terminal:
+    title: shell
+    commands: {}
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    # A window showing a session prints as terminal:<title>, so the shape and the content are one goal each.
+    - { type: windows, paths: [src/main.ts, terminal:shell] }
+    - { type: focus, leaf: 1 }
+    # The keys moved to the terminal; the editor did not: the file it opened beside is still the active one.
+    - { type: active_file, path: src/main.ts }
+    - { type: open_buffers, paths: [src/main.ts] }
+solutions:
+  - actions:
+      - action: app.launch-terminal
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The terminal opens beside the window you are in, so the file stays on screen instead of being replaced."
+  - afterMs: 8000
+    level: 2
+    text: "Super-Enter in Omarchy opens it: the pane is added beside the focused one and the new pane takes the keys."
+explanation: "A terminal is a window, so opening one splits the pane you were in and gives the new half to a shell session. The file stays where it was and stays the active file, because what moved is the keys and not the editor. That is why the window on the right is the terminal and the one you were reading is still src/main.ts."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 15
+  transferTags: []

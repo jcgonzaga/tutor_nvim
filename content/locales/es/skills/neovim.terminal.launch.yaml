@@ -1,0 +1,10 @@
+id: neovim-terminal-launch
+title: "Abrir una ventana de terminal"
+description: "Abre una shell junto al editor como ventana propia, con las teclas en ella y el archivo todavía a la vista."
+lesson:
+  - title: "Un terminal también es una ventana"
+    body: "El terminal que abres es una ventana como la del editor: se coloca junto a la que tiene el foco, ocupa una parte del ancho y todas las teclas de ventana funcionan en ella. Lo que muestra es una sesión de shell en lugar de un archivo."
+  - title: "El archivo no se mueve"
+    body: "Abrir un terminal divide la ventana y deja el archivo en el panel donde estabas, así que el editor sigue en pantalla y el archivo activo no cambia. Solo se mueven las teclas, al panel nuevo, y el panel nuevo tiene que tomarlas o el terminal sería un dibujo."
+  - title: "Una sesión, no un búfer"
+    body: "Una ventana de terminal muestra una sesión con su propio historial, así que nada de ahí se edita ni se guarda. Por eso además la ventana y la sesión son dos cosas: cerrar una no cierra la otra."

@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-terminal-panes
+slug: neovim.terminal.panes
+
+title: "Split a pane and run the tests there"
+description: "Give the test suite a pane of its own, run it, and read what it printed in the shell beside the editor."
+
+domain: neovim
+tier: 5
+difficulty: 4
+enabled: true
+
+prerequisites:
+  - neovim.terminal.launch
+concepts:
+  - terminal
+  - panes
+  - tests
+tags:
+  - terminal
+  - tests
+
+lesson:
+  - title: "A pane you can divide"
+    body: "A terminal window splits like any other: one pane becomes two, each takes a share of the space, and the keys go to the new one. That is how a suite gets a pane of its own while the shell you were using stays where it was."
+  - title: "Running a command is content"
+    body: "A command runs in the pane that has the keys, and what it prints is what the exercise declared for it. Nothing is executed here: the simulated machine answers the commands the story names and refuses the rest by name."
+  - title: "Reading the scrollback"
+    body: "What a pane printed stays in the session behind it, so the lines are still there when the command finishes, and they survive the pane. The scrollback is what a goal can check, never the keystroke that started it."

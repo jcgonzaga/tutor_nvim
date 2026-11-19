@@ -1,0 +1,7 @@
+id: workspace-workspace-move-001
+title: "Mueve una ventana a otro espacio de trabajo y vuelve"
+instruction: "Estás trabajando en src/main.ts con src/lib/format.ts al lado y quieres quitar de en medio el panel de format. Abre un segundo espacio de trabajo sobre src/main.ts, vuelve al primero, mueve el panel de format al segundo, cambia para verlo allí junto a src/main.ts y vuelve al primer espacio de trabajo, que debe quedar mostrando solo src/main.ts y con el archivo de format todavía abierto."
+hints:
+  - "Dos espacios de trabajo, dos árboles: abrir uno nuevo empieza como una sola ventana y deja intactas las divisiones del anterior."
+  - "C-b c abre un espacio de trabajo en tmux y C-b n y C-b p van de uno a otro. Un movimiento se lleva solo la ventana enfocada, así que enfoca el panel que quieres quitar antes de moverlo."
+explanation: "Un espacio de trabajo es su propio árbol de ventanas: el segundo empieza como una sola ventana sobre el búfer en el que estabas y no sabe nada de la división que dejaste. Un movimiento saca la ventana enfocada de su pestaña y la pone junto a la de la pestaña que nombras, así que el panel de format llega junto a src/main.ts mientras este se queda con una ventana. El archivo nunca se cerró: está abierto en los dos árboles, y por eso vuelves a un espacio limpio sin perder nada."

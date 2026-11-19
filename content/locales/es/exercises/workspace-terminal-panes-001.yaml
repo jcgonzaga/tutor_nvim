@@ -1,0 +1,7 @@
+id: workspace-terminal-panes-001
+title: "Divide un panel, corre los tests ahí y lee lo que imprimieron"
+instruction: "Abre un terminal junto a src/main.ts, divide ese panel para que la suite tenga uno propio, corre pnpm test en el panel nuevo y cierra ese panel cuando haya imprimido. La shell que queda junto al editor es donde los resultados siguen legibles, y src/main.ts sigue siendo el archivo en el que estás."
+hints:
+  - "Una ventana de terminal se divide como cualquier otra, y el comando se ejecuta en el panel que tiene las teclas, no en el de al lado."
+  - "C-b % divide un panel de tmux y C-b x cierra el que tiene el foco. Lo que la suite imprimió está en la sesión, así que la shell junto al editor todavía lo muestra."
+explanation: "Una división de una ventana de terminal es una segunda vista sobre una sola sesión, así que la salida de la suite va al historial de esa sesión y no al panel, y el panel que cierras no se la lleva: las líneas siguen legibles junto al editor. En tmux de verdad esos dos paneles serían dos shells y C-b x se llevaría el historial, así que lee los resultados antes de matar el panel. Aquí el objetivo comprueba las líneas que imprimió la sesión y la ventana que no ejecutó nada pero las muestra."

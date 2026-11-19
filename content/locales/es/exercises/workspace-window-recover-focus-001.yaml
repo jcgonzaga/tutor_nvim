@@ -1,0 +1,7 @@
+id: workspace-window-recover-focus-001
+title: "Cierra la ventana del terminal y recupera las teclas"
+instruction: 'Pon src/main.ts y src/lib/format.ts lado a lado, abre un terminal junto al archivo de format y luego cierra esa ventana de terminal: los dos archivos tienen que seguir en pantalla y las teclas tienen que volver a src/lib/format.ts.'
+hints:
+  - "Cerrar una ventana cede su sitio y sus teclas a la ventana de al lado, así que el terminal se va y una ventana de archivo recupera las teclas."
+  - "C-wq cierra la ventana en la que estás, y el panel junto al que se abrió el terminal toma el espacio y el cursor."
+explanation: "Cerrar una ventana elimina la división de la que formaba parte y le da el sitio a su hermana, así que una disposición de tres ventanas vuelve a los dos archivos que había antes de abrir el terminal. Las teclas viajan con ese traspaso y aterrizan en la ventana hermana, y por eso src/lib/format.ts vuelve a estar activo sin volver a escribir nada. Ningún búfer se movió, así que cerrar la ventana que mostraba la sesión no cerró nada de lo que la sesión mostraba."

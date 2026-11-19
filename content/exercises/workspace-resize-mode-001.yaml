@@ -1,0 +1,59 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-resize-mode-001
+slug: neovim.workspace.resize-mode.001
+title: "Widen a window in resize mode and leave the mode"
+instruction: "Split the editor with src/main.ts on the left and src/lib/format.ts on the right, put the keys back on src/main.ts, enter resize mode, widen that window until it takes about two thirds of the width, and then leave resize mode so the ordinary keys work again."
+skillIds:
+  - neovim.workspace.resize-mode
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/main.ts: |
+      import { format } from "./lib/format";
+
+      console.log(format(42));
+    src/lib/format.ts: |
+      export const format = (value: number) => String(value);
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: windows, paths: [src/main.ts, src/lib/format.ts] }
+    # Three steps of a twentieth from a half: the file you are reading gets a third more room.
+    - { type: split_ratio, index: 0, ratio: 0.65 }
+    - { type: focus, leaf: 0 }
+    - { type: active_file, path: src/main.ts }
+    # Left, not still in it: the mode and the widened split are two different facts.
+    - { type: mode, mode: normal }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/lib/format.ts
+      - action: window.focus-left
+      - action: window.enter-resize-mode
+      - action: window.resize-wider
+      - action: window.resize-wider
+      - action: window.resize-wider
+      - action: window.leave-resize-mode
+    classification: optimal
+hints:
+  - afterMs: 5000
+    level: 1
+    text: "Resize mode changes what the keys mean, not the layout: while it is on, only the resize keys and leaving it apply."
+  - afterMs: 10000
+    level: 2
+    text: "C-b r enters Herdr's resize mode, C-w> widens the split a twentieth per press, and Esc leaves the mode with the wider split still there."
+explanation: "The two panes share the width in a ratio that starts at one half each, and each wider step takes a twentieth from the other side, so three presses land just under two thirds. Resize mode is what makes those presses unambiguous: while it is on nothing else applies, which is the point of a mode that exists for one job. Leaving it changes no layout at all, so the split you widened is exactly the one you go back to, and only the meaning of the keys returns to normal."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 25
+  transferTags: []

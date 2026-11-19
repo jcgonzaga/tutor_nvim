@@ -1,0 +1,10 @@
+id: neovim-windows-recover-focus
+title: "Cerrar una ventana y recuperar el foco"
+description: "Cierra la ventana que tiene las teclas y deja que aterricen en la ventana de al lado, sin tocar las demás."
+lesson:
+  - title: "Cerrar entrega las teclas"
+    body: "Una ventana cerrada cede su sitio a su hermana y las teclas se van con él, así que nunca escribes al vacío y no hay un paso aparte para elegir la siguiente ventana."
+  - title: "La forma se derrumba, los archivos se quedan"
+    body: "La división en la que vivía la ventana desaparece y su hermana ocupa el espacio, así que un árbol de tres ventanas pasa a dos. Los búferes detrás de esas ventanas no se movieron: cerrar una ventana no es cerrar un archivo."
+  - title: "Dónde aterrizan las teclas"
+    body: "El foco va a la ventana hermana y al último panel que contiene, no de vuelta a la primera ventana del espacio de trabajo. En un árbol de divisiones anidadas esa regla es la que decide en qué archivo puedes escribir después."

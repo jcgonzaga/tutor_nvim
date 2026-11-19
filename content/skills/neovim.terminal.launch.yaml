@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-terminal-launch
+slug: neovim.terminal.launch
+
+title: "Open a terminal window"
+description: "Open a shell beside the editor as its own window, with the keys on it and the file still in view."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.split
+concepts:
+  - terminal
+  - windows
+  - layout
+tags:
+  - terminal
+  - windows
+
+lesson:
+  - title: "A terminal is a window too"
+    body: "The terminal you open is a window like the editor's: it sits beside the focused one, it takes a share of the width, and every window key works on it. What it shows is a shell session instead of a file."
+  - title: "The file stays where it was"
+    body: "Opening a terminal splits the window and keeps the file in the pane you were in, so the editor is still on screen and the active file does not change. Only the keys move, to the new pane, and the new pane has to take them or the terminal would be a picture."
+  - title: "A session, not a buffer"
+    body: "A terminal window shows a session with its own scrollback, so nothing there is edited or saved. That is also why the window and the session are two things: closing one does not close the other."

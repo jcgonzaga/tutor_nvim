@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-session-detach
+slug: neovim.session.detach
+
+title: "Detach and come back to the session"
+description: "Leave the session running, attach again later, and find every window and buffer where you left them."
+
+domain: neovim
+tier: 5
+difficulty: 4
+enabled: true
+
+prerequisites:
+  - neovim.terminal.panes
+concepts:
+  - session
+  - terminal
+  - desktop
+tags:
+  - session
+  - terminal
+
+lesson:
+  - title: "Detaching is leaving, not closing"
+    body: "Detaching freezes the workspace: the workspaces, the splits, the open buffers and what the terminals printed all stay. Nothing is shut down, so nothing has to be rebuilt when you come back."
+  - title: "A frozen workspace refuses keys"
+    body: "While the session is detached, no action applies except attaching, so you cannot half-change a session you are not looking at. Every refusal names the state instead of doing nothing quietly."
+  - title: "Attaching finds what you left"
+    body: "Attaching restores the workspace field for field, down to the input mode you were in. The editor is where you left it because detaching copied nothing and closed nothing."

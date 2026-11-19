@@ -1,0 +1,7 @@
+id: workspace-terminal-launch-001
+title: "Abrir una ventana de terminal y quedarte con las teclas"
+instruction: "Estás editando src/main.ts y quieres una shell al lado sin perder el archivo. Abre una ventana de terminal de modo que el editor conserve src/main.ts en el panel izquierdo y el terminal nuevo sea la ventana con las teclas."
+hints:
+  - "El terminal se abre junto a la ventana en la que estás, así que el archivo sigue en pantalla en vez de desaparecer."
+  - "Super-Enter en Omarchy lo abre: el panel se añade junto al que tiene el foco y el panel nuevo toma las teclas."
+explanation: "Un terminal es una ventana, así que abrir uno divide el panel en el que estabas y le da la mitad nueva a una sesión de shell. El archivo se queda donde estaba y sigue siendo el archivo activo, porque lo que se movió son las teclas y no el editor. Por eso la ventana de la derecha es el terminal y la que estabas leyendo sigue siendo src/main.ts."

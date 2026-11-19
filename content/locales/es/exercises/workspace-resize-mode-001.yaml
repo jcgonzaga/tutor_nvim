@@ -1,0 +1,7 @@
+id: workspace-resize-mode-001
+title: "Ensancha una ventana en el modo de redimensionar y sal del modo"
+instruction: "Divide el editor con src/main.ts a la izquierda y src/lib/format.ts a la derecha, devuelve las teclas a src/main.ts, entra en el modo de redimensionar, ensancha esa ventana hasta que ocupe unos dos tercios del ancho y luego sal del modo para que las teclas de siempre vuelvan a funcionar."
+hints:
+  - "El modo de redimensionar cambia lo que significan las teclas, no la disposición: mientras está activo solo se aplican las teclas de redimensionar y salir de él."
+  - "C-b r entra en el modo de redimensionar de Herdr, C-w> ensancha la división una vigésima parte por pulsación, y Esc sale del modo con la división más ancha todavía ahí."
+explanation: "Los dos paneles comparten el ancho a medias, y cada paso hacia más ancho le quita una vigésima parte al otro lado, así que tres pulsaciones dejan justo por debajo de dos tercios. El modo de redimensionar hace inequívocas esas pulsaciones: mientras está activo no se aplica nada más. Salir de él no cambia ninguna disposición, así que la división que ensanchaste es la que recuperas y solo vuelve a la normalidad el significado de las teclas."

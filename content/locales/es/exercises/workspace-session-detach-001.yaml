@@ -1,0 +1,7 @@
+id: workspace-session-detach-001
+title: "Desconéctate de la sesión y encuentra el editor todavía abierto"
+instruction: 'Pon src/lib/format.ts junto a src/main.ts, añade el comentario "// Helpers shared by the app." como primera línea y guárdalo, y luego corre pnpm test en un terminal al lado. Desconéctate de la sesión y vuelve a conectarte: los dos archivos en sus paneles, el comentario guardado y lo que imprimieron los tests tienen que estar exactamente donde los dejaste.'
+hints:
+  - "Desconectarse congela el espacio de trabajo en vez de cerrarlo: cada ventana, búfer e historial se queda, y las teclas se rechazan hasta que vuelvas a conectarte."
+  - "C-b d se desconecta en tmux y tmux a vuelve a conectarse a la sesión; nada de dentro se mueve mientras no estás."
+explanation: "Desconectarse guarda el espacio de trabajo entero detrás de una bandera: las pestañas, cada división, los búferes, el archivo guardado y el historial del terminal son los mismos objetos mientras estás fuera, así que al conectarte los encuentras campo a campo. Entre medias las teclas se rechazan, así que una sesión que no ves no puede quedar a medio cambiar. Guardar antes de desconectarte es la razón de que el comentario siga en el disco: la sesión restaura estado, no rehace ediciones."

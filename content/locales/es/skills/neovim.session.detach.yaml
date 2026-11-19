@@ -1,0 +1,10 @@
+id: neovim-session-detach
+title: "Desconectarte y volver a la sesión"
+description: "Deja la sesión corriendo, vuelve a conectarte más tarde y encuentra cada ventana y cada búfer donde los dejaste."
+lesson:
+  - title: "Desconectarse es irse, no cerrar"
+    body: "Desconectarse congela el espacio de trabajo: los espacios, las divisiones, los búferes abiertos y lo que imprimieron los terminales se quedan. No se apaga nada, así que no hay nada que reconstruir al volver."
+  - title: "Un espacio de trabajo congelado rechaza las teclas"
+    body: "Mientras la sesión está desconectada no se aplica ninguna acción salvo conectarse, así que no puedes cambiar a medias una sesión que no estás mirando. Cada rechazo nombra el estado en vez de no hacer nada en silencio."
+  - title: "Al conectarte encuentras lo que dejaste"
+    body: "Conectarse restaura el espacio de trabajo campo a campo, hasta el modo de entrada en el que estabas. El editor está donde lo dejaste porque desconectarse no copió nada ni cerró nada."

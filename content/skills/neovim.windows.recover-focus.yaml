@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-windows-recover-focus
+slug: neovim.windows.recover-focus
+
+title: "Close a window and recover the focus"
+description: "Close the window that has the keys and have them land on the window beside it, without touching the others."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.close
+concepts:
+  - windows
+  - focus
+  - layout
+tags:
+  - windows
+  - navigation
+
+lesson:
+  - title: "Closing hands the keys over"
+    body: "A closed window gives its room to its sibling and the keys go with it, so you are never typing into nothing and there is no separate step to choose the next window."
+  - title: "The shape collapses, the files stay"
+    body: "The split the window lived in disappears and its sibling takes the space, so a tree of three windows becomes two. The buffers behind those windows never moved: closing a window is not closing a file."
+  - title: "Where the keys land"
+    body: "Focus goes to the sibling window and to the last pane it holds, not back to the first window of the workspace. In a nest of splits that rule is what decides which file you can type into next."

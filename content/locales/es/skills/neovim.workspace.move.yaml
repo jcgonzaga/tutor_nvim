@@ -1,0 +1,10 @@
+id: neovim-workspace-move
+title: "Mover una ventana a otro espacio de trabajo"
+description: "Manda una ventana a otro espacio de trabajo, mírala allí junto al archivo que esperaba y vuelve al tuyo."
+lesson:
+  - title: "Un espacio de trabajo es un árbol de ventanas"
+    body: "Cada espacio de trabajo tiene sus propias divisiones: una que haces en uno no está en el otro, y cada uno guarda su foco. Uno nuevo empieza como una sola ventana que muestra el búfer en el que estabas."
+  - title: "El movimiento lleva la ventana, no el archivo"
+    body: "Mover saca la ventana enfocada de su espacio de trabajo y la coloca junto a la ventana del que nombras. El archivo sigue abierto a los dos lados del viaje, y el espacio del que lo sacaste conserva sus otras ventanas."
+  - title: "Las teclas se quedan atrás"
+    body: "Después de mover, las teclas siguen en el espacio del que salió la ventana, así que sigues donde estabas y cambias cuando quieres mirar. Un movimiento que dejaría a un espacio de trabajo con cero ventanas se rechaza, porque un espacio de trabajo nunca es de nadie."

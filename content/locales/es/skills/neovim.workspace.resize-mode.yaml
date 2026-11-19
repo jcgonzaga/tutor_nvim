@@ -1,0 +1,10 @@
+id: neovim-workspace-resize-mode
+title: "Redimensionar en el modo de redimensionar"
+description: "Entra en el modo donde las teclas redimensionan en vez de moverse, ensancha tu ventana y sal del modo."
+lesson:
+  - title: "Un modo para una tarea"
+    body: "El modo de redimensionar es un modo de entrada y no una disposición: cambia lo que significan tus teclas. Mientras está activo se aplican las teclas de redimensionar y todo lo demás se rechaza, así que una tecla suelta no puede abrir un archivo mientras estás midiendo."
+  - title: "Los pasos son proporciones"
+    body: "Cada redimensionado mueve la proporción de la división una vigésima parte, así que tres pulsaciones llevan una división a medias hasta justo por debajo de dos tercios. Nada se cuenta en columnas, y por eso las mismas pulsaciones se ven igual en cualquier pantalla."
+  - title: "Salir no cambia nada más"
+    body: "Salir del modo conserva lo que hayas ensanchado: el modo y la forma de la división son dos hechos distintos. Cuando vuelven las teclas de siempre, la división sigue donde la dejaste."

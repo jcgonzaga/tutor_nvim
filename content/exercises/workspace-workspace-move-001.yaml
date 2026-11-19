@@ -1,0 +1,59 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-workspace-move-001
+slug: neovim.workspace.move.001
+title: "Move a window to another workspace and come back"
+instruction: "You are working in src/main.ts with src/lib/format.ts beside it and want the format pane out of the way. Open a second workspace on src/main.ts, come back to the first one, move the format pane into the second one, switch over to see it there beside src/main.ts, and come back to the first workspace, which should be left showing src/main.ts alone with the format file still open."
+skillIds:
+  - neovim.workspace.move
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/main.ts: |
+      import { format } from "./lib/format";
+
+      console.log(format(42));
+    src/lib/format.ts: |
+      export const format = (value: number) => String(value);
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "leaf" }
+    - { type: windows, paths: [src/main.ts] }
+    - { type: focus, leaf: 0 }
+    - { type: active_file, path: src/main.ts }
+    # The window left, the file did not: the format buffer is still loaded in the session.
+    - { type: open_buffers, paths: [src/main.ts, src/lib/format.ts] }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/lib/format.ts
+      - action: tab.new
+      - action: file.open
+        path: src/main.ts
+      - action: workspace.switch
+      - action: workspace.move
+        tab: tab:2
+      - action: workspace.switch
+      - action: workspace.switch
+    classification: optimal
+hints:
+  - afterMs: 6000
+    level: 1
+    text: "Two workspaces, two trees: opening a new one starts as a single window and leaves the splits of the old one alone."
+  - afterMs: 12000
+    level: 2
+    text: "C-b c opens a workspace in tmux and C-b n and C-b p step between them. A move takes the focused window only, so focus the pane you want gone before you move it."
+explanation: "A workspace is its own tree of windows: the second one starts as one window on the buffer you were in and knows nothing about the split you left. A move takes the focused window out of its tab and puts it beside the window of the tab you name, so the format pane arrives next to src/main.ts over there while this workspace collapses to one window with the keys in it. No file was closed: it is open in both trees, so you return to a clean workspace without losing what you sent away."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 40
+  transferTags: []

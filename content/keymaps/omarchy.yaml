@@ -61,6 +61,22 @@ bindings:
     action: window.swap
     description: "Swap this window with the one below."
     notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+  - keys: "Super-S-1"
+    action: workspace.move
+    description: "Move this window to workspace 1."
+    notModelled: "The desktop takes the chord before any window sees it, and a shift chord reaches a page as the character it produced, so this row is recorded and cannot be pressed."
+  - keys: "Super-S-2"
+    action: workspace.move
+    description: "Move this window to workspace 2."
+    notModelled: "The desktop takes the chord before any window sees it, and a shift chord reaches a page as the character it produced, so this row is recorded and cannot be pressed."
+  - keys: "Super-S-3"
+    action: workspace.move
+    description: "Move this window to workspace 3."
+    notModelled: "The desktop takes the chord before any window sees it, and a shift chord reaches a page as the character it produced, so this row is recorded and cannot be pressed."
+  - keys: "Super-S-4"
+    action: workspace.move
+    description: "Move this window to workspace 4."
+    notModelled: "The desktop takes the chord before any window sees it, and a shift chord reaches a page as the character it produced, so this row is recorded and cannot be pressed."
   - keys: "Super-Tab"
     action: workspace.switch
     description: "Switch to the next workspace on this monitor."

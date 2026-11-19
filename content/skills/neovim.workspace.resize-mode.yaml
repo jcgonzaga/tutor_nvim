@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-workspace-resize-mode
+slug: neovim.workspace.resize-mode
+
+title: "Resize in resize mode"
+description: "Enter the mode where the keys resize instead of moving, widen your window, and leave the mode again."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.resize
+concepts:
+  - windows
+  - layout
+  - modes
+tags:
+  - windows
+  - layout
+
+lesson:
+  - title: "A mode for one job"
+    body: "Resize mode is an input mode and not a layout: it changes what your keys mean. While it is on, the resize keys apply and everything else is refused, so a stray key cannot open a file while you are measuring."
+  - title: "The steps are shares"
+    body: "Each resize steps the split's share by a twentieth, so three presses take a half-and-half split to just under two thirds. Nothing is counted in columns, which is why the same presses look the same on any screen."
+  - title: "Leaving changes nothing else"
+    body: "Leaving the mode keeps whatever you widened: the mode and the shape of the split are two different facts. When the ordinary keys are back, the split stays where you left it."

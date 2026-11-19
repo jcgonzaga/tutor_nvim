@@ -1,0 +1,31 @@
+schemaVersion: 1
+
+id: neovim-workspace-move
+slug: neovim.workspace.move
+
+title: "Move a window to another workspace"
+description: "Send a window to another workspace, look at it there beside the file that was waiting, and come back to your own."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.split
+concepts:
+  - workspace
+  - windows
+  - desktop
+tags:
+  - workspace
+  - windows
+  - desktop
+
+lesson:
+  - title: "A workspace is a tree of windows"
+    body: "Each workspace holds its own splits: a division you make in one is not in the other, and each keeps its own focus. A new workspace starts as a single window showing the buffer you were in."
+  - title: "A move takes the window, not the file"
+    body: "Moving takes the focused window out of its workspace and puts it beside the window of the one you name. The file stays open on both sides of the journey, and the workspace you took it from keeps its other windows."
+  - title: "The keys stay behind"
+    body: "After a move the keys are still in the workspace the window came from, so you carry on where you were and switch over when you want to look. A move that would take a workspace's only window is refused, because a workspace is never nobody's."

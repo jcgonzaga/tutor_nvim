@@ -1,0 +1,58 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-recover-focus-001
+slug: neovim.windows.recover-focus.001
+title: "Close the terminal window and get the keys back"
+instruction: 'Put src/main.ts and src/lib/format.ts side by side, open a terminal beside the format file, and then close that terminal window again: both files must still be on screen and the keys must be back in src/lib/format.ts.'
+skillIds:
+  - neovim.windows.recover-focus
+mode: recall
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/main.ts: |
+      import { format } from "./lib/format";
+
+      console.log(format(42));
+    src/lib/format.ts: |
+      export const format = (value: number) => String(value);
+  path: src/main.ts
+  cwd: /project
+  terminal:
+    title: shell
+    commands: {}
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    # The two file windows, in reading order: the terminal window is gone from the tree.
+    - { type: windows, paths: [src/main.ts, src/lib/format.ts] }
+    # The keys came back to the pane the terminal took them from, not to the first window of the tab.
+    - { type: focus, leaf: 1 }
+    - { type: active_file, path: src/lib/format.ts }
+    # Closing a window is not closing a file: both buffers are still loaded.
+    - { type: open_buffers, paths: [src/main.ts, src/lib/format.ts] }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/lib/format.ts
+      - action: app.launch-terminal
+      - action: window.close
+    classification: optimal
+hints:
+  - afterMs: 5000
+    level: 1
+    text: "Closing a window hands its room and its keys to the window beside it, so the terminal goes and a file window has the keys again."
+  - afterMs: 9000
+    level: 2
+    text: "C-wq closes the window you are in, and the pane the terminal was opened beside takes the space and the cursor."
+explanation: "Closing a window removes the split it was part of and gives the room to its sibling, so a three-window layout falls back to the two files that were there before the terminal opened. The keys travel with that hand-over and land in the sibling window, which is why src/lib/format.ts is active again without retyping anything. No buffer moved, so closing the window that showed the session did not close anything the session was showing."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 25
+  transferTags: []

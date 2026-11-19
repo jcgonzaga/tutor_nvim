@@ -1,0 +1,10 @@
+id: neovim-terminal-panes
+title: "Dividir un panel y correr los tests ahí"
+description: "Dale a la suite un panel propio, córrela y lee lo que imprimió en la shell que queda junto al editor."
+lesson:
+  - title: "Un panel que puedes dividir"
+    body: "Una ventana de terminal se divide como cualquier otra: un panel pasa a dos, cada uno toma una parte del espacio y las teclas van al nuevo. Así consigue una suite su panel propio mientras la shell que usabas se queda donde estaba."
+  - title: "Ejecutar un comando es contenido"
+    body: "Un comando se ejecuta en el panel que tiene las teclas, y lo que imprime es lo que el ejercicio declaró para él. Aquí no se ejecuta nada: la máquina simulada responde a los comandos que la historia nombra y rechaza el resto por su nombre."
+  - title: "Leer el historial"
+    body: "Lo que un panel imprimió se queda en la sesión que hay detrás, así que las líneas siguen ahí cuando el comando termina, y sobreviven al panel. Ese historial es lo que un objetivo puede comprobar, nunca la pulsación que lo arrancó."
