@@ -1,9 +1,10 @@
 import { execFile } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { KEYMAP_ACTIONS } from "@tutor-nvim/exercise-schema";
 import { afterEach, describe, expect, it } from "vitest";
 
 /**
@@ -28,6 +29,27 @@ function copyOfContent(): string {
   workdir = mkdtempSync(join(tmpdir(), "content-ci-"));
   cpSync(join(repo, "content"), workdir, { recursive: true });
   return workdir;
+}
+
+/**
+ * An action the vocabulary knows and no catalog of this copy binds.
+ *
+ * The rule under test is "a solution no layer can solve is a defect", so the fixture has to name an
+ * action no catalog provides — and which one that is changes as layers land (resizing was the
+ * example until the window stories needed `C-w>`). Reading it from the copy keeps the test about the
+ * rule instead of about today's catalogs.
+ */
+function unboundAction(root: string): string {
+  const bound = new Set<string>();
+  for (const file of readdirSync(join(root, "keymaps"))) {
+    const text = readFileSync(join(root, "keymaps", file), "utf8");
+    for (const match of text.matchAll(/^\s+action: (\S+)$/gm)) bound.add(match[1] ?? "");
+  }
+  // `edit.insert` is exempt by design — typing is the one action every layer performs — so the rule
+  // can never be about it; its exemption has a test of its own below.
+  const action = KEYMAP_ACTIONS.find((name) => name !== "edit.insert" && !bound.has(name));
+  if (action === undefined) throw new Error("every action is bound: nothing to test the rule with");
+  return action;
 }
 
 async function run(script: "content-validate" | "content-test", root: string) {
@@ -195,17 +217,17 @@ describe("content integrity gate (T-907)", () => {
 
   it("blocks an action solution no catalog provides", async () => {
     const root = copyOfContent();
+    const action = unboundAction(root);
     edit(
       root,
       "exercises/vim-delete-001.yaml",
-      (text) =>
-        // No catalog in content/keymaps binds a resize, so this exercise could never be solved.
-        `${text}\nactionSolutions:\n  - action: window.resize-wider\n    classification: optimal\n`,
+      // No catalog in content/keymaps binds this action, so this exercise could never be solved.
+      (text) => `${text}\nactionSolutions:\n  - action: ${action}\n    classification: optimal\n`,
     );
     const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("vim-delete-001");
-    expect(result.output).toContain("window.resize-wider");
+    expect(result.output).toContain(action);
   }, 60_000);
 
   it("blocks a workspace solution that does not reach its objective", async () => {
@@ -250,19 +272,20 @@ describe("content integrity gate (T-907)", () => {
   it("blocks a workspace solution action no catalog provides", async () => {
     const root = copyOfContent();
     const id = "workspace-split-unprovided-001";
+    const action = unboundAction(root);
     addWorkspaceExercise(
       root,
       id,
       workspaceYaml(
         id,
-        "  - actions: [window.resize-wider]\n    classification: optimal",
+        `  - actions: [${action}]\n    classification: optimal`,
         '  type: layout\n  text: "leaf"',
       ),
     );
     const result = await run("content-validate", root);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain(id);
-    expect(result.output).toContain("window.resize-wider");
+    expect(result.output).toContain(action);
     expect(result.output).toContain("no keymap catalog provides");
   }, 60_000);
 
@@ -285,19 +308,20 @@ describe("content integrity gate (T-907)", () => {
     // The rule itself still holds: an action no binding offers is a story no layer can solve.
     const rejected = copyOfContent();
     const unprovidedId = "workspace-split-unprovided-002";
+    const action = unboundAction(rejected);
     addWorkspaceExercise(
       rejected,
       unprovidedId,
       workspaceYaml(
         unprovidedId,
-        "  - actions: [window.resize-wider]\n    classification: optimal",
+        `  - actions: [${action}]\n    classification: optimal`,
         '  type: layout\n  text: "leaf"',
       ),
     );
     const result = await run("content-validate", rejected);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain(
-      `${unprovidedId}: declares action solution "window.resize-wider", which no keymap catalog provides`,
+      `${unprovidedId}: declares action solution "${action}", which no keymap catalog provides`,
     );
   }, 60_000);
 

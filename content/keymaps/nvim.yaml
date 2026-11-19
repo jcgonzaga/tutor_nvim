@@ -314,3 +314,28 @@ bindings:
     description: "Close the window you are in."
     modes: [normal]
     notModelled: "One window only: packages/vim-engine models no windows, so there is no window to close."
+  - keys: "C-w>"
+    action: window.resize-wider
+    description: "Make the window wider, taking room from its neighbour."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no split to resize."
+  - keys: "C-w<"
+    action: window.resize-narrower
+    description: "Make the window narrower, giving room back to its neighbour."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no split to resize."
+  - keys: "C-w+"
+    action: window.resize-taller
+    description: "Make the window taller, taking room from the one below."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no split to resize."
+  - keys: "C-w-"
+    action: window.resize-shorter
+    description: "Make the window shorter, giving room back to the one below."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no split to resize."
+  - keys: "C-wx"
+    action: window.swap
+    description: "Exchange the window you are in with its neighbour."
+    modes: [normal]
+    notModelled: "One window only: packages/vim-engine models no windows, so there is no neighbour to exchange with."
