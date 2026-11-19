@@ -535,3 +535,47 @@ total operations, refusals that name what is missing).
 `...workspace.move`, `...workspace.resize-mode`, `...terminal.panes`, `...session.detach`) and six
 stories, with ES overlays, each declaring the outputs its terminal needs. Catalog rows for the keys no
 layer declares yet: `session.attach` (tmux `tmux a`) and the resize-mode pair.
+
+## Design for T7a3 and T8 (typing into a terminal, and the view that shows it)
+
+The reconnaissance of `apps/web` found three gaps between the engine and a learner, and one of them is
+an engine gap this design closes first.
+
+**T7a3 — a terminal you can type into.** Story 19 says "split a tmux pane, run the tests there", so a
+terminal is not a log to read: it is a prompt to write at. The engine already models a `:` command line
+(`state.pending`), and a terminal prompt is the same shape, so:
+
+- Printable keys with a terminal focused append to that terminal's own command line
+  (`state.terminals[i].pending`), Backspace removes the last character, and `Enter` runs it through the
+  same path `shell.run` uses: the declared output is appended as an entry, and a command nobody declared
+  is refused with the exact reason `shell.run` gives, keeping what was typed so it can be corrected.
+- With a file focused, keys keep going where they go today (the editor). That is `dispatchWorkspace`'s
+  existing split, and the terminal's command line is a second face of the same idea.
+
+**T8 — the view.** `PracticeScreen` branches on `kind === "workspace"` and today renders a notice; the
+screen owns keyboard capture, the attempt, hints and feedback, and the workspace branch starts no
+attempt at all. The view is built in this order:
+
+1. **An attempt that can advance.** `packages/evaluation` cannot record a workspace action:
+   `recordInput` throws and `WorkspaceAttempt.actions` is only ever empty. Add
+   `recordWorkspaceAction(attempt, action, options)`, which applies the action to the attempt's
+   workspace state, appends the action to `actions` (so a replay and a ghost run have something to
+   replay) and returns the same refusal shape the other kinds use — a refused action changes nothing.
+   Test it where the vim and shell attempts are tested: the same state twice, a refusal that does not
+   mutate, and a replay that reaches the objective.
+2. **Keys to actions, then to the engine.** At the capture site, resolve the key with
+   `packages/keymap`'s resolver over the learner's enabled layers; a resolved key becomes
+   `recordWorkspaceAction` with that action (plus the options the layer's row implies), and an
+   unresolved key falls through to `dispatchWorkspace`, which is what types into the buffer or the
+   terminal prompt. `apps/web` gains the `@tutor-nvim/workspace-engine` dependency; nothing new is
+   invented for notation.
+3. **The renderer.** A pane is a leaf: the existing `EditorView` for a buffer leaf, a small terminal
+   view for a terminal leaf (workspace terminals carry `entries`, not a `shell-engine` transcript, so it
+   is a second view, not an adapter), and the split tree is drawn from `splitRatios` with the focused
+   leaf ringed, the zoomed leaf marked in words, and mode/pending shown where the vim footer shows them.
+   Tailwind only, tokens from `index.css`, no new CSS files, keyboard-only, focus visible, no
+   colour-only state (`AGENTS.md` 18-19).
+4. **Strings and tests.** New `practice.workspace.*` keys in both `en` and `es` (the parity test fails
+   otherwise), and the `workspace-notice` test boundary replaced by a real one: the screen shows the
+   panes of the exercise, a key that a layer resolves moves focus, and a key that does not reach the
+   buffer types into it.
