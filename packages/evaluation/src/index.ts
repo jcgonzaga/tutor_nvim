@@ -21,6 +21,11 @@ export {
   type ShellObjectiveEvaluation,
 } from "./goal";
 export {
+  evaluateWorkspaceObjective,
+  type WorkspaceObjectiveEvaluation,
+  type WorkspaceObjectiveState,
+} from "./workspace-goal";
+export {
   DEFAULT_ANTI_PATTERN_CONFIG,
   detectAntiPatterns,
   optimalKeystrokes,

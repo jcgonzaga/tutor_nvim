@@ -52,7 +52,7 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 | --- | --- | --- | --- |
 | T1 | S4 | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests | pending commit |
 | T2 | S2, S4 | window tree, splits, resize, zoom, swap, tabs and workspaces as actions | pending commit |
-| T3 | S1, S2 | schema objectives: `active_file`, `buffers`, `layout`, `focus`, `buffer_text` | pending |
+| T3 | S1, S2 | `kind: workspace` + objectives (`active_file`, `open_buffers`, `buffer_text`, `file_text`, `layout`, `focus`, `split_ratio`, `all`) + `evaluateWorkspaceObjective` | pending commit |
 | T4 | S5 | evaluation: action solutions, strategy classification, CI replay | pending |
 | T5 | S3 | content: stories 1-8 (files and buffers) | pending |
 | T6 | S3 | content: stories 9-14 (windows and panes) | pending |
@@ -201,3 +201,60 @@ interface WorkspaceTab { readonly id: string; readonly root: WindowNode; readonl
   survives a tab switch while its window still exists.
 - The T1 command line follows the focused window now (`:e`, `:bn`, `:bp`), pinned by a differential
   over eleven command scripts against the T1 code: no differences.
+
+## Design for T3 (workspace exercises and their objectives)
+
+Decided here. T4 replays and classifies; T8 renders.
+
+**A workspace exercise is content like any other**, with `kind: workspace` and its own initial state and
+objective:
+
+```yaml
+kind: workspace
+initialState: { files: { "src/main.ts": "…" }, path: "src/main.ts", cwd: "/project" }
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: "src/other.ts" }
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: split_ratio, index: 0, ratio: 0.5 }
+    - { type: focus, leaf: 1 }
+    - { type: buffer_text, path: "src/main.ts", text: "…" }
+solutions:
+  - actions: [file.find, file.open, window.split-side-by-side]   # actions, never keys (S5)
+    classification: optimal
+```
+
+- **The layout objective is a string the engine prints, not a second tree grammar.** `layoutText`
+  serialises the tree pre-order: `leaf` for a window, `side(a, b)` / `stacked(a, b)` for a split. Content
+  reads exactly what a person would draw, and there is one implementation of "what shape is this".
+- `focus` is the pre-order index of the focused leaf; `split_ratio` addresses a split by its pre-order
+  index among splits and compares with a tolerance of 0.01, because floats are compared, not stored as
+  text. `active_file`/`buffer_text` take the path; `open_buffers` takes a set (order is not the point);
+  `file_text` asserts the disk, so saving is observable.
+- Objectives decide the END STATE only (AGENTS.md 13, S5): never a keystroke, never a strategy.
+- `solutions` are action lists, validated against the keymap vocabulary, with exactly one `optimal` like
+  the other kinds. Replaying them, classifying strategy from their cost and running them in CI is T4;
+  T3 only makes them expressible and checks the objective against a state.
+- `packages/evaluation` gains `evaluateWorkspaceObjective(objective, state)` returning the same
+  `{ met, failures }` shape the other kinds use, so a screen shows which goal failed rather than "wrong".
+
+**L6 — evidence (T3)**
+
+- The engine prints the layout (`layoutText`: `leaf`, `side(a, b)`, `stacked(a, b)`), the focus index and
+  the split ratios; the objective compares against those strings, so there is one implementation of
+  "what shape is this". Focus is the focus-path index, not a buffer lookup: a split shows one buffer
+  in both panes, so a buffer lookup would answer 0 for the second leaf.
+- `kind: workspace` and its eight objectives exist, with action solutions validated against the
+  vocabulary. **`parseExercise` still rejects workspace content on purpose** until T4 replays action
+  solutions, so `ContentBundle` cannot hold an exercise nothing can run, and T5 cannot land before T4.
+- Two declarations of the projection shape (`WorkspaceObjectiveView` in the engine,
+  `WorkspaceObjectiveState` in evaluation) exist only because T3 adds no dependency; a type probe proved
+  them mutually assignable, but nothing committed pins it. T4, which imports the engine, must unify them.
+- Independent verification: the 168 real exercises parse identically before and after (168/168, 0
+  differences), `actionSolutionSchema` and `sameLines` behave the same, and 1152 tests passed. It found
+  one defect: `split_ratio` rounded the difference, accepting 0.514 for 0.50 — further than a resize
+  step. The hundredth is now the bound itself, with an epsilon only for binary floating point.
+- Process note: `vitest` was green on the test that called `state({...})` while `tsc` failed, because the
+  unit runner does not type check the test file. That is why `pnpm typecheck` is its own gate and not a
+  formality.

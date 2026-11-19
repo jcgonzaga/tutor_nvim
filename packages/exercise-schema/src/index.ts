@@ -26,6 +26,17 @@ export {
   type ShellSolution,
 } from "./shell";
 export {
+  workspaceExerciseSchema,
+  parseWorkspaceExercise,
+  parseWorkspaceExerciseYaml,
+  type RawWorkspaceObjective,
+  type WorkspaceExercise,
+  type WorkspaceExerciseInput,
+  type WorkspaceObjective,
+  type WorkspaceSolution,
+  type WorkspaceSolutionAction,
+} from "./workspace";
+export {
   SKILL_DOMAINS,
   SKILL_SCHEMA_VERSION,
   parseSkill,
@@ -68,8 +79,9 @@ export {
   isShellExercise,
   isVimExercise,
   parseExercise,
-  parseVimExercise,
   parseExerciseYaml,
+  parseVimExercise,
+  parseYamlDocument,
   validateExerciseCollection,
   type Exercise,
   type LoadedExercise,
@@ -107,7 +119,9 @@ export {
 } from "./primitives";
 export { availableExercises, exerciseLayers, isExerciseAvailable } from "./layers";
 export {
+  actionRefSchema,
   actionSolutionSchema,
   actionSolutionsSchema,
+  type ActionRef,
   type ActionSolution,
 } from "./action-solutions";

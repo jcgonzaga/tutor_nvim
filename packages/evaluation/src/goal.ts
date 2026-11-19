@@ -27,7 +27,8 @@ export type ObjectiveEvaluation =
   | { readonly type: "buffer_equals" | "cursor_at" | "mode_equals"; readonly met: boolean }
   | { readonly type: "all"; readonly met: boolean; readonly goals: readonly ObjectiveEvaluation[] };
 
-const sameLines = (a: readonly string[], b: readonly string[]): boolean =>
+/** Line-by-line equality; shared with the workspace objectives, which compare end state too. */
+export const sameLines = (a: readonly string[], b: readonly string[]): boolean =>
   a.length === b.length && a.every((line, index) => line === b[index]);
 
 export function evaluateObjective(objective: Objective, state: VimState): ObjectiveEvaluation {

@@ -32,6 +32,17 @@ export function parseExercise(input: unknown, source?: string): Exercise {
   // Content written before `kind` existed is Vim; an unknown kind is reported as such.
   const kind =
     typeof input === "object" && input !== null && "kind" in input ? (input.kind ?? "vim") : "vim";
+  // A workspace solution is a list of actions, which this package's evaluators cannot replay: the
+  // content bundle is what the Vim and shell simulators run, so a workspace exercise is parsed by
+  // `parseWorkspaceExercise` until evaluation can replay it (T4).
+  if (kind === "workspace") {
+    throw new ExerciseValidationError(
+      [
+        "kind: workspace exercises cannot be loaded into the content bundle yet (their action solutions are not replayed by the evaluation package)",
+      ],
+      source,
+    );
+  }
   if (kind !== "vim" && kind !== "shell") {
     throw new ExerciseValidationError(
       [`kind: must be "vim" or "shell", got ${JSON.stringify(kind)}`],
@@ -61,16 +72,19 @@ export function parseVimExercise(input: unknown, source?: string): VimExercise {
 }
 
 export function parseExerciseYaml(text: string, source?: string): Exercise {
-  let data: unknown;
+  return parseExercise(parseYamlDocument(text, source), source);
+}
+
+/** YAML as data, with a syntax error reported the way a schema error is. */
+export function parseYamlDocument(text: string, source?: string): unknown {
   try {
-    data = parseYaml(text);
+    return parseYaml(text);
   } catch (error) {
     throw new ExerciseValidationError(
       [`YAML syntax error: ${error instanceof Error ? error.message : String(error)}`],
       source,
     );
   }
-  return parseExercise(data, source);
 }
 
 export interface LoadedExercise {

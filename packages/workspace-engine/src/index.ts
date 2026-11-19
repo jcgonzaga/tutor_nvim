@@ -27,3 +27,11 @@ export {
 export { dispatchWorkspace, runWorkspaceKeys } from "./keys";
 export { WORKSPACE_ACTIONS, applyWorkspaceAction, type WorkspaceActionName } from "./actions";
 export { activeTab, focusLeaf, leafBufferIds } from "./windows";
+export {
+  focusLeafIndex,
+  layoutText,
+  splitRatios,
+  workspaceObjectiveView,
+  type WorkspaceObjectiveBuffer,
+  type WorkspaceObjectiveView,
+} from "./serialize";
