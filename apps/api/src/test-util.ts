@@ -5,7 +5,12 @@ import {
   startAttempt,
   type Attempt,
 } from "@tutor-nvim/evaluation";
-import { keysForCommand, type Exercise } from "@tutor-nvim/exercise-schema";
+import {
+  keysForCommand,
+  type Exercise,
+  type ShellExercise,
+  type VimExercise,
+} from "@tutor-nvim/exercise-schema";
 import { keyInputFromToken } from "@tutor-nvim/vim-engine";
 import type { AttemptSubmissionInput } from "@tutor-nvim/shared";
 import { buildApp, type AppDeps } from "./build-app";
@@ -17,9 +22,19 @@ import { syncContent } from "./db/syncContent";
 
 export const bundle = loadContentBundle();
 
-export const exerciseNamed = (slug: string): Exercise => {
+/** The kinds the API replays: the Vim buffer and the shell. */
+export type ReplayableExercise = VimExercise | ShellExercise;
+
+/**
+ * An exercise by slug. A workspace exercise is refused here on purpose: the API cannot replay a
+ * workspace attempt yet (T9), so asking for one is an error instead of a silently wrong replay.
+ */
+export const exerciseNamed = (slug: string): ReplayableExercise => {
   const found = bundle.exercises.find((exercise) => exercise.slug === slug);
   if (!found) throw new Error(`No exercise ${slug}`);
+  if (found.kind === "workspace") {
+    throw new Error(`${slug} is a workspace exercise: the API does not replay those yet`);
+  }
   return found;
 };
 
@@ -146,7 +161,7 @@ export function submissionFromAttempt(
 
 /** A learner who solves the exercise with its optimal solution. */
 export function solved(
-  exercise: Exercise,
+  exercise: ReplayableExercise,
   options: { id?: string; finishedAt: number; sessionId?: string; localDay?: string },
 ): AttemptSubmissionInput {
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
@@ -157,7 +172,7 @@ export function solved(
 
 /** A learner who gives up without typing anything. */
 export function gaveUp(
-  exercise: Exercise,
+  exercise: ReplayableExercise,
   options: { id?: string; finishedAt: number; sessionId?: string; localDay?: string },
 ): AttemptSubmissionInput {
   const attempt = { ...startAttempt(exercise, 0), completedAt: 5000 };
@@ -165,7 +180,10 @@ export function gaveUp(
 }
 
 /** Types commands as a learner would (every key, Enter after each), 150 ms apart. */
-export function simulateCommands(exercise: Exercise, commands: readonly string[]): Attempt {
+export function simulateCommands(
+  exercise: ReplayableExercise,
+  commands: readonly string[],
+): Attempt {
   const keys = commands.flatMap(keysForCommand);
   return keys.reduce<Attempt>(
     (attempt, token, index) =>

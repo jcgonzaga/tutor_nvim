@@ -12,10 +12,15 @@ const { skills, exercises } = loadContent(readContentInput());
 const contextOf = (exercise: Exercise) =>
   `${exercise.metadata.language ?? "?"}/${exercise.metadata.context ?? "?"}`;
 const forSkill = (slug: string) => exercises.filter((exercise) => exercise.skillIds.includes(slug));
-const optimalKeys = (exercise: Exercise): string =>
-  (exercise.solutions.find((s) => s.classification === "optimal")?.keys ?? []).join("");
+// Only the Vim and shell exercises have key sequences; a workspace solution is an action list.
+const optimalKeys = (exercise: Exercise): string => {
+  const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
+  return optimal && "keys" in optimal ? optimal.keys.join("") : "";
+};
 const allKeys = (exercise: Exercise): string =>
-  exercise.solutions.map((solution) => solution.keys.join("")).join(" ");
+  exercise.solutions
+    .flatMap((solution) => ("keys" in solution ? [solution.keys.join("")] : []))
+    .join(" ");
 
 const LEARNING_MODES = ["learn", "imitate", "recall", "discriminate", "transfer"] as const;
 

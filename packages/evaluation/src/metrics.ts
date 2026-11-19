@@ -1,6 +1,6 @@
 import type { Exercise } from "@tutor-nvim/exercise-schema";
 import type { Attempt } from "./attempt";
-import { optimalKeystrokes } from "./antipatterns";
+import { optimalCost } from "./antipatterns";
 import type { StrategyClassification } from "./strategy";
 
 /** A latency band: at or below `idealMs` scores 100, at or above `worstMs` scores 0, linear in between. */
@@ -72,7 +72,10 @@ export interface AttemptMetrics {
   readonly medianInterKeyLatencyMs: number | null;
   readonly maxInterKeyLatencyMs: number | null;
   readonly totalDurationMs: number;
-  /** Every logical input, including rejected ones. */
+  /**
+   * What the attempt cost, in its own unit: every logical input including rejected ones, or the
+   * actions spent in the workspace, which is spent in actions rather than keys (S5).
+   */
   readonly keystrokes: number;
   /** Keystrokes beyond the shortest optimal solution. */
   readonly unnecessaryKeystrokes: number;
@@ -108,11 +111,14 @@ export function computeMetrics(
   config: MetricsConfig = DEFAULT_METRICS_CONFIG,
 ): AttemptMetrics {
   const { events } = attempt;
-  const keystrokes = events.length;
+  // Keystrokes for the simulators, actions for the workspace: every ratio below divides by what
+  // this attempt was actually spent in, and `optimalCost` is the baseline in the same unit.
+  const keystrokes = attempt.kind === "workspace" ? attempt.actions.length : events.length;
   const first = events[0];
-  const last = events[keystrokes - 1];
+  const last = events[events.length - 1];
   const end = attempt.completedAt ?? last?.timestamp ?? attempt.startedAt;
-  const optimal = optimalKeystrokes(exercise);
+  // Keystrokes typed, or actions spent: the baseline is in the attempt's own unit (`optimalCost`).
+  const optimal = optimalCost(exercise);
 
   const gaps = events
     .slice(1)

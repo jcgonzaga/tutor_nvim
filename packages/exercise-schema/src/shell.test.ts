@@ -65,7 +65,11 @@ describe("shell exercise schema", () => {
         { type: "cwd_equals", path: "project" },
       ],
     });
-    expect(exercise.environment).toEqual({ type: "simulator", profile: "shell-basic-v1", layers: [] });
+    expect(exercise.environment).toEqual({
+      type: "simulator",
+      profile: "shell-basic-v1",
+      layers: [],
+    });
   });
 
   it("turns each command into the keys that type it, ending with Enter", () => {
@@ -101,9 +105,9 @@ describe("shell exercise schema", () => {
 
   it("treats content without a kind as a Vim exercise and rejects unknown kinds", () => {
     expect(issuesOf({ ...validInput(), kind: "emacs" })).toEqual([
-      'kind: must be "vim" or "shell", got "emacs"',
+      'kind: must be "vim", "shell" or "workspace", got "emacs"',
     ]);
-    expect(issuesOf({ kind: undefined })[0]).not.toMatch(/must be "vim" or "shell"/);
+    expect(issuesOf({ kind: undefined })[0]).not.toMatch(/must be "vim"/);
   });
 
   it.each([

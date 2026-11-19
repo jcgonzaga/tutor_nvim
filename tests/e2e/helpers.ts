@@ -4,6 +4,8 @@ import {
   localizeBundle,
   validateLocale,
   type Exercise,
+  type ShellExercise,
+  type VimExercise,
 } from "@tutor-nvim/exercise-schema";
 import { readContentInput, readLocaleInput } from "../../scripts/content-fs";
 
@@ -53,9 +55,15 @@ export async function currentExercise(page: Page): Promise<Exercise> {
   return exercise;
 }
 
-/** Solves the exercise on screen with its declared optimal solution. */
-export async function solveCurrent(page: Page): Promise<Exercise> {
+/**
+ * Solves the exercise on screen by typing its declared optimal keys. A workspace exercise has no key
+ * solution: its view is T8, so nothing on screen can be typed.
+ */
+export async function solveCurrent(page: Page): Promise<VimExercise | ShellExercise> {
   const exercise = await currentExercise(page);
+  if (exercise.kind === "workspace") {
+    throw new Error(`${exercise.slug} is a workspace exercise: its view is not on screen yet`);
+  }
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   if (!optimal) throw new Error(`${exercise.slug} declares no optimal solution`);
   await pressTokens(page, optimal.keys);
@@ -68,7 +76,7 @@ export async function solveCurrent(page: Page): Promise<Exercise> {
  * solves that one and returns it. Sessions mix shell and Vim exercises, and some checks (the
  * replay, for example) only exist for Vim.
  */
-export async function solveNextVim(page: Page): Promise<Exercise> {
+export async function solveNextVim(page: Page): Promise<VimExercise> {
   for (let guard = 0; guard < 12; guard++) {
     const exercise = await currentExercise(page);
     await solveCurrent(page);

@@ -10,7 +10,14 @@ import {
   type VimState,
 } from "@tutor-nvim/vim-engine";
 import { dispatchShellKey, initShell, type ShellState } from "@tutor-nvim/shell-engine";
-import type { Exercise, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
+import { createWorkspace, type WorkspaceState } from "@tutor-nvim/workspace-engine";
+import type {
+  Exercise,
+  ShellExercise,
+  VimExercise,
+  WorkspaceExercise,
+  WorkspaceSolutionAction,
+} from "@tutor-nvim/exercise-schema";
 import { goalMet } from "./goal";
 import type { HintReveal } from "./hints";
 
@@ -64,13 +71,44 @@ export interface ShellAttempt extends AttemptBase {
   readonly state: ShellState;
 }
 
-/** An attempt in either simulator; `kind` tells which, and always matches its exercise's. */
-export type Attempt = VimAttempt | ShellAttempt;
+export interface WorkspaceAttempt extends AttemptBase {
+  readonly kind: "workspace";
+  readonly initialState: WorkspaceState;
+  readonly state: WorkspaceState;
+  /**
+   * The actions applied so far, in order. A workspace attempt is spent in actions, not in keys
+   * (S5): the same end state reached with more of them is a worse strategy, so this list is the
+   * cost the classification divides by. `events` stays empty because no keystroke was typed here;
+   * attributing keys to actions needs the learner's layer, which the replay does not have (T8).
+   */
+  readonly actions: readonly WorkspaceSolutionAction[];
+}
+
+/** An attempt in any simulator; `kind` tells which, and always matches its exercise's. */
+export type Attempt = VimAttempt | ShellAttempt | WorkspaceAttempt;
 
 export function startAttempt(exercise: VimExercise, startedAt: number): VimAttempt;
 export function startAttempt(exercise: ShellExercise, startedAt: number): ShellAttempt;
+export function startAttempt(exercise: WorkspaceExercise, startedAt: number): WorkspaceAttempt;
 export function startAttempt(exercise: Exercise, startedAt: number): Attempt;
 export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
+  if (exercise.kind === "workspace") {
+    const initialState = createWorkspace({
+      files: exercise.initialState.files,
+      path: exercise.initialState.path,
+      cwd: exercise.initialState.cwd,
+    });
+    return {
+      kind: "workspace",
+      startedAt,
+      initialState,
+      state: initialState,
+      events: [],
+      actions: [],
+      completedAt: null,
+      hints: [],
+    };
+  }
   if (exercise.kind === "shell") {
     const { files, modes, cwd } = exercise.initialState;
     const initialState = initShell({
@@ -111,8 +149,19 @@ export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
   };
 }
 
-/** Telemetry only: runs the engine and appends the event. Knows nothing about goals. */
+/**
+ * Telemetry only: runs the engine and appends the event. Knows nothing about goals.
+ *
+ * A workspace attempt has no key path here on purpose: a key only becomes an action once the
+ * learner's layer resolves it, and the API's replay (T9) and the workspace view (T8) are what bring
+ * that. Until then it says so instead of recording input that changed no state.
+ */
 export function recordInput<A extends Attempt>(attempt: A, input: TimedKeyInput): A {
+  if (attempt.kind === "workspace") {
+    throw new Error(
+      "a workspace attempt is made of actions, not keys: resolve the key through the learner's layer first",
+    );
+  }
   if (attempt.kind === "shell") {
     const { state, accepted } = dispatchShellKey(attempt.state, input);
     const event: InputEvent = {

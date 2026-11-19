@@ -190,9 +190,8 @@ describe("records the server derives", () => {
     const attempt = solved(exercise, { finishedAt: T0, sessionId: newId(), localDay: DAY });
     await upload("rec-1", [attempt]);
     const run = (await progress("rec-1")).gamification.bestRuns[exercise.id];
-    expect(run.keys.join("")).toBe(
-      exercise.solutions.find((s) => s.classification === "optimal")?.keys.join(""),
-    );
+    const optimal = exercise.solutions.find((s) => s.classification === "optimal");
+    expect(run.keys.join("")).toBe(optimal && "keys" in optimal ? optimal.keys.join("") : "");
     expect(run.times).toHaveLength(run.keys.length);
     expect(run.times[0]).toBeGreaterThan(0);
     expect([...run.times].sort((a, b) => a - b)).toEqual(run.times);

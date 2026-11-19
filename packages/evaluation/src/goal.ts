@@ -14,6 +14,10 @@ import {
 } from "@tutor-nvim/shell-engine";
 import type { VimState } from "@tutor-nvim/vim-engine";
 import type { Attempt } from "./attempt";
+import { sameLines } from "./lines";
+import { evaluateWorkspaceGoal } from "./workspace-goal";
+
+export { sameLines };
 
 export interface GoalEvaluation {
   readonly met: boolean;
@@ -27,14 +31,13 @@ export type ObjectiveEvaluation =
   | { readonly type: "buffer_equals" | "cursor_at" | "mode_equals"; readonly met: boolean }
   | { readonly type: "all"; readonly met: boolean; readonly goals: readonly ObjectiveEvaluation[] };
 
-/** Line-by-line equality; shared with the workspace objectives, which compare end state too. */
-export const sameLines = (a: readonly string[], b: readonly string[]): boolean =>
-  a.length === b.length && a.every((line, index) => line === b[index]);
-
 export function evaluateObjective(objective: Objective, state: VimState): ObjectiveEvaluation {
   switch (objective.type) {
     case "buffer_equals":
-      return { type: objective.type, met: sameLines(state.buffer.lines, objective.targetLines) };
+      return {
+        type: objective.type,
+        met: sameLines(state.buffer.lines, objective.targetLines),
+      };
     case "cursor_at":
       return {
         type: objective.type,
@@ -131,8 +134,9 @@ export function evaluateShellGoal(exercise: ShellExercise, state: ShellState): S
 }
 
 /**
- * Is the attempt in a valid end state? One question for both simulators; the attempt and its
- * exercise always have the same kind.
+ * Is the attempt in a valid end state? One question for every kind; the attempt and its exercise
+ * always have the same kind. For the workspace it is exactly the objective: which keys (or which
+ * layer's actions) got there is `classifyStrategy`'s question, never this one (AGENTS.md 12, S5).
  */
 export function goalMet(exercise: Exercise, attempt: Attempt): boolean {
   if (exercise.kind === "shell" && attempt.kind === "shell") {
@@ -140,6 +144,9 @@ export function goalMet(exercise: Exercise, attempt: Attempt): boolean {
   }
   if (exercise.kind === "vim" && attempt.kind === "vim") {
     return evaluateGoal(exercise, attempt.state).met;
+  }
+  if (exercise.kind === "workspace" && attempt.kind === "workspace") {
+    return evaluateWorkspaceGoal(exercise, attempt.state).met;
   }
   throw new Error(`a ${attempt.kind} attempt cannot be judged by a ${exercise.kind} exercise`);
 }

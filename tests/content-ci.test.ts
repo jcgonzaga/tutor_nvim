@@ -52,6 +52,38 @@ const edit = (root: string, file: string, transform: (text: string) => string) =
   writeFileSync(path, transform(readFileSync(path, "utf8")));
 };
 
+/**
+ * A workspace exercise as content: every exercise needs a source file and the Spanish overlay
+ * (ADR-0005), so the copy gets both and the defect under test is the only one reported.
+ */
+function addWorkspaceExercise(root: string, id: string, yaml: string): void {
+  writeFileSync(join(root, "exercises", `${id}.yaml`), yaml);
+  writeFileSync(
+    join(root, "locales/es/exercises", `${id}.yaml`),
+    `id: ${id}\ntitle: "Divide la ventana"\ninstruction: "Divide la ventana en dos."\n`,
+  );
+}
+
+const workspaceYaml = (id: string, solutions: string, objective: string): string =>
+  `schemaVersion: 1
+kind: workspace
+id: ${id}
+slug: workspace.${id}.001
+title: "Split the window side by side"
+instruction: "Split the window side by side."
+skillIds: [vim.navigation.atomic]
+mode: learn
+difficulty: 1
+initialState:
+  files:
+    src/main.ts: "one"
+  path: src/main.ts
+  cwd: /project
+objective:
+${objective}
+solutions:
+${solutions}`;
+
 describe("content integrity gate (T-907)", () => {
   it("passes on the real content", async () => {
     const root = copyOfContent();
@@ -174,6 +206,64 @@ describe("content integrity gate (T-907)", () => {
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("vim-delete-001");
     expect(result.output).toContain("window.resize-wider");
+  }, 60_000);
+
+  it("blocks a workspace solution that does not reach its objective", async () => {
+    const root = copyOfContent();
+    const id = "workspace-split-wrong-001";
+    addWorkspaceExercise(
+      root,
+      id,
+      workspaceYaml(
+        id,
+        "  - actions: [window.split-stacked]\n    classification: optimal",
+        '  type: all\n  goals:\n    - { type: layout, text: "side(leaf, leaf)" }\n    - { type: focus, leaf: 1 }',
+      ),
+    );
+    const result = await run("content-test", root);
+    expect(result.code).not.toBe(0);
+    // The exercise, the solution and the objective it missed, so the author knows what to fix.
+    expect(result.output).toContain(`workspace.${id}.001: solution 1`);
+    expect(result.output).toContain(
+      'layout: expected "side(leaf, leaf)", found "stacked(leaf, leaf)"',
+    );
+  }, 60_000);
+
+  it("blocks a workspace solution the engine refuses", async () => {
+    const root = copyOfContent();
+    const id = "workspace-split-refused-001";
+    addWorkspaceExercise(
+      root,
+      id,
+      workspaceYaml(
+        id,
+        "  - actions: [window.split-side-by-side]\n    classification: optimal\n  - actions: [window.close]\n    classification: valid",
+        '  type: layout\n  text: "side(leaf, leaf)"',
+      ),
+    );
+    const result = await run("content-test", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain(`workspace.${id}.001: solution 2`);
+    expect(result.output).toContain("window.close: the last window cannot be closed");
+  }, 60_000);
+
+  it("blocks a workspace solution action no catalog provides", async () => {
+    const root = copyOfContent();
+    const id = "workspace-split-unprovided-001";
+    addWorkspaceExercise(
+      root,
+      id,
+      workspaceYaml(
+        id,
+        "  - actions: [window.resize-wider]\n    classification: optimal",
+        '  type: layout\n  text: "leaf"',
+      ),
+    );
+    const result = await run("content-validate", root);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain(id);
+    expect(result.output).toContain("window.resize-wider");
+    expect(result.output).toContain("no keymap catalog provides");
   }, 60_000);
 
   it("blocks a prerequisite cycle", async () => {

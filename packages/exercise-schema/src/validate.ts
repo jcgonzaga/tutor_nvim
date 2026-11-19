@@ -2,9 +2,14 @@ import { parse as parseYaml } from "yaml";
 import type { z } from "zod";
 import { vimExerciseSchema, type VimExercise } from "./schema";
 import { shellExerciseSchema, type ShellExercise } from "./shell";
+import { workspaceExerciseSchema, type WorkspaceExercise } from "./workspace";
 
-/** Any exercise: the learner practices either in the Vim simulator or in the shell simulator. */
-export type Exercise = VimExercise | ShellExercise;
+/**
+ * Any exercise. Each kind runs in its own simulated environment: the Vim buffer, the shell, or the
+ * workspace of files and windows (S1, S2). The kind decides which engine replays it and which
+ * objective decides success; it is never a UI route.
+ */
+export type Exercise = VimExercise | ShellExercise | WorkspaceExercise;
 
 export class ExerciseValidationError extends Error {
   readonly issues: readonly string[];
@@ -32,20 +37,17 @@ export function parseExercise(input: unknown, source?: string): Exercise {
   // Content written before `kind` existed is Vim; an unknown kind is reported as such.
   const kind =
     typeof input === "object" && input !== null && "kind" in input ? (input.kind ?? "vim") : "vim";
-  // A workspace solution is a list of actions, which this package's evaluators cannot replay: the
-  // content bundle is what the Vim and shell simulators run, so a workspace exercise is parsed by
-  // `parseWorkspaceExercise` until evaluation can replay it (T4).
   if (kind === "workspace") {
-    throw new ExerciseValidationError(
-      [
-        "kind: workspace exercises cannot be loaded into the content bundle yet (their action solutions are not replayed by the evaluation package)",
-      ],
-      source,
-    );
+    // Every kind is loadable: the evaluation package replays action solutions through the
+    // workspace engine, so a bundle may hold one (T4).
+    const workspace = workspaceExerciseSchema.safeParse(input);
+    if (!workspace.success)
+      throw new ExerciseValidationError(formatIssues(workspace.error), source);
+    return workspace.data;
   }
   if (kind !== "vim" && kind !== "shell") {
     throw new ExerciseValidationError(
-      [`kind: must be "vim" or "shell", got ${JSON.stringify(kind)}`],
+      [`kind: must be "vim", "shell" or "workspace", got ${JSON.stringify(kind)}`],
       source,
     );
   }
@@ -58,6 +60,8 @@ export const isVimExercise = (exercise: Exercise): exercise is VimExercise =>
   exercise.kind === "vim";
 export const isShellExercise = (exercise: Exercise): exercise is ShellExercise =>
   exercise.kind === "shell";
+export const isWorkspaceExercise = (exercise: Exercise): exercise is WorkspaceExercise =>
+  exercise.kind === "workspace";
 
 /** For code that only handles Vim exercises (the Vim engine, its tests and its tools). */
 export function parseVimExercise(input: unknown, source?: string): VimExercise {

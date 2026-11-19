@@ -78,6 +78,7 @@ export {
   formatIssues,
   isShellExercise,
   isVimExercise,
+  isWorkspaceExercise,
   parseExercise,
   parseExerciseYaml,
   parseVimExercise,

@@ -1,7 +1,7 @@
 import { splitLines } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
 
-import { actionRefSchema } from "./action-solutions";
+import { actionRefSchema, type ActionSolution } from "./action-solutions";
 import { KEYMAP_ACTIONS } from "./keymap-vocabulary";
 import type { KeymapAction, KeymapTarget } from "./keymap-vocabulary";
 import {
@@ -25,8 +25,9 @@ import { ExerciseValidationError, formatIssues, parseYamlDocument } from "./vali
  *
  * Objectives assert what is on screen — the active file, the open buffers, the buffer and disk text,
  * the layout, the focus and a split's ratio — and solutions are lists of keymap actions, so tmux's
- * `C-b %` and Herdr's `C-b v` can both solve a split (S5). Deriving their keys, replaying them and
- * classifying the strategy is T4; this module only makes a workspace exercise expressible.
+ * `C-b %` and Herdr's `C-b v` can both solve a split (S5). This module makes a workspace exercise
+ * expressible; replaying those actions and classifying the strategy belongs to `@tutor-nvim/evaluation`
+ * (T4), and the CI gate runs it (AGENTS.md 10).
  */
 
 /** The actions of one solution: a name, or `{ action, target }` where the verb takes a text object. */
@@ -146,6 +147,7 @@ export const workspaceExerciseSchema = z
   })
   .transform((exercise) => ({
     ...exercise,
+    actionSolutions: NO_SOLO_ACTIONS,
     instruction: exercise.instruction ?? exercise.title,
     initialState: {
       files: exercise.initialState.files,
@@ -171,6 +173,13 @@ export interface WorkspaceSolutionAction {
   readonly action: KeymapAction;
   readonly target?: KeymapTarget;
 }
+
+/**
+ * Every exercise answers "which actions do you ask of a layer?" the same way (`planExerciseActions`
+ * takes `Pick<Exercise, "actionSolutions">`). A workspace declares its actions inside each solution,
+ * because their order is part of the solution, so the field is empty and content cannot write it.
+ */
+const NO_SOLO_ACTIONS: readonly ActionSolution[] = [];
 
 /** Raw content shape of a workspace exercise (what YAML/JSON authors write). */
 export type WorkspaceExerciseInput = z.input<typeof workspaceExerciseSchema>;

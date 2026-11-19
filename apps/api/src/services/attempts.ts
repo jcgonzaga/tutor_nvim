@@ -8,7 +8,7 @@ import {
   type Attempt,
   type AttemptEvaluation,
 } from "@tutor-nvim/evaluation";
-import type { ContentBundle, Exercise } from "@tutor-nvim/exercise-schema";
+import type { ContentBundle, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
 import {
   NO_BEST,
   computeAttemptReward,
@@ -37,9 +37,13 @@ export const MAX_CLOCK_SKEW_MS = 5 * 60_000;
 /**
  * Rebuilds the attempt from what the learner did and evaluates it with the same engine and
  * evaluation the client uses. The client's own score is never read (AGENTS 26).
+ *
+ * Only the two kinds that are spent in keys: a workspace attempt is spent in actions, and replaying
+ * its keys needs the workspace engine and the learner's layer (T9), so `recordSubmission` refuses
+ * one with a message instead of guessing.
  */
 export function replaySubmission(
-  exercise: Exercise,
+  exercise: VimExercise | ShellExercise,
   submission: AttemptSubmission,
 ): { attempt: Attempt; evaluation: AttemptEvaluation } {
   let attempt = startAttempt(exercise, submission.startedAt);
@@ -96,6 +100,15 @@ export async function recordSubmission(
   const exercise = bundle.exercises.find((candidate) => candidate.id === submission.exerciseId);
   if (!exercise) {
     throw new HttpError(422, "unknown_exercise", `Unknown exercise ${submission.exerciseId}`);
+  }
+  if (exercise.kind === "workspace") {
+    // Said, not faked: the server cannot judge an attempt it cannot replay, so it refuses it
+    // instead of storing a score it made up (AGENTS 26).
+    throw new HttpError(
+      422,
+      "unsupported_exercise_kind",
+      `Exercise ${exercise.id} is a workspace exercise: the API cannot replay workspace attempts yet`,
+    );
   }
 
   return db.transaction(async (tx) => {

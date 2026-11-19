@@ -15,6 +15,7 @@ const PRACTICE = "/?exercise=vim.ci-quotes.shell-001";
 /** Free practice shows the plain result panel, not the session feedback `solveCurrent` waits for. */
 async function solveInFreePractice(page: Page): Promise<void> {
   const exercise = await currentExercise(page);
+  if (exercise.kind === "workspace") throw new Error("no workspace view yet (T8)");
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   await pressTokens(page, optimal?.keys ?? []);
   await expect(page.getByTestId("result")).toBeVisible();

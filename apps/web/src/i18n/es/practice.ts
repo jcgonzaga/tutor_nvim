@@ -13,6 +13,11 @@ export const practice: Messages["practice"] = {
   combo: "Combo",
   keys: (n) => `${n} ${n === 1 ? "tecla" : "teclas"}`,
   focusHint: "Haz clic en el editor, o pulsa Tab hasta enfocarlo, para empezar a escribir.",
+  workspaceNotice: {
+    title: "Este ejercicio trata del espacio de trabajo",
+    detail:
+      "Practica archivos, ventanas y paneles. Esta pantalla solo puede mostrar el búfer de Vim y la terminal, así que todavía no hay nada que escribir aquí; la vista del espacio de trabajo llega después.",
+  },
   layers: {
     title: "Capas activas",
     count: (on, total) => `${on} de ${total} activas`,

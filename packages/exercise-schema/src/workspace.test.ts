@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   ExerciseValidationError,
+  isWorkspaceExercise,
   parseExerciseYaml,
   parseWorkspaceExercise,
   parseWorkspaceExerciseYaml,
+  validateContent,
 } from "./index";
 import type { WorkspaceExerciseInput } from "./index";
 
@@ -295,11 +297,45 @@ solutions: [{ commands: ["mkdir docs"], classification: optimal }]
     });
   });
 
-  it("does not load a workspace exercise into the content bundle yet", () => {
-    // The content bundle is what the Vim and shell evaluators replay; a workspace solution is a
-    // list of actions, replayed by the workspace engine (T4). It is parsed by its own entry point.
-    expect(() => parseExerciseYaml(yaml, "split.yaml")).toThrow(
-      /kind: workspace exercises cannot be loaded into the content bundle yet/,
+  it("loads a workspace exercise through the content bundle entry point, like every other kind", () => {
+    // T4 makes the kind loadable: the evaluation package replays its action solutions, so content
+    // may hold it. Before that, `parseExercise` rejected it on purpose.
+    const exercise = parseExerciseYaml(yaml, "split.yaml");
+    if (!isWorkspaceExercise(exercise)) throw new Error("the workspace kind did not load");
+    expect(exercise.kind).toBe("workspace");
+    expect(exercise.solutions[0]?.actions.map((action) => action.action)).toEqual([
+      "file.find",
+      "file.open",
+      "window.split-side-by-side",
+    ]);
+  });
+
+  it("holds a workspace exercise in a content bundle beside the other kinds", () => {
+    const { bundle, errors } = validateContent({
+      skills: [
+        {
+          path: "skills/workspace.file.open.yaml",
+          text: `schemaVersion: 1
+id: workspace-file-open
+slug: workspace.file.open
+title: Open a file
+description: Choose a file and work on it.
+domain: neovim
+tier: 1
+difficulty: 1
+`,
+        },
+      ],
+      exercises: [{ path: "exercises/workspace-split.yaml", text: yaml }],
+    });
+
+    expect(errors).toEqual([]);
+    expect(bundle?.exercises.map((exercise) => exercise.kind)).toEqual(["workspace"]);
+  });
+
+  it("reports an unknown kind as an unknown kind, workspace included in the message", () => {
+    expect(() => parseExerciseYaml(`${yaml.replace("kind: workspace", "kind: terminal")}`)).toThrow(
+      /kind: must be "vim", "shell" or "workspace"/,
     );
   });
 });

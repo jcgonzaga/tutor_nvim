@@ -1,4 +1,12 @@
-import type { AntiPatternId, Exercise, ShellAntiPatternId } from "@tutor-nvim/exercise-schema";
+import type {
+  AntiPatternId,
+  Exercise,
+  ShellAntiPatternId,
+  ShellExercise,
+  VimExercise,
+  WorkspaceExercise,
+  WorkspaceSolution,
+} from "@tutor-nvim/exercise-schema";
 import type { TranscriptEntry } from "@tutor-nvim/shell-engine";
 import type { Attempt, InputEvent } from "./attempt";
 
@@ -169,10 +177,29 @@ const SHELL_DETECTORS: Readonly<
 };
 
 /** Shortest declared optimal solution: the keystroke baseline for efficiency and thresholds. */
-export function optimalKeystrokes(exercise: Exercise): number {
+export function optimalKeystrokes(exercise: VimExercise | ShellExercise): number {
   const optimal = exercise.solutions.filter((solution) => solution.classification === "optimal");
   const references = optimal.length > 0 ? optimal : exercise.solutions;
   return Math.min(...references.map((solution) => solution.keys.length));
+}
+
+/** The optimal solutions of a workspace exercise, or every one it declares when none is marked. */
+function workspaceBaseline(exercise: WorkspaceExercise): readonly WorkspaceSolution[] {
+  const optimal = exercise.solutions.filter((solution) => solution.classification === "optimal");
+  return optimal.length > 0 ? optimal : exercise.solutions;
+}
+
+/**
+ * The reference cost of the shortest declared optimal solution, in the unit the attempt is spent
+ * in: keystrokes for the two simulators, actions for the workspace (S5). One function, so the
+ * efficiency scale is the same for every kind and a workspace story cannot be graded by a second,
+ * drifting rule.
+ */
+export function optimalCost(exercise: Exercise): number {
+  if (exercise.kind === "workspace") {
+    return Math.min(...workspaceBaseline(exercise).map((solution) => solution.actions.length));
+  }
+  return optimalKeystrokes(exercise);
 }
 
 /**
@@ -198,5 +225,7 @@ export function detectAntiPatterns(
     };
     return exercise.antiPatterns.flatMap((id) => DETECTORS[id](context) ?? []);
   }
+  // A workspace attempt is spent in actions, not keys, and workspace content declares no
+  // anti-patterns yet (T4): adding one is a new id in the schema, never a quiet detector here.
   return [];
 }

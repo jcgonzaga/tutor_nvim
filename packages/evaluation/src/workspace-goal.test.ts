@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateWorkspaceObjective, type WorkspaceObjectiveState } from "./index";
+import type { WorkspaceObjectiveView } from "@tutor-nvim/workspace-engine";
+
+import { evaluateWorkspaceObjective } from "./index";
 
 /**
  * End-state objectives for the simulated workspace (S1, S2). Each goal reports what it expected and
@@ -11,7 +13,7 @@ import { evaluateWorkspaceObjective, type WorkspaceObjectiveState } from "./inde
 const MAIN_TEXT = 'const mode = "development";';
 const OTHER_TEXT = "export const other = 1;";
 
-function state(): WorkspaceObjectiveState {
+function state(): WorkspaceObjectiveView {
   return {
     files: { "src/main.ts": MAIN_TEXT, "src/other.ts": OTHER_TEXT },
     buffers: [

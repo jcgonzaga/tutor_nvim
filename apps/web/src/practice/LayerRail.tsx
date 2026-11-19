@@ -49,7 +49,13 @@ export function LayerRail({ exercise, events, layers = keymapLayers }: LayerRail
   );
   const claim = useMemo(() => keyClaim(catalogs, events), [catalogs, events]);
 
-  const asked = exercise.actionSolutions[0]?.action;
+  // What the exercise asks of a layer: a declared action, or the first action of a workspace
+  // solution, whose actions are written inside the solution (S5) and not as action solutions.
+  const asked =
+    exercise.kind === "workspace"
+      ? exercise.solutions.find((solution) => solution.classification === "optimal")?.actions[0]
+          ?.action
+      : exercise.actionSolutions[0]?.action;
   const action = asked ?? EXAMPLE_ACTION;
   const rows = useMemo(() => costRows(catalogs, action), [catalogs, action]);
   const enabledCount = layers.filter((layer) => prefs.enabledLayers.includes(layer.id)).length;

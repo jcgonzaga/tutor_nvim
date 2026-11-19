@@ -1,4 +1,8 @@
-import type { Exercise, SolutionClassification } from "@tutor-nvim/exercise-schema";
+import type {
+  Exercise,
+  SolutionClassification,
+  WorkspaceSolutionAction,
+} from "@tutor-nvim/exercise-schema";
 import type { Attempt } from "./attempt";
 import type { AntiPatternHit } from "./antipatterns";
 
@@ -26,6 +30,10 @@ export interface StrategyContext {
   readonly attempt: Attempt;
   readonly success: boolean;
   readonly antiPatterns: readonly AntiPatternHit[];
+  /**
+   * The cheapest declared solution, in the attempt's own unit: keystrokes for the Vim and shell
+   * simulators, actions for the workspace (`optimalCost`). It is one scale for every kind.
+   */
   readonly optimalKeystrokes: number;
   readonly config: StrategyConfig;
 }
@@ -53,8 +61,29 @@ export function efficiencyClassification(
 
 const failedRule: StrategyRule = ({ success }) => (success ? null : "failed");
 
-/** The author's word wins: an exact declared sequence takes the classification it was declared with. */
+/** The same action, target included: `diw` and `daw` are different turns of the same verb. */
+const sameAction = (a: WorkspaceSolutionAction, b: WorkspaceSolutionAction): boolean =>
+  a.action === b.action && a.target === b.target;
+
+const sameActions = (
+  a: readonly WorkspaceSolutionAction[],
+  b: readonly WorkspaceSolutionAction[],
+): boolean => a.length === b.length && a.every((action, index) => sameAction(action, b[index]!));
+
+/**
+ * The author's word wins: an exact declared run takes the classification it was declared with —
+ * keys for the simulators, actions for the workspace (S5 writes those solutions as actions).
+ */
 const declaredSolutionRule: StrategyRule = ({ exercise, attempt }) => {
+  if (attempt.kind === "workspace") {
+    if (exercise.kind !== "workspace") return null;
+    return (
+      exercise.solutions.find((solution) => sameActions(solution.actions, attempt.actions))
+        ?.classification ?? null
+    );
+  }
+  // A mismatch (a Vim attempt against workspace content) has no key solution to match.
+  if (exercise.kind === "workspace") return null;
   const typed = attempt.events.map((event) => event.logicalKey);
   const match = exercise.solutions.find(
     (solution) =>
@@ -68,8 +97,12 @@ const declaredSolutionRule: StrategyRule = ({ exercise, attempt }) => {
 const antiPatternRule: StrategyRule = ({ antiPatterns }) =>
   antiPatterns.length > 0 ? "anti-pattern" : null;
 
+/** What the attempt spent: keystrokes, or actions in the workspace (where no key was typed). */
+const attemptCost = (attempt: Attempt): number =>
+  attempt.kind === "workspace" ? attempt.actions.length : attempt.events.length;
+
 const efficiencyRule: StrategyRule = ({ attempt, optimalKeystrokes, config }) =>
-  efficiencyClassification(optimalKeystrokes, attempt.events.length, config.efficiencyBands);
+  efficiencyClassification(optimalKeystrokes, attemptCost(attempt), config.efficiencyBands);
 
 /** Rules run in order; the first one with an opinion decides. Extend or reorder by passing your own list. */
 export const DEFAULT_STRATEGY_RULES: readonly StrategyRule[] = [

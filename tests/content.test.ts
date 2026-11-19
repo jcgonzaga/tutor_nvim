@@ -2,7 +2,13 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { checkContent, evaluateAttempt, simulateSolution } from "@tutor-nvim/evaluation";
+import {
+  checkContent,
+  evaluateAttempt,
+  goalMet,
+  simulateSolution,
+  simulateWorkspaceSolution,
+} from "@tutor-nvim/evaluation";
 import { loadContent, parseKeymapLayers } from "@tutor-nvim/exercise-schema";
 import { bufferToText } from "@tutor-nvim/vim-engine";
 import { readContentInput, readKeymapInput } from "../scripts/content-fs";
@@ -23,30 +29,112 @@ describe("content", () => {
     expect(checkContent(bundle)).toEqual([]);
   });
 
-  describe.each(bundle.exercises.map((exercise) => [exercise.slug, exercise] as const))(
-    "%s",
-    (_slug, exercise) => {
-      it.each(exercise.solutions.map((solution) => [solution.sequence, solution] as const))(
-        "declared solution %s succeeds with its declared classification",
-        (_sequence, solution) => {
-          const attempt = simulateSolution(exercise, solution);
-          const evaluation = evaluateAttempt(exercise, attempt);
+  // The exercises whose declared solutions are key sequences: a workspace solution is a list of
+  // actions, replayed by the workspace engine in the "workspace content" block below (T4).
+  describe.each(
+    bundle.exercises
+      .filter((exercise) => exercise.kind !== "workspace")
+      .map((exercise) => [exercise.slug, exercise] as const),
+  )("%s", (_slug, exercise) => {
+    it.each(exercise.solutions.map((solution) => [solution.sequence, solution] as const))(
+      "declared solution %s succeeds with its declared classification",
+      (_sequence, solution) => {
+        const attempt = simulateSolution(exercise, solution);
+        const evaluation = evaluateAttempt(exercise, attempt);
 
-          expect(evaluation.success).toBe(true);
-          expect(evaluation.strategy).toBe(solution.classification);
-          if (
-            exercise.kind === "vim" &&
-            attempt.kind === "vim" &&
-            exercise.objective.type === "buffer_equals"
-          ) {
-            expect(bufferToText(attempt.state.buffer)).toBe(
-              exercise.objective.targetLines.join("\n"),
-            );
-          }
-        },
-      );
-    },
-  );
+        expect(evaluation.success).toBe(true);
+        expect(evaluation.strategy).toBe(solution.classification);
+        if (
+          exercise.kind === "vim" &&
+          attempt.kind === "vim" &&
+          exercise.objective.type === "buffer_equals"
+        ) {
+          expect(bufferToText(attempt.state.buffer)).toBe(
+            exercise.objective.targetLines.join("\n"),
+          );
+        }
+      },
+    );
+  });
+});
+
+/**
+ * A workspace exercise is content like any other (T3, T4): it joins the bundle, the CI gate replays
+ * its action solutions through the workspace engine, and the end state is the only thing that decides
+ * success while the cost in actions decides the strategy (S5).
+ */
+const WORKSPACE_EXERCISE = `schemaVersion: 1
+kind: workspace
+id: workspace-split-001
+slug: workspace.window.split-001
+title: "Split the window side by side"
+instruction: "Split the window side by side."
+skillIds: [vim.navigation.atomic]
+mode: learn
+difficulty: 1
+initialState:
+  files:
+    src/main.ts: "const mode = 'development';"
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: focus, leaf: 1 }
+solutions:
+  - actions: [window.split-side-by-side]
+    classification: optimal
+  - actions: [window.split-side-by-side, window.zoom]
+    classification: valid
+`;
+
+function bundleWithWorkspace(exercise = WORKSPACE_EXERCISE) {
+  const content = readContentInput();
+  return loadContent({
+    skills: content.skills,
+    exercises: [...content.exercises, { path: "exercises/workspace-split.yaml", text: exercise }],
+  });
+}
+
+describe("workspace content", () => {
+  it("loads through the real content bundle beside the vim and shell exercises", () => {
+    const loaded = bundleWithWorkspace();
+    const kinds = new Set(loaded.exercises.map((exercise) => exercise.kind));
+
+    expect(kinds).toEqual(new Set(["shell", "vim", "workspace"]));
+    expect(loaded.exercises.find((exercise) => exercise.id === "workspace-split-001")?.kind).toBe(
+      "workspace",
+    );
+  });
+
+  it("replays every declared workspace solution and finds nothing wrong", () => {
+    expect(checkContent(bundleWithWorkspace())).toEqual([]);
+  });
+
+  it("reaches the objective with the optimal solution and grades a longer list lower", () => {
+    const exercise = bundleWithWorkspace().exercises.find(
+      (candidate) => candidate.id === "workspace-split-001",
+    );
+    if (exercise?.kind !== "workspace") throw new Error("the fixture did not load as a workspace");
+    const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
+    if (optimal === undefined) throw new Error("the fixture declares no optimal solution");
+
+    const replay = simulateWorkspaceSolution(exercise, optimal);
+    expect(replay.refused).toBeNull();
+    expect(goalMet(exercise, replay)).toBe(true);
+    expect(evaluateAttempt(exercise, replay).strategy).toBe("optimal");
+
+    // The same end state with one action more: solved, and graded below the baseline.
+    const longer = simulateWorkspaceSolution(exercise, {
+      actions: [...optimal.actions, { action: "window.zoom" }],
+      classification: "valid",
+    });
+    const evaluation = evaluateAttempt(exercise, longer);
+    expect(longer.refused).toBeNull();
+    expect(evaluation.success).toBe(true);
+    expect(evaluation.strategy).toBe("valid");
+  });
 });
 
 describe("curriculum coverage", () => {

@@ -199,6 +199,9 @@ importers:
       '@tutor-nvim/vim-engine':
         specifier: workspace:*
         version: link:../vim-engine
+      '@tutor-nvim/workspace-engine':
+        specifier: workspace:*
+        version: link:../workspace-engine
 
   packages/exercise-schema:
     dependencies:

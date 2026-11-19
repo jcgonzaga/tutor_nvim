@@ -13,6 +13,7 @@
  */
 import {
   parseKeymapKeys,
+  type ActionSolution,
   type Exercise,
   type KeymapBinding,
   type KeymapMode,
@@ -162,6 +163,22 @@ function checkLayer(loaded: LoadedKeymapLayer): string[] {
   return problems;
 }
 
+/**
+ * The actions an exercise asks of a layer. The Vim and shell kinds declare them on the exercise; a
+ * workspace declares them inside each solution, because the order of the actions is the solution
+ * (S5). Both are the same vocabulary and both must be pressable somewhere.
+ */
+function declaredActions(exercise: Exercise): readonly ActionSolution[] {
+  if (exercise.kind !== "workspace") return exercise.actionSolutions;
+  return exercise.solutions.flatMap((solution) =>
+    solution.actions.map((action) => ({
+      action: action.action,
+      ...(action.target === undefined ? {} : { target: action.target }),
+      classification: solution.classification,
+    })),
+  );
+}
+
 /** Every action an exercise declares must be provided by at least one catalog, or it cannot be solved. */
 function checkActionSolutions(
   exercises: readonly Exercise[],
@@ -169,7 +186,7 @@ function checkActionSolutions(
 ): string[] {
   const problems: string[] = [];
   for (const exercise of exercises) {
-    for (const solution of exercise.actionSolutions) {
+    for (const solution of declaredActions(exercise)) {
       if (planActionSolutions([solution], catalogs).length > 0) continue;
       problems.push(
         `${exercise.id}: declares action solution "${solution.action}"${solution.target === undefined ? "" : ` (${solution.target})`}, which no keymap catalog provides`,

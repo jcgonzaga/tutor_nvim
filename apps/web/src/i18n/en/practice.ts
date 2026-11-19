@@ -12,6 +12,15 @@ export const practice = {
   combo: "Combo",
   keys: (n: number) => `${n} ${n === 1 ? "key" : "keys"}`,
   focusHint: "Click the editor, or press Tab until it is focused, to start typing.",
+  /**
+   * A workspace exercise (files, windows, panes) cannot be practised in this screen yet: it renders
+   * the Vim buffer and the shell terminal only. Saying so beats an editor that rejects every key.
+   */
+  workspaceNotice: {
+    title: "This exercise is about the workspace",
+    detail:
+      "It practises files, windows and panes. This screen can only show the Vim buffer and the terminal, so there is nothing to type here yet; the workspace view arrives next.",
+  },
   /** The layer rail next to the practice area (keymap-layers.md T6). */
   layers: {
     title: "Active layers",

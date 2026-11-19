@@ -7,7 +7,7 @@ import {
   type AttemptEvaluation,
   type Feedback,
 } from "@tutor-nvim/evaluation";
-import type { Exercise } from "@tutor-nvim/exercise-schema";
+import type { Exercise, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
 import { useT } from "../i18n/I18nProvider";
 import { shouldPreventDefault, toKeyInput } from "../input/keyboard";
 import { EditorView } from "./EditorView";
@@ -47,12 +47,25 @@ interface PracticeScreenProps {
   readonly nextSlug?: string | null;
 }
 
+interface PracticeSessionProps extends Omit<PracticeScreenProps, "exercise"> {
+  /** The two views this screen can render: a Vim buffer or a shell terminal. */
+  readonly exercise: VimExercise | ShellExercise;
+}
+
 /**
  * The practice loop for one exercise: instruction, editor, mode and immediate feedback. It is the
  * same screen for free practice, calibration probes and session items; the caller decides what
  * happens at the end (`onFinish`, `renderResult`). Keyboard capture is scoped to the editor.
  */
-export function PracticeScreen({
+export function PracticeScreen(props: PracticeScreenProps) {
+  // A workspace exercise is content like any other (T3), but this screen renders the Vim buffer and
+  // the shell terminal; the workspace view is T8. Say so instead of drawing an editor that would
+  // reject every key the learner presses.
+  if (props.exercise.kind === "workspace") return <WorkspacePractice {...props} />;
+  return <PracticeSession {...props} exercise={props.exercise} />;
+}
+
+function PracticeSession({
   exercise,
   eyebrow,
   progress,
@@ -63,7 +76,7 @@ export function PracticeScreen({
   onHint,
   combo = 0,
   nextSlug = null,
-}: PracticeScreenProps) {
+}: PracticeSessionProps) {
   const t = useT();
   const { attempt, evaluation, hints, sendInput, requestHint, giveUp, reset } =
     usePracticeAttempt(exercise);
@@ -127,7 +140,9 @@ export function PracticeScreen({
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const input = toKeyInput(event.nativeEvent, performance.now());
     if (input === null) return;
-    if (shouldPreventDefault(input, attempt.kind)) event.preventDefault();
+    if (shouldPreventDefault(input, attempt.kind === "shell" ? "shell" : "vim")) {
+      event.preventDefault();
+    }
     sendInput(input);
   }
 
@@ -206,14 +221,14 @@ export function PracticeScreen({
               >
                 {attempt.kind === "shell" ? (
                   <TerminalView state={attempt.state} />
-                ) : (
+                ) : attempt.kind === "vim" ? (
                   <EditorView
                     lines={attempt.state.buffer.lines}
                     cursor={attempt.state.cursor}
                     mode={attempt.state.mode}
                     pending={attempt.state.pending !== null}
                   />
-                )}
+                ) : null}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line bg-sunken px-4 py-2.5 font-mono text-sm">
                 <div className="flex items-center gap-3.5">
@@ -227,7 +242,7 @@ export function PracticeScreen({
                       </span>
                       <span className="text-ink-3">{promptOf(attempt.state)}</span>
                     </>
-                  ) : (
+                  ) : attempt.kind === "vim" ? (
                     <>
                       <ModePill
                         mode={attempt.state.mode}
@@ -242,7 +257,7 @@ export function PracticeScreen({
                         {pendingKeys(attempt.state.pending)}
                       </output>
                     </>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-ink-2">
                   {lastEvent && !lastEvent.accepted ? (
@@ -352,6 +367,85 @@ export function PracticeScreen({
 
         {/* The rail labels the keys of the attempt; it never decides whether they were accepted. */}
         <LayerRail exercise={exercise} events={attempt.events} />
+      </div>
+    </div>
+  );
+}
+
+/** No keystroke was typed: the rail labels an attempt, not the absence of one. */
+const NO_EVENTS = [] as const;
+
+/**
+ * What a workspace exercise shows until its view exists (T8).
+ *
+ * It starts no attempt: there is no editor to type in, and an attempt the learner cannot drive
+ * would be a screen that pretends (T4). The instruction and the layer rail stay, so the exercise is
+ * still readable, and the way out is the same one the practice area always has.
+ */
+function WorkspacePractice({ exercise, eyebrow, progress }: PracticeScreenProps) {
+  const t = useT();
+  const counted = progress ? /^(\d+)\D+(\d+)$/.exec(progress) : null;
+  const fraction = counted
+    ? Math.min(1, Number(counted[1]) / Math.max(1, Number(counted[2])))
+    : null;
+
+  return (
+    <div className="flex min-h-screen flex-col bg-canvas text-ink">
+      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-8 py-4">
+        <a
+          href="#/"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-[15px] font-semibold text-ink-2 no-underline hover:text-ink"
+        >
+          <svg
+            aria-hidden
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M4 4l8 8M12 4l-8 8" />
+          </svg>
+          {t.practice.exit}
+        </a>
+        {progress ? (
+          <div className="flex items-center gap-3 text-sm text-ink-2">
+            <span data-testid="practice-progress">{progress}</span>
+            {fraction !== null ? (
+              <span aria-hidden className="h-1 w-[120px] overflow-hidden rounded-sm bg-line">
+                <span className="block h-full bg-amber" style={{ width: `${fraction * 100}%` }} />
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+      </header>
+
+      <div className="mx-auto flex w-full max-w-[1360px] flex-1 flex-col gap-6 px-8 pb-12 pt-8 lg:flex-row lg:items-start">
+        <main className="flex min-w-0 flex-1 flex-col gap-7">
+          <header className="flex flex-col gap-3.5">
+            <p className="text-[15px] font-bold tracking-[0.04em] text-amber">
+              {eyebrow ?? t.practice.defaultEyebrow}
+            </p>
+            <h1 id="instruction" className="text-balance text-[32px] font-bold leading-tight">
+              {exercise.instruction}
+            </h1>
+          </header>
+
+          <section
+            data-testid="workspace-notice"
+            aria-labelledby="workspace-notice-h"
+            className="rounded-2xl border border-line bg-surface p-6"
+          >
+            <h2 id="workspace-notice-h" className="text-[20px] font-bold">
+              {t.practice.workspaceNotice.title}
+            </h2>
+            <p className="mt-2 text-[17px] text-ink-2">{t.practice.workspaceNotice.detail}</p>
+          </section>
+        </main>
+
+        <LayerRail exercise={exercise} events={NO_EVENTS} />
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import type { Attempt } from "./attempt";
 import {
   DEFAULT_ANTI_PATTERN_CONFIG,
   detectAntiPatterns,
-  optimalKeystrokes,
+  optimalCost,
   type AntiPatternConfig,
   type AntiPatternHit,
 } from "./antipatterns";
@@ -57,7 +57,7 @@ export function evaluateAttempt(
     attempt,
     success,
     antiPatterns,
-    optimalKeystrokes: optimalKeystrokes(exercise),
+    optimalKeystrokes: optimalCost(exercise),
     config: config.strategy,
   });
   return {

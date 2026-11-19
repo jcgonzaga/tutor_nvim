@@ -13,6 +13,7 @@
     "@tutor-nvim/exercise-schema": "workspace:*",
     "@tutor-nvim/keymap": "workspace:*",
     "@tutor-nvim/shell-engine": "workspace:*",
-    "@tutor-nvim/vim-engine": "workspace:*"
+    "@tutor-nvim/vim-engine": "workspace:*",
+    "@tutor-nvim/workspace-engine": "workspace:*"
   }
 }

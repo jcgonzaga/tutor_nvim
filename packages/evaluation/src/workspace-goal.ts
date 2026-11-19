@@ -1,7 +1,12 @@
-import type { WorkspaceObjective } from "@tutor-nvim/exercise-schema";
+import type { WorkspaceExercise, WorkspaceObjective } from "@tutor-nvim/exercise-schema";
 import { splitLines } from "@tutor-nvim/vim-engine";
+import {
+  workspaceObjectiveView,
+  type WorkspaceObjectiveView,
+  type WorkspaceState,
+} from "@tutor-nvim/workspace-engine";
 
-import { sameLines } from "./goal";
+import { sameLines } from "./lines";
 
 /*
  * End-state objectives for the simulated workspace (S1, S2). Only the end state is judged: what is
@@ -9,23 +14,12 @@ import { sameLines } from "./goal";
  * reports what it expected and what it found, so a screen shows which goal failed instead of
  * "wrong".
  *
- * `state` is the workspace state as the engine prints it (`workspaceObjectiveView` in
- * `@tutor-nvim/workspace-engine`): files, every open buffer's text, the active path, the layout
- * string, the focus index and the split ratios. Taking that projection instead of importing the
- * engine is what keeps one implementation of "what shape is this" — the printers live in the engine
- * that owns the tree — while this package needs no new dependency to compare the objective (T3
- * adds none; T4 can import the engine once evaluation replays action solutions).
+ * `state` is the workspace state as the engine prints it (`WorkspaceObjectiveView`, the projection
+ * `workspaceObjectiveView` returns): files, every open buffer's text, the active path, the layout
+ * string, the focus index and the split ratios. The type comes from the engine that owns the tree, so
+ * there is one declaration of "what shape is this" and one implementation of how it prints (T4;
+ * T3 kept a structural copy because it added no dependency).
  */
-
-/** The projection above, declared structurally on the consumer side so no import is needed. */
-export interface WorkspaceObjectiveState {
-  readonly files: Readonly<Record<string, string>>;
-  readonly buffers: readonly { readonly path: string; readonly text: string }[];
-  readonly activePath: string | undefined;
-  readonly layout: string;
-  readonly focus: number | undefined;
-  readonly splitRatios: readonly number[];
-}
 
 export interface WorkspaceObjectiveEvaluation {
   readonly met: boolean;
@@ -56,7 +50,7 @@ const samePaths = (expected: readonly string[], found: readonly string[]): boole
 
 export function evaluateWorkspaceObjective(
   objective: WorkspaceObjective,
-  state: WorkspaceObjectiveState,
+  state: WorkspaceObjectiveView,
 ): WorkspaceObjectiveEvaluation {
   switch (objective.type) {
     case "active_file": {
@@ -165,4 +159,18 @@ export function evaluateWorkspaceObjective(
       return { met: failures.length === 0, failures };
     }
   }
+}
+
+/** Did the workspace reach a valid end state, with the per-goal detail a screen can show. */
+export interface WorkspaceGoalEvaluation {
+  readonly met: boolean;
+  readonly objective: WorkspaceObjectiveEvaluation;
+}
+
+export function evaluateWorkspaceGoal(
+  exercise: WorkspaceExercise,
+  state: WorkspaceState,
+): WorkspaceGoalEvaluation {
+  const objective = evaluateWorkspaceObjective(exercise.objective, workspaceObjectiveView(state));
+  return { met: objective.met, objective };
 }

@@ -8,6 +8,7 @@ export {
   type ShellAttempt,
   type TimedKeyInput,
   type VimAttempt,
+  type WorkspaceAttempt,
 } from "./attempt";
 export {
   evaluateGoal,
@@ -21,13 +22,20 @@ export {
   type ShellObjectiveEvaluation,
 } from "./goal";
 export {
+  evaluateWorkspaceGoal,
   evaluateWorkspaceObjective,
+  type WorkspaceGoalEvaluation,
   type WorkspaceObjectiveEvaluation,
-  type WorkspaceObjectiveState,
 } from "./workspace-goal";
+export {
+  simulateWorkspaceSolution,
+  type RefusedWorkspaceAction,
+  type WorkspaceReplay,
+} from "./workspace-replay";
 export {
   DEFAULT_ANTI_PATTERN_CONFIG,
   detectAntiPatterns,
+  optimalCost,
   optimalKeystrokes,
   type AntiPatternConfig,
   type AntiPatternHit,

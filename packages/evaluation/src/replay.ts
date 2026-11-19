@@ -76,8 +76,14 @@ export function runOf(attempt: Attempt): Run {
   };
 }
 
-/** The shortest declared optimal solution as a run (no timing: nobody typed it). */
+/**
+ * The shortest declared optimal solution as a run (no timing: nobody typed it).
+ *
+ * A workspace exercise has none: its solutions are actions, not keys, and showing another tool's
+ * keys as "the master run" would be a sequence nobody could press (S5).
+ */
 export function masterRun(exercise: Exercise): { keys: readonly string[] } | null {
+  if (exercise.kind === "workspace") return null;
   const optimal = exercise.solutions
     .filter((solution) => solution.classification === "optimal")
     .sort((a, b) => a.keys.length - b.keys.length)[0];

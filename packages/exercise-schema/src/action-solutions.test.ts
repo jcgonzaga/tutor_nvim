@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { parseExercise, parseExerciseYaml } from "./validate";
+import type { ActionSolution } from "./action-solutions";
+import { parseExercise, parseExerciseYaml, type Exercise } from "./validate";
+
+/** The action solutions of an exercise; the workspace kind declares them inside each solution. */
+const actionSolutionsOf = (exercise: Exercise): readonly ActionSolution[] =>
+  exercise.kind === "workspace" ? [] : exercise.actionSolutions;
 
 /** An exercise that asks for an action instead of naming one tool's keys (S6). */
 const exercise = (actionSolutions: string): string =>
@@ -32,7 +37,7 @@ const actions = (lines: readonly string[]): string =>
 describe("an exercise may ask for an action, not for one tool's keys (S6)", () => {
   it("keeps the field empty when the exercise only declares keys", () => {
     const parsed = parseExerciseYaml(exercise(""), "a.yaml");
-    expect(parsed.actionSolutions).toEqual([]);
+    expect(actionSolutionsOf(parsed)).toEqual([]);
   });
 
   it("reads an action solution with its classification", () => {
@@ -40,7 +45,7 @@ describe("an exercise may ask for an action, not for one tool's keys (S6)", () =
       exercise(actions(["  - action: window.split-side-by-side", "    classification: optimal"])),
       "a.yaml",
     );
-    expect(parsed.actionSolutions).toEqual([
+    expect(actionSolutionsOf(parsed)).toEqual([
       { action: "window.split-side-by-side", classification: "optimal" },
     ]);
   });
@@ -70,7 +75,11 @@ describe("an exercise may ask for an action, not for one tool's keys (S6)", () =
           evaluation: {},
           solutions: [{ sequence: "dd", classification: "optimal" }],
           actionSolutions: [
-            { action: "window.split-side-by-side", target: "inner-quotes", classification: "optimal" },
+            {
+              action: "window.split-side-by-side",
+              target: "inner-quotes",
+              classification: "optimal",
+            },
           ],
         },
         "a.yaml",
