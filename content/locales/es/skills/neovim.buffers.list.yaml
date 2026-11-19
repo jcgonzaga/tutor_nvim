@@ -1,0 +1,10 @@
+id: neovim-buffers-list
+title: "Listar los búferes y elegir uno"
+description: "Saber qué archivos tiene abiertos tu sesión y elegir uno de la lista."
+lesson:
+  - title: "Varios archivos, un editor"
+    body: "Cada archivo que abres se queda en una lista de búferes. La lista mantiene el orden en que los abriste, así que el primer archivo de la sesión va primero."
+  - title: "Recorre la lista"
+    body: "Siguiente y anterior recorren esa lista y dan la vuelta: desde el último búfer, siguiente te da el primero."
+  - title: "Elige por nombre o por posición"
+    body: "La lista de búferes muestra las rutas para que elijas una. Sin la lista llegas al mismo búfer moviéndote, y eso cuesta un paso por cada búfer que cruzas."

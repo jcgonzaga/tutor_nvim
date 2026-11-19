@@ -1,0 +1,66 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-buffer-close-002
+slug: neovim.buffers.close.002
+title: "Close the buffer you are in, keep the file"
+instruction: "Open src/util.ts, then close the buffer for src/main.ts so the window shows src/util.ts and src/main.ts stays on disk untouched."
+skillIds:
+  - neovim.buffers.close
+mode: transfer
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    README.md: |
+      # Demo app
+      Start it with pnpm dev.
+    src/main.ts: |
+      import { add } from "./util";
+
+      console.log(add(1, 2));
+    src/util.ts: |
+      export const add = (a: number, b: number) => a + b;
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: src/util.ts }
+    - { type: open_buffers, paths: [src/util.ts] }
+    - type: file_text
+      path: src/main.ts
+      text: |
+        import { add } from "./util";
+
+        console.log(add(1, 2));
+solutions:
+  - actions:
+      - action: file.open
+        path: src/util.ts
+      - action: buffer.previous
+      - action: file.close-buffer
+    classification: optimal
+  - actions:
+      - action: file.open
+        path: src/util.ts
+      - action: buffer.previous
+      - action: file.open
+        path: src/main.ts
+      - action: file.close-buffer
+    classification: efficient
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "You cannot close the last buffer: there is always one holding the keys."
+  - afterMs: 8000
+    level: 2
+    text: "Close the buffer while src/util.ts is still open behind it."
+metadata:
+  language: typescript
+  context: session-cleanup
+  estimatedSeconds: 25
+  transferTags:
+    - context:source-code
+explanation: "Closing a buffer removes it from the session, never from the disk: src/main.ts keeps its text and can be opened again. Reaching the buffer you came from is one step; opening the file by its name first, only to close it, costs one more."

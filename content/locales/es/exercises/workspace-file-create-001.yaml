@@ -1,0 +1,7 @@
+id: workspace-file-create-001
+title: "Crea un archivo nuevo"
+instruction: "Empieza un archivo nuevo llamado notes/todo.md. No está en el disco, así que el búfer se abre vacío y no se escribe nada hasta que guardes."
+hints:
+  - "El archivo todavía no existe, así que abrirlo por su nombre sería rechazado."
+  - "Empieza un archivo nuevo y vacío con la ruta que quieres que tenga."
+explanation: "Una ruta nueva abre un búfer vacío: el editor guarda el nombre que le diste y escribe el archivo solo al guardar. Abrir una ruta que no está en el disco se rechaza, y por eso crear un archivo es un comando aparte."

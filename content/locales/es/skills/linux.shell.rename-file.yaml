@@ -1,0 +1,10 @@
+id: linux-shell-rename-file
+title: "Renombrar un archivo y volver a abrirlo"
+description: "Renombrar un archivo desde la shell con mv y volver a editarlo con su nombre nuevo."
+lesson:
+  - title: "Renombrar es mover"
+    body: "La shell no tiene un comando para renombrar. mv viejo nuevo mueve el archivo a un nombre nuevo en la misma carpeta, y eso es renombrar."
+  - title: "El editor guarda una ruta"
+    body: "Un búfer recuerda la ruta con la que se abrió. Renombra el archivo por detrás y el búfer seguirá apuntando al nombre viejo, que ya no existe."
+  - title: "Vuelve a abrirlo con el nombre nuevo"
+    body: "Abre la ruta nueva para editar el archivo renombrado, y cierra el búfer que aún tiene el nombre viejo para que la sesión coincida con el disco."

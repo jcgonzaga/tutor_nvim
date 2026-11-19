@@ -1,0 +1,10 @@
+id: neovim-buffers-jump-back
+title: "Volver al archivo que estabas editando"
+description: "Regresar al búfer del que vienes sin volver a nombrar el archivo."
+lesson:
+  - title: "No todo movimiento es una apertura"
+    body: "El archivo que mirabas hace un momento sigue abierto. Volver a él no es abrirlo otra vez y no necesita su ruta."
+  - title: "El búfer del que vienes"
+    body: "Cada sesión recuerda el búfer del que vienes. Un solo comando te devuelve a él, esté donde esté en la lista."
+  - title: "Abrir por nombre sigue valiendo"
+    body: "Abrir la misma ruta otra vez enfoca el búfer que ya la tiene, así que no está mal, solo es más escritura que volver."

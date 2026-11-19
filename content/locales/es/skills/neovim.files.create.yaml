@@ -1,0 +1,10 @@
+id: neovim-files-create
+title: "Crear un archivo nuevo"
+description: "Empezar un archivo que el disco todavía no tiene y saber cuándo existe de verdad."
+lesson:
+  - title: "Un archivo que aún no está"
+    body: "Empezar un archivo nuevo abre un búfer vacío en una ruta que el disco no tiene. El búfer existe y el archivo no."
+  - title: "El búfer recuerda el nombre"
+    body: "El búfer nuevo guarda la ruta que le diste, así que guardar escribe ese nombre y el archivo aparece en el árbol desde ese momento."
+  - title: "Un búfer no es un archivo"
+    body: "Hasta que guardas, otro editor no encontraría el archivo. Cerrar el búfer antes de guardar tira el nombre, porque no había nada en el disco."

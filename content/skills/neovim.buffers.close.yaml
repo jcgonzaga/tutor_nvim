@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-buffers-close
+slug: neovim.buffers.close
+
+title: "Close a buffer without quitting"
+description: "Drop a file from the session and keep editing the rest."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.files.open
+  - neovim.buffers.jump-back
+concepts:
+  - buffers
+tags:
+  - buffers
+  - cleanup
+
+lesson:
+  - title: "Closing a buffer is not quitting"
+    body: "Quitting leaves the editor. Closing a buffer takes that one file out of the session and leaves you inside it, with the rest untouched."
+  - title: "The window stays"
+    body: "The window that showed the closed buffer goes on showing another one, so the layout is the same and only the list is shorter."
+  - title: "The file stays"
+    body: "Closing a buffer never deletes the file. It is still on disk, and opening its path again gives you the same text back."
+    keys: ":bd"

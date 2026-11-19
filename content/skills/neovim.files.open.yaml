@@ -1,0 +1,32 @@
+schemaVersion: 1
+
+id: neovim-files-open
+slug: neovim.files.open
+
+title: "Open a file by name"
+description: "Put another file in the editor with :e, leaving the file you were in open."
+
+domain: neovim
+tier: 4
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - vim.mode.normal
+concepts:
+  - files
+  - buffers
+tags:
+  - files
+  - buffers
+  - editor
+
+lesson:
+  - title: "A file opened is a buffer"
+    body: "Opening a file puts its text in a buffer and shows it in the current window. The buffer keeps the path, and the window keeps the keys."
+  - title: "Say the path"
+    body: "In NORMAL mode type colon, e, a space and the path: :e src/util.ts. The path is relative to where you started the editor, and it has to exist, or the editor refuses it with E484."
+    keys: ":e src/util.ts"
+  - title: "The first file stays open"
+    body: "Opening a second file does not close the first: you now have two buffers. Naming a path you already have open focuses its buffer instead of reading the file twice."
+    keys: ":bn"

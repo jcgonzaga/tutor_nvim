@@ -1,0 +1,7 @@
+id: workspace-buffer-jump-back-001
+title: "Vuelve al archivo que estabas editando"
+instruction: "Estás editando src/main.ts. Mira src/util.ts y vuelve directo a src/main.ts sin escribir su ruta otra vez."
+hints:
+  - "El archivo en el que estabas sigue abierto, así que no necesitas su ruta."
+  - "Un comando de búfer te devuelve al búfer del que vienes."
+explanation: "Abrir src/util.ts deja src/main.ts abierto detrás, así que volver es un paso por los búferes, no una segunda apertura. Abrir src/main.ts por ruta llega al mismo sitio, pero tienes que escribir justo el nombre que querías evitar."

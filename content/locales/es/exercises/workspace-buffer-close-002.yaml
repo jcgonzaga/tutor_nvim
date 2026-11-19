@@ -1,0 +1,7 @@
+id: workspace-buffer-close-002
+title: "Cierra el búfer en el que estás y conserva el archivo"
+instruction: "Abre src/util.ts y después cierra el búfer de src/main.ts para que la ventana muestre src/util.ts, dejando src/main.ts intacto en el disco."
+hints:
+  - "No puedes cerrar el último búfer: siempre hay uno que recibe las teclas."
+  - "Cierra el búfer mientras src/util.ts sigue abierto detrás."
+explanation: "Cerrar un búfer lo quita de la sesión, nunca del disco: src/main.ts conserva su texto y puedes abrirlo otra vez. Llegar al búfer del que vienes cuesta un paso; abrir antes el archivo por su nombre, solo para cerrarlo, cuesta uno más."

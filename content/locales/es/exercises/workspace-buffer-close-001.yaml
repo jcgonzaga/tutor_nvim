@@ -1,0 +1,7 @@
+id: workspace-buffer-close-001
+title: "Cierra un búfer sin salir del editor"
+instruction: "Abre src/util.ts y después README.md, como harías mientras miras cosas. Luego cierra el búfer de README, terminando en src/util.ts y con src/main.ts todavía abierto."
+hints:
+  - "Cerrar un búfer saca un archivo de la sesión y te deja en el editor."
+  - "El búfer que ocupa el lugar del cerrado es el siguiente, o el anterior cuando cerraste el último."
+explanation: "Cerrar el búfer en el que estás le da la ventana a otro búfer abierto, así que no se cierra ninguna ventana y no se pierde nada más. El archivo no se toca: solo se acorta la lista de la sesión, y eso es lo que hace distinto cerrar de salir."

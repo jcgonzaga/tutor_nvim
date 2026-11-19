@@ -1,0 +1,58 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-file-open-001
+slug: neovim.files.open.by-name-001
+title: "Open a file by name"
+instruction: "You are editing src/main.ts. Open src/util.ts, the file it imports from, without leaving the editor."
+skillIds:
+  - neovim.files.open
+mode: learn
+difficulty: 1
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    README.md: |
+      # Demo app
+      Start it with pnpm dev.
+    src/main.ts: |
+      import { add } from "./util";
+
+      console.log(add(1, 2));
+    src/util.ts: |
+      export const add = (a: number, b: number) => a + b;
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: src/util.ts }
+    - { type: open_buffers, paths: [src/main.ts, src/util.ts] }
+    - type: buffer_text
+      path: src/util.ts
+      text: "export const add = (a: number, b: number) => a + b;"
+solutions:
+  - actions:
+      - action: file.open
+        path: src/util.ts
+    classification: optimal
+  - actions:
+      - action: file.open
+        path: src/main.ts
+      - action: file.open
+        path: src/util.ts
+    classification: valid
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Opening a file is one editor command, and it names the file."
+  - afterMs: 8000
+    level: 2
+    text: "Open a file by its path: src/util.ts."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags: []
+explanation: "Opening by path adds a second buffer and shows it, and the file you were editing stays open behind it. Naming the file you already have open first changes nothing and costs an extra step."

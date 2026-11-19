@@ -1,0 +1,7 @@
+id: workspace-file-open-001
+title: "Abre un archivo por su nombre"
+instruction: "Estás editando src/main.ts. Abre src/util.ts, el archivo del que importa, sin salir del editor."
+hints:
+  - "Abrir un archivo es un solo comando del editor, y nombra el archivo."
+  - "Abre un archivo por su ruta: src/util.ts."
+explanation: "Abrir por ruta añade un segundo búfer y lo muestra, y el archivo que estabas editando sigue abierto detrás. Mirar otro archivo antes cuesta un paso de más y deja un tercer búfer abierto para nada."

@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-files-create
+slug: neovim.files.create
+
+title: "Create a new file"
+description: "Start a file the disk does not have yet, and know when it becomes real."
+
+domain: neovim
+tier: 4
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - neovim.files.open
+concepts:
+  - files
+  - buffers
+tags:
+  - files
+  - create
+
+lesson:
+  - title: "A file that is not there yet"
+    body: "Starting a new file opens an empty buffer on a path the disk does not have. The buffer exists and the file does not."
+  - title: "The buffer remembers the name"
+    body: "The new buffer keeps the path you gave it, so saving writes that name and the file appears in the tree from that moment."
+    keys: ":w"
+  - title: "A buffer is not a file"
+    body: "Until you write, another editor would not find the file. Closing the buffer before saving throws the name away, because nothing was on disk."

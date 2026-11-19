@@ -1,0 +1,10 @@
+id: neovim-files-find
+title: "Encontrar un archivo por su nombre"
+description: "Llegar a un archivo escribiendo unas pocas letras de su nombre en lugar de la ruta completa."
+lesson:
+  - title: "Deja de escribir rutas"
+    body: "No hace falta recordar la ruta completa. Un buscador lista los archivos del proyecto y estrecha la lista mientras escribes, así que las carpetas largas no te cuestan nada."
+  - title: "Difuso significa letras en orden"
+    body: "Escribe unas pocas letras del nombre y mantenlas en orden: mnts encuentra src/main.ts. No tienen que ir juntas, así que puedes saltarte todas las carpetas por el camino."
+  - title: "La lista es la elección"
+    body: "Eliges entre lo que muestra el buscador, así que decides reconociendo la ruta. Dos archivos con el mismo nombre se distinguen por la carpeta que aparece al lado."

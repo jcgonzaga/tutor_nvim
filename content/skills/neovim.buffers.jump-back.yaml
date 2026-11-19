@@ -1,0 +1,31 @@
+schemaVersion: 1
+
+id: neovim-buffers-jump-back
+slug: neovim.buffers.jump-back
+
+title: "Jump back to the file you were editing"
+description: "Return to the buffer you came from without naming the file again."
+
+domain: neovim
+tier: 4
+difficulty: 2
+enabled: true
+
+prerequisites:
+  - neovim.files.open
+concepts:
+  - buffers
+  - navigation
+tags:
+  - buffers
+  - navigation
+
+lesson:
+  - title: "Not every move is an open"
+    body: "The file you were looking at a moment ago is still open. Going back to it is not opening it again, and it does not need its path."
+  - title: "The buffer you came from"
+    body: "Each session remembers the buffer you came from. One command returns to it, wherever it sits in the list."
+    keys: ":bp"
+  - title: "Opening by name still works"
+    body: "Opening the same path again focuses the buffer that already holds it, so it is not wrong, only more typing than going back."
+    keys: ":e src/main.ts"

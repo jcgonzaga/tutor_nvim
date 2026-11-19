@@ -1,0 +1,10 @@
+id: neovim-files-open
+title: "Abrir un archivo por su nombre"
+description: "Poner otro archivo en el editor con :e, dejando abierto el que estabas editando."
+lesson:
+  - title: "Un archivo abierto es un búfer"
+    body: "Abrir un archivo pone su texto en un búfer y lo muestra en la ventana actual. El búfer guarda la ruta y la ventana guarda las teclas."
+  - title: "Di la ruta"
+    body: "En modo NORMAL escribe dos puntos, e, un espacio y la ruta: :e src/util.ts. La ruta es relativa a la carpeta desde la que arrancaste el editor y tiene que existir, o el editor la rechaza con E484."
+  - title: "El primer archivo sigue abierto"
+    body: "Abrir un segundo archivo no cierra el primero: ahora tienes dos búferes. Si nombras una ruta que ya está abierta, el editor enfoca su búfer en vez de leer el archivo otra vez."

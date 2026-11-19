@@ -1,0 +1,30 @@
+schemaVersion: 1
+
+id: neovim-files-find
+slug: neovim.files.find
+
+title: "Find a file by name"
+description: "Reach a file by typing a few letters of its name instead of its whole path."
+
+domain: neovim
+tier: 4
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.files.open
+concepts:
+  - files
+  - picker
+tags:
+  - files
+  - picker
+  - navigation
+
+lesson:
+  - title: "Stop typing paths"
+    body: "You do not have to remember a full path. A finder lists the files of the project and narrows the list while you type, so long folders cost you nothing."
+  - title: "Fuzzy means letters in order"
+    body: "Type a few letters of the name and keep their order: mnts finds src/main.ts. The letters do not have to sit together, so you can skip every folder on the way."
+  - title: "The list is the choice"
+    body: "You pick from what the finder shows, so you choose by recognising the path. Two files with the same name are told apart by the folder printed beside them."

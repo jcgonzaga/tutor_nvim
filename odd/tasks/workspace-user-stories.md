@@ -346,3 +346,22 @@ the vocabulary already has, and the command line keeps working beside them.
   modified buffer is allowed.
 - Known wording gap: the content gate prints a solution action without its path, so two solutions that
   differ only by file read the same in a message. Recorded for the slice that next touches the gate.
+
+**L9 — evidence (T5, partial by design) and the gap it exposed**
+
+- Eight skills and seven `kind: workspace` exercises are content now, with their Spanish overlays; the
+  gate replays all 221 solutions of 175 exercises, including the new workspace ones.
+- **Three of the eight stories cannot be expressed and were left out instead of faked:** 2 (fuzzy find),
+  3 (grep and jump) and 8 (rename from the shell) need actions the engine refuses as pickers
+  (`file.find`, `grep.project`, `buffer.list`) or a shell rename that does not exist as an action.
+  Stories 1 and 6 ship reduced to their expressible half: open, create.
+- **The gap that reduction exposed, and the next slice:** no action can modify buffer text, so
+  `file.save` is unreachable in a replay and a story can never say "type this". Opening and creating
+  files is a workspace concern; typing is not. Decision: add `edit.insert` with a `text` field to the
+  vocabulary — the engine applies it by delegating to `vim-engine`'s INSERT, exactly as the workspace
+  already delegates every editing key. Content then says what is typed without naming a layer's keys,
+  and stories 1, 6 and 8 become whole.
+- Two honesty notes on the content: three of the new skills (`neovim.files.find`,
+  `neovim.search.grep-project`, `linux.shell.rename-file`) are theory-only until their stories can be
+  expressed, and the gate's declared-solution rule matches on action and target only, so alternatives
+  were kept distinct by action name; their bands were chosen by hand and are not pinned by a test yet.

@@ -1,0 +1,31 @@
+schemaVersion: 1
+
+id: neovim-buffers-list
+slug: neovim.buffers.list
+
+title: "List buffers and pick one"
+description: "Know which files your session has open, and choose one out of the list."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.buffers.jump-back
+concepts:
+  - buffers
+  - picker
+tags:
+  - buffers
+  - picker
+
+lesson:
+  - title: "Several files, one editor"
+    body: "Every file you open stays in a list of buffers. The list keeps the order you opened them in, so the first file of the session comes first."
+  - title: "Move through the list"
+    body: "Next and previous walk that list, and they wrap around: from the last buffer, next gives you the first one."
+    keys: ":bn"
+  - title: "Pick by name, or by position"
+    body: "The buffer list prints the paths so you can pick one. Without the list you reach the same buffer by moving, which costs one step for every buffer you cross."
+    keys: ":ls"

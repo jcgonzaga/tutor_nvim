@@ -1,0 +1,47 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-file-create-001
+slug: neovim.files.create.001
+title: "Create a new file"
+instruction: "Start a new file called notes/todo.md. It is not on disk yet, so the buffer opens empty and nothing is written until you save it."
+skillIds:
+  - neovim.files.create
+mode: learn
+difficulty: 2
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    notes/README.md: |
+      Notes for the project.
+    src/main.ts: |
+      import { add } from "./util";
+
+      console.log(add(1, 2));
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: notes/todo.md }
+    - { type: open_buffers, paths: [src/main.ts, notes/todo.md] }
+    - { type: buffer_text, path: notes/todo.md, text: "" }
+solutions:
+  - actions:
+      - action: file.new
+        path: notes/todo.md
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The file does not exist yet, so opening it by name would be refused."
+  - afterMs: 8000
+    level: 2
+    text: "Start a new, empty file with the path you want it to have."
+metadata:
+  language: markdown
+  context: notes
+  estimatedSeconds: 12
+  transferTags: []
+explanation: "A new path starts an empty buffer: the editor keeps the name you gave it and writes the file only when you save. Opening a path that is not on disk is refused, which is why creating a file is its own command."

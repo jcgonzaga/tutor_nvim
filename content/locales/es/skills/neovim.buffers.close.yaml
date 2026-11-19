@@ -1,0 +1,10 @@
+id: neovim-buffers-close
+title: "Cerrar un búfer sin salir del editor"
+description: "Quitar un archivo de la sesión y seguir editando el resto."
+lesson:
+  - title: "Cerrar un búfer no es salir"
+    body: "Salir deja el editor. Cerrar un búfer saca ese archivo de la sesión y te deja dentro, con el resto intacto."
+  - title: "La ventana se queda"
+    body: "La ventana que mostraba el búfer cerrado sigue mostrando otro, así que el reparto es el mismo y solo la lista es más corta."
+  - title: "El archivo se queda"
+    body: "Cerrar un búfer nunca borra el archivo. Sigue en el disco, y abrir su ruta otra vez te devuelve el mismo texto."

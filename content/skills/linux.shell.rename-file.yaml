@@ -1,0 +1,33 @@
+schemaVersion: 1
+
+id: linux-shell-rename-file
+slug: linux.shell.rename-file
+
+title: "Rename a file and reopen it"
+description: "Rename a file from the shell with mv, then go back to editing it under its new name."
+
+domain: linux
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - linux.shell.copy-move
+  - neovim.files.open
+concepts:
+  - rename
+  - files
+tags:
+  - rename
+  - shell
+  - editor
+
+lesson:
+  - title: "Rename is a move"
+    body: "The shell has no rename command. mv old new moves the file onto a new name in the same folder, and that is what a rename is."
+    keys: "mv old.txt new.txt"
+  - title: "The editor holds a path"
+    body: "A buffer remembers the path it was opened with. Rename the file behind it and the buffer still points at the old name, which no longer exists."
+  - title: "Reopen under the new name"
+    body: "Open the new path to edit the renamed file, and close the buffer that still holds the old one so the session matches the disk."
+    keys: ":e new.txt"

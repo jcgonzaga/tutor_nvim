@@ -1,0 +1,61 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-buffer-close-001
+slug: neovim.buffers.close.001
+title: "Close a buffer without quitting"
+instruction: "Open src/util.ts and then README.md, as you would while looking around. Then close the README buffer, ending in src/util.ts with src/main.ts still open."
+skillIds:
+  - neovim.buffers.close
+mode: recall
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    README.md: |
+      # Demo app
+      Start it with pnpm dev.
+    src/main.ts: |
+      import { add } from "./util";
+
+      console.log(add(1, 2));
+    src/util.ts: |
+      export const add = (a: number, b: number) => a + b;
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: src/util.ts }
+    - { type: open_buffers, paths: [src/main.ts, src/util.ts] }
+solutions:
+  - actions:
+      - action: file.open
+        path: src/util.ts
+      - action: file.open
+        path: README.md
+      - action: file.close-buffer
+    classification: optimal
+  - actions:
+      - action: file.open
+        path: README.md
+      - action: file.open
+        path: src/util.ts
+      - action: file.open
+        path: README.md
+      - action: file.close-buffer
+    classification: efficient
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Closing a buffer takes one file out of the session and leaves you in the editor."
+  - afterMs: 8000
+    level: 2
+    text: "The buffer that takes the closed one's place is the next one, or the previous one when you closed the last."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []
+explanation: "Closing the buffer you are in hands the window another open buffer, so no window closes and nothing else is lost. The file itself is untouched: only the session's list gets shorter, which is what makes closing different from quitting."

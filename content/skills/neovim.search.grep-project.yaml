@@ -1,0 +1,33 @@
+schemaVersion: 1
+
+id: neovim-search-grep-project
+slug: neovim.search.grep-project
+
+title: "Grep the project and jump to the match"
+description: "Search the text of every file in the project and open the file at the line that matched."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - linux.shell.search
+  - neovim.files.find
+concepts:
+  - search
+  - navigation
+tags:
+  - search
+  - project
+  - picker
+
+lesson:
+  - title: "Search the project, not the buffer"
+    body: "grep in the editor looks inside every file of the project, so you do not need to know which file holds the text you remember."
+  - title: "A pattern, then places to go"
+    body: "The results are file and line pairs. Each one is a place to jump to, so the search doubles as navigation."
+    keys: ":grep"
+  - title: "The same grep you know"
+    body: "This is the shell's grep -r behind a picker: a pattern in, the matching lines out, each with the file it came from."
+    keys: "grep -rn word ."

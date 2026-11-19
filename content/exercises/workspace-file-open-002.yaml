@@ -1,0 +1,55 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-file-open-002
+slug: neovim.files.open.by-name-002
+title: "Open the matching environment file"
+instruction: "You are looking at config/dev.env. Open config/prod.env so you can switch between the two environments."
+skillIds:
+  - neovim.files.open
+mode: transfer
+difficulty: 2
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    Makefile: |
+      dev:
+      	pnpm dev
+    config/dev.env: |
+      API_URL=http://localhost:3000
+      DEBUG=true
+    config/prod.env: |
+      API_URL=https://api.example.com
+      DEBUG=false
+  path: config/dev.env
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: config/prod.env }
+    - { type: open_buffers, paths: [config/dev.env, config/prod.env] }
+    - type: buffer_text
+      path: config/prod.env
+      text: |
+        API_URL=https://api.example.com
+        DEBUG=false
+solutions:
+  - actions:
+      - action: file.open
+        path: config/prod.env
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The file you want sits next to the one you have open."
+  - afterMs: 8000
+    level: 2
+    text: "Open config/prod.env by its path."
+metadata:
+  language: dotenv
+  context: config-file
+  estimatedSeconds: 10
+  transferTags:
+    - context:config-file
+explanation: "The path is relative to the folder the editor started in, so it starts at config. Opening config/prod.env leaves config/dev.env open, which is what makes comparing two environments possible."

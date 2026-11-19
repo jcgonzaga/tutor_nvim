@@ -1,0 +1,10 @@
+id: neovim-search-grep-project
+title: "Buscar en el proyecto y saltar al resultado"
+description: "Buscar un texto en todos los archivos del proyecto y abrir el archivo en la línea que coincide."
+lesson:
+  - title: "Busca en el proyecto, no en el búfer"
+    body: "grep en el editor mira dentro de todos los archivos del proyecto, así que no necesitas saber qué archivo contiene el texto que recuerdas."
+  - title: "Un patrón y lugares a los que ir"
+    body: "Los resultados son pares de archivo y línea. Cada uno es un sitio al que saltar, así que la búsqueda también sirve para navegar."
+  - title: "El mismo grep que ya conoces"
+    body: "Es el grep -r de la shell detrás de un selector: entra un patrón y salen las líneas que coinciden, cada una con el archivo del que viene."

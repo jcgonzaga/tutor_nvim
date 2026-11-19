@@ -1,0 +1,7 @@
+id: workspace-file-open-002
+title: "Abre el archivo del otro entorno"
+instruction: "Estás mirando config/dev.env. Abre config/prod.env para poder cambiar entre los dos entornos."
+hints:
+  - "El archivo que quieres está junto al que tienes abierto."
+  - "Abre config/prod.env por su ruta."
+explanation: "La ruta es relativa a la carpeta donde arrancó el editor, así que empieza en config. Abrir config/prod.env deja config/dev.env abierto, que es lo que permite comparar dos entornos."

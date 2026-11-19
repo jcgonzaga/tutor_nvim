@@ -1,0 +1,56 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-buffer-jump-back-001
+slug: neovim.buffers.jump-back.001
+title: "Jump back to the file you were editing"
+instruction: "You are editing src/main.ts. Look at src/util.ts and then come straight back to src/main.ts without typing its path again."
+skillIds:
+  - neovim.buffers.jump-back
+mode: recall
+difficulty: 2
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    README.md: |
+      # Demo app
+      Start it with pnpm dev.
+    src/main.ts: |
+      import { add } from "./util";
+
+      console.log(add(1, 2));
+    src/util.ts: |
+      export const add = (a: number, b: number) => a + b;
+  path: src/main.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: src/main.ts }
+    - { type: open_buffers, paths: [src/main.ts, src/util.ts] }
+    - type: buffer_text
+      path: src/main.ts
+      text: |
+        import { add } from "./util";
+
+        console.log(add(1, 2));
+solutions:
+  - actions:
+      - action: file.open
+        path: src/util.ts
+      - action: buffer.previous
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The file you were in is still open, so you do not need its path."
+  - afterMs: 8000
+    level: 2
+    text: "One buffer command goes back to the buffer you came from."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 12
+  transferTags: []
+explanation: "Opening src/util.ts leaves src/main.ts open behind it, so going back is a step through the buffers, not a second open. Opening src/main.ts by path reaches the same place, but you have to type the name you wanted to avoid."
