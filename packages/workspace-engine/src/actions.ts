@@ -1,6 +1,9 @@
 import {
   cycleBuffer,
   closeBuffer,
+  findFile,
+  grepProject,
+  listBuffer,
   newFile,
   openFile,
   saveActiveFile,
@@ -42,6 +45,11 @@ import { openBuffer } from "./workspace";
  * `file.*`, `buffer.*` and `edit.insert` call the same state functions the `:` command line calls
  * (`edit.insert` typing through `vim-engine`), and the parity tests assert they agree.
  *
+ * The picker-shaped actions are here as deterministic queries (T5c): the project is fixed, so
+ * `file.find` answers with the first file in path order whose path holds its query, `grep.project`
+ * records the matching rows in the state, and `buffer.list` focuses the open buffer its path names.
+ * Nothing is scored, ranked or timed, so a replay is the state the recording made.
+ *
  * Every operation is total: one that cannot apply returns the state it was given, unchanged, with
  * `applied: false` and a reason. Nothing throws and nothing is a silent no-op.
  */
@@ -81,22 +89,22 @@ export const WORKSPACE_FILE_ACTIONS = [
 export type WorkspaceFileActionName = (typeof WORKSPACE_FILE_ACTIONS)[number];
 
 /**
+ * The picker-shaped actions, each modelled as a deterministic query instead of an interactive
+ * picker (T5c), because the simulated project is a fixed set of files (S6): `file.find` opens the
+ * first file in path order whose path holds its query, `grep.project` records the matching lines in
+ * the state, and `buffer.list` focuses the open buffer its path names. Nothing is scored, ranked or
+ * timed, so the same query always answers the same file and the same rows.
+ */
+export const WORKSPACE_PICKER_ACTIONS = ["file.find", "grep.project", "buffer.list"] as const;
+export type WorkspacePickerActionName = (typeof WORKSPACE_PICKER_ACTIONS)[number];
+
+/**
  * The editing action this engine applies: the one that changes text, and the only one whose keys are
  * the content the solution names (L9). It types through `vim-engine`'s INSERT mode, never by writing
  * a buffer (AGENTS.md 2.3).
  */
 export const WORKSPACE_EDIT_ACTIONS = ["edit.insert"] as const;
 export type WorkspaceEditActionName = (typeof WORKSPACE_EDIT_ACTIONS)[number];
-
-/**
- * Actions that need an interactive picker. The simulation models no picker (S6), so they are
- * refused with a reason that names them: what is not modelled is absent, never faked, and a story
- * that needs one waits for a picker instead of passing on an invented answer.
- */
-export const WORKSPACE_PICKER_ACTIONS = ["file.find", "grep.project", "buffer.list"] as const;
-export type WorkspacePickerActionName = (typeof WORKSPACE_PICKER_ACTIONS)[number];
-
-const PICKER_ACTIONS: ReadonlySet<string> = new Set(WORKSPACE_PICKER_ACTIONS);
 
 /** A resize is a step of the ratio, never a number of pixels, so it stays deterministic. */
 const RATIO_STEP = 0.05;
@@ -177,10 +185,13 @@ export function applyWorkspaceAction(
       return cycleBufferAction(state, action, -1);
     case "edit.insert":
       return insertTextAction(state, options);
+    case "file.find":
+      return findFileAction(state, options);
+    case "grep.project":
+      return grepProjectAction(state, options);
+    case "buffer.list":
+      return listBufferAction(state, options);
     default:
-      if (PICKER_ACTIONS.has(action)) {
-        return refused(state, `${action}: no picker is modelled in the simulated workspace`);
-      }
       return refused(state, `Unknown workspace action: ${action}`);
   }
 }
@@ -225,6 +236,39 @@ function cycleBufferAction(
 ): WorkspaceActionResult {
   if (state.buffers.length < 2) return refused(state, `${action}: only one buffer is open`);
   return fromStep(cycleBuffer(state, offset));
+}
+
+/**
+ * `file.find` searches the project for the fragment the action names. A query the action does not
+ * carry is a refusal, because the simulation types no query and opens no dialog (S6).
+ */
+function findFileAction(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const query = options.query;
+  if (query === undefined) return refused(state, "file.find: no query given");
+  return fromStep(findFile(state, query));
+}
+
+/** `grep.project` records the rows it finds; opening the file a row names is a separate action. */
+function grepProjectAction(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const query = options.query;
+  if (query === undefined) return refused(state, "grep.project: no query given");
+  return fromStep(grepProject(state, query));
+}
+
+/** `buffer.list` focuses an open buffer by its path: the list is the session, not the project. */
+function listBufferAction(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const path = options.path;
+  if (path === undefined || path === "") return refused(state, "buffer.list: no path given");
+  return fromStep(listBuffer(state, path));
 }
 
 /**

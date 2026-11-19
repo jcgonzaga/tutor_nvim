@@ -10,6 +10,7 @@ export type {
   WorkspaceBuffer,
   WorkspaceCommandResult,
   WorkspaceDispatchResult,
+  WorkspaceGrepMatch,
   WorkspaceInit,
   WorkspaceState,
   WorkspaceTab,

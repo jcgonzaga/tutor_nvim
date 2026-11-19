@@ -126,7 +126,22 @@ describe("workspaceObjectiveView projects the state an objective is judged again
       layout: "leaf",
       focus: 0,
       splitRatios: [],
+      matches: [],
     });
+  });
+
+  it("carries the rows the last project search recorded, in project order", () => {
+    const state = createWorkspace({
+      files: { "src/b.ts": "one port", "src/a.ts": "port two" },
+      path: "src/a.ts",
+      cwd: "/project",
+    });
+    const result = applyWorkspaceAction(state, "grep.project", { query: "port" });
+    if (!result.applied) throw new Error("grep.project was refused");
+    expect(workspaceObjectiveView(result.state).matches).toEqual([
+      { path: "src/a.ts", line: 1, text: "port two" },
+      { path: "src/b.ts", line: 1, text: "one port" },
+    ]);
   });
 
   it("prints the layout, focus and ratios of the active tab", () => {

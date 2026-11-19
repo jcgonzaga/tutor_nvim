@@ -1,6 +1,6 @@
 import { bufferToText } from "@tutor-nvim/vim-engine";
 
-import type { FocusStep, WindowNode, WorkspaceState } from "./types";
+import type { FocusStep, WindowNode, WorkspaceGrepMatch, WorkspaceState } from "./types";
 import { activeTab, leafBufferIds } from "./windows";
 
 /*
@@ -61,13 +61,12 @@ export interface WorkspaceObjectiveBuffer {
 
 /**
  * The state an objective is judged against, already printed by the functions above: files, every
- * open buffer's text, the active path, the layout string, the focus index and the split ratios.
+ * open buffer's text, the active path, the layout string, the focus index, the split ratios and the
+ * rows the last project search recorded.
  *
  * Evaluation consumes this projection instead of the state itself, so it compares the same strings
  * the UI shows without a second implementation of the tree and without depending on this package's
- * internals. Field by field it mirrors `WorkspaceObjectiveState` in `@tutor-nvim/evaluation`, which
- * declares the same shape on the consumer side (T4 can re-point it when evaluation depends on the
- * engine for replay).
+ * internals.
  */
 export interface WorkspaceObjectiveView {
   /** The simulated disk: path -> text, as `file_text` asserts it. */
@@ -82,6 +81,8 @@ export interface WorkspaceObjectiveView {
   readonly focus: number | undefined;
   /** Pre-order ratios of the active tab. */
   readonly splitRatios: readonly number[];
+  /** The rows `grep.project` recorded, in project order, as `grep_matches` asserts them. */
+  readonly matches: readonly WorkspaceGrepMatch[];
 }
 
 export function workspaceObjectiveView(state: WorkspaceState): WorkspaceObjectiveView {
@@ -96,5 +97,10 @@ export function workspaceObjectiveView(state: WorkspaceState): WorkspaceObjectiv
     layout: tab === undefined ? "" : layoutText(tab.root),
     focus: focusLeafIndex(state),
     splitRatios: tab === undefined ? [] : splitRatios(tab.root),
+    matches: state.matches.map((match) => ({
+      path: match.path,
+      line: match.line,
+      text: match.text,
+    })),
   };
 }

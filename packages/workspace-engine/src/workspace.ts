@@ -36,6 +36,8 @@ export function createWorkspace(input: WorkspaceInit): WorkspaceState {
     cwd: input.cwd,
     buffers: [buffer],
     activeBufferId: buffer.id,
+    // No project search has run yet; the rows arrive with `grep.project` (T5c).
+    matches: [],
     tabs: [tab],
     activeTabId: tab.id,
     zoom: null,

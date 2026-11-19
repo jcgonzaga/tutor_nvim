@@ -15,6 +15,7 @@ import {
   WORKSPACE_PICKER_ACTIONS,
   type WindowNode,
   type WorkspaceActionOptions,
+  type WorkspaceGrepMatch,
   type WorkspaceState,
 } from "./index";
 
@@ -69,6 +70,11 @@ interface Snapshot {
   readonly zoom: unknown;
   readonly pending: unknown;
   readonly lastCommand: unknown;
+  /**
+   * The rows of the last project search (T5c). Nothing here searches, so the field is asserted as
+   * empty on every window, file and buffer step: a picker must not record rows as a side effect.
+   */
+  readonly matches: readonly WorkspaceGrepMatch[];
 }
 
 const snapshot = (state: WorkspaceState): Snapshot => ({
@@ -88,6 +94,7 @@ const snapshot = (state: WorkspaceState): Snapshot => ({
   zoom: state.zoom,
   pending: state.pending,
   lastCommand: state.lastCommand,
+  matches: [...state.matches],
 });
 
 /** The buffer of a single-line fixture file, as the T1 tests spell it. */
@@ -127,6 +134,7 @@ const stateOf = (parts: {
   readonly zoom?: unknown;
   readonly lastCommand?: unknown;
   readonly files?: Readonly<Record<string, string>>;
+  readonly matches?: readonly WorkspaceGrepMatch[];
 }): Snapshot => ({
   files: parts.files ?? FILES,
   cwd: CWD,
@@ -137,6 +145,7 @@ const stateOf = (parts: {
   zoom: parts.zoom ?? null,
   pending: null,
   lastCommand: parts.lastCommand ?? null,
+  matches: parts.matches ?? [],
 });
 
 const key = (pressed: string): KeyInput => ({ key: pressed });
@@ -854,17 +863,18 @@ describe("buffer.next, buffer.previous — cycling in open order", () => {
   });
 });
 
-describe("picker-shaped actions stay unapplied, never faked (S6)", () => {
-  it.each(["file.find", "grep.project", "buffer.list"])(
-    "refuses %s with a reason that names the picker it would need",
-    (action) => {
-      const before = initial();
-      const { state, applied, reason } = act(before, action);
-      expect(applied).toBe(false);
-      expect(reason).toBe(`${action}: no picker is modelled in the simulated workspace`);
-      expect(state).toBe(before);
-    },
-  );
+describe("picker-shaped actions are deterministic queries now (T5c)", () => {
+  it.each([
+    ["file.find", "file.find: no query given"],
+    ["grep.project", "grep.project: no query given"],
+    ["buffer.list", "buffer.list: no path given"],
+  ])("refuses %s when it names nothing to look for", (action, reason) => {
+    const before = initial();
+    const { state, applied, reason: found } = act(before, action);
+    expect(applied).toBe(false);
+    expect(found).toBe(reason);
+    expect(state).toBe(before);
+  });
 });
 
 /**
@@ -988,7 +998,7 @@ describe("totality", () => {
     ]);
   });
 
-  it("lists the picker-shaped actions it refuses instead of faking them", () => {
+  it("lists the picker-shaped actions it applies as deterministic queries", () => {
     expect([...WORKSPACE_PICKER_ACTIONS]).toEqual(["file.find", "grep.project", "buffer.list"]);
   });
 
