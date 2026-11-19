@@ -58,7 +58,7 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 | T5 | S3 | content: stories 1-8 (files and buffers) — stories 1-7 landed, story 8 waits on a shell action | `611db28` |
 | T5b | S3, S4 | `edit.insert`: typing is an action, so stories 1 and 6 become whole | `270c3eb` |
 | T5c | S3, S4 | the picker as a deterministic query: `file.find`, `grep.project`, `buffer.list`, the `grep_matches` goal, stories 2, 3 and 5 | `7163d25`, `371267f`, `c6c8f5a` |
-| T6 | S3 | content: stories 9-14 (windows and panes) | pending |
+| T6 | S3, S1 | windows and panes: the `windows` and `zoom` goals, the resize/swap catalog rows, six skills and stories 9-14 | `b168c44`, `57bcce9`, `d7e14da` |
 | T7 | S3 | content: stories 15-20 (sessions and the desktop) | pending |
 | T8 | S7 | web: workspace view, layout rendering, focus ring, keyboard only | pending |
 | T9 | S4-S6 | API: replay of workspace attempts with the same engine | pending |
@@ -456,3 +456,43 @@ not as an interactive fuzzy scorer:
   `pnpm content:embed` is regenerated in `f05d6f4`; the equality test that guards it passes again.
 - **Slice boundary, recorded again:** 15,095 authored changed lines in 29 commits on `main` since the
   branch point. `T1+T2`, `T3`, `T4+T4b+T5b` and `T5c` are the boundaries; the next slice is `T6`.
+
+**L13 — evidence (T6): windows are on screen, so the stories can be written**
+
+- Two goals were missing before a single window story could be told, and both are answered from the
+  tree instead of from a new state field. `windows` asserts the path each leaf shows, in pre-order:
+  a split is the same file twice, a swap is the same two files the other way round, and
+  `open_buffers` cannot say either, because it is the set of what is loaded. `zoom` asserts the path
+  the zoomed window shows, or `null` for none, because zoom is a note beside the tree and a learner
+  who zoomed and restored prints the same layout as one who never touched it.
+- Both are test-first: the RED tests are the `windows`/`zoom` cases in `workspace-goal.test.ts`, the
+  parser cases in `workspace.test.ts` and the projection cases in `serialize.test.ts`. Writing the
+  swap case is what proved the engine already got it right: `withTabs` re-derives `activeBufferId`
+  from the focused leaf, so after a swap the cursor stays in the pane and the active buffer becomes
+  the neighbour's file. The test now pins that.
+- The nvim catalog gained the five rows the stories needed and no catalog had: `C-w>`, `C-w<`,
+  `C-w+`, `C-w-` (`window.resize-*`) and `C-wx` (`window.swap`), each carrying the same `notModelled`
+  note as its neighbours, because `packages/vim-engine` still models one window. Without them the
+  gate would have refused any solution that resizes or swaps.
+- Six skills — `neovim.windows.{split,focus,resize,close,zoom,swap}` — and six stories (9-14), with
+  their ES overlays: split and open a second file, move back with the direction key, step the ratio
+  to 0.65, close the pane without closing the file, zoom to edit and restore the layout, and trade
+  the two panes. Every story asserts the *end state* only, which is why story 13 edits and saves
+  while zoomed: a zoom that is undone is invisible to a replay, so the story proves the detour with
+  the text it left on disk.
+- Evidence: `pnpm content:ci` green (43 skills, 183 exercises, 232 solutions reach their objective
+  with the classification they declare); `pnpm typecheck` green; the workspace, evaluation and schema
+  suites at 407 tests green. The embedded API copy is regenerated again (`content:embed`), so the
+  equality test passes with the new content.
+- Two failures in the full run are worth naming so nobody reads them as regressions. The three
+  `tests/content-ci.test.ts` cases that failed mid-slice were the fixture rotting under the new
+  catalog rows, not the gate breaking, and they are fixed by reading the unprovided action out of the
+  copy. And the DB-backed files (`tests/cloud-sync.test.ts`, `apps/api/src/{api,db,gamification,platform,sessions}.test.ts`)
+  fail on a ten-second `beforeEach` hook: `openTestDb` (pglite) takes **15.1 s** on this machine while
+  `syncContent` takes 0.43 s for all 183 exercises, so the content is not what makes them slow. Run
+  alone, `api.test.ts` skips 28 and `sessions.test.ts` skips 9 (no database), while `db.test.ts` (2)
+  and `platform.test.ts` (11) pass.
+- **Slice boundary:** 16,038 authored changed lines in 34 commits. `T7` (stories 15-20) is next: it
+  needs `app.launch-terminal`, `session.detach`/`session.attach` and `window.new`, none of which any
+  catalog or the engine models yet, so it starts with the terminal and session actions rather than
+  with content.
