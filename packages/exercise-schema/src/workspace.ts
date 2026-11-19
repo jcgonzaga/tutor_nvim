@@ -32,7 +32,8 @@ import { ExerciseValidationError, formatIssues, parseYamlDocument } from "./vali
 
 /**
  * The actions of one solution: a name, or `{ action, target }` where the verb takes a text object,
- * and `path` where the action names a file (`file.open`, `file.new`, T4b).
+ * `path` where the action names a file (`file.open`, `file.new`, T4b) and `text` where it types one
+ * (`edit.insert`, L9).
  */
 const solutionActionSchema = z.union([z.enum(KEYMAP_ACTIONS), workspaceActionRefSchema]);
 
@@ -167,20 +168,24 @@ export const workspaceExerciseSchema = z
               action: entry.action,
               ...(entry.target === undefined ? {} : { target: entry.target }),
               ...(entry.path === undefined ? {} : { path: entry.path }),
+              ...(entry.text === undefined ? {} : { text: entry.text }),
             },
       ),
     })),
   }));
 
 /**
- * One action of a workspace solution: the target only where the vocabulary takes one, and the path
- * only where the action names a file (`file.open`, `file.new`), so the replay can hand it to the
- * engine instead of guessing which file the story meant.
+ * One action of a workspace solution: the target only where the vocabulary takes one, the path only
+ * where the action names a file (`file.open`, `file.new`) and the text only where it types one
+ * (`edit.insert`), so the replay can hand them to the engine instead of guessing which file or which
+ * words the story meant.
  */
 export interface WorkspaceSolutionAction {
   readonly action: KeymapAction;
   readonly target?: KeymapTarget;
   readonly path?: string;
+  /** What `edit.insert` types, handed to the engine the way `path` is. */
+  readonly text?: string;
 }
 
 /**

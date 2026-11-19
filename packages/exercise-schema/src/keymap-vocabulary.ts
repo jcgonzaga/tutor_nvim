@@ -44,6 +44,8 @@ export const KEYMAP_ACTIONS = [
   "motion.repeat-find-reverse",
   "edit.insert-before",
   "edit.insert-after",
+  // Types the text a workspace solution names: the one action whose keys are the content (L9).
+  "edit.insert",
   "edit.open-line-below",
   "edit.normal-mode",
   "edit.delete",
@@ -112,3 +114,10 @@ export type KeymapTarget = (typeof KEYMAP_TARGETS)[number];
 /** The only actions a binding may give a `target`: the operator verbs that need one. */
 export const KEYMAP_TARGETED_ACTIONS = ["edit.delete", "edit.change", "edit.yank"] as const;
 
+/**
+ * The actions that type text: `edit.insert` and nothing else. A binding names keys, never the words
+ * a story asks for, so no layer's keys can stand in for these: the solution carries the text itself
+ * (a workspace story says "type this", L9) and the workspace engine types it through `vim-engine`'s
+ * INSERT mode. A solution gives a `text` to these actions and to no other.
+ */
+export const KEYMAP_TEXT_ACTIONS = ["edit.insert"] as const;

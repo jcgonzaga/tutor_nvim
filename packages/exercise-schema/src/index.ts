@@ -53,6 +53,7 @@ export {
   KEYMAP_SURFACES,
   KEYMAP_TARGETED_ACTIONS,
   KEYMAP_TARGETS,
+  KEYMAP_TEXT_ACTIONS,
   KeymapValidationError,
   isKeymapKeySequence,
   keymapBindingSchema,

@@ -2,8 +2,8 @@ schemaVersion: 1
 kind: workspace
 id: workspace-file-create-001
 slug: neovim.files.create.001
-title: "Create a new file"
-instruction: "Start a new file called notes/todo.md. It is not on disk yet, so the buffer opens empty and nothing is written until you save it."
+title: "Create a new file, write it and save it"
+instruction: 'Start a new file called notes/todo.md, type the two lines "# TODO" and "- write the first exercise" into it, and save it. The path is not on disk yet, so the buffer opens empty and nothing is written until you save.'
 skillIds:
   - neovim.files.create
 mode: learn
@@ -26,11 +26,19 @@ objective:
   goals:
     - { type: active_file, path: notes/todo.md }
     - { type: open_buffers, paths: [src/main.ts, notes/todo.md] }
-    - { type: buffer_text, path: notes/todo.md, text: "" }
+    - type: buffer_text
+      path: notes/todo.md
+      text: "# TODO\n- write the first exercise"
+    - type: file_text
+      path: notes/todo.md
+      text: "# TODO\n- write the first exercise"
 solutions:
   - actions:
       - action: file.new
         path: notes/todo.md
+      - action: edit.insert
+        text: "# TODO\n- write the first exercise"
+      - action: file.save
     classification: optimal
 hints:
   - afterMs: 4000
@@ -38,10 +46,10 @@ hints:
     text: "The file does not exist yet, so opening it by name would be refused."
   - afterMs: 8000
     level: 2
-    text: "Start a new, empty file with the path you want it to have."
+    text: "Start a new, empty file with the path you want it to have, type the text, then save it."
 metadata:
   language: markdown
   context: notes
-  estimatedSeconds: 12
+  estimatedSeconds: 20
   transferTags: []
-explanation: "A new path starts an empty buffer: the editor keeps the name you gave it and writes the file only when you save. Opening a path that is not on disk is refused, which is why creating a file is its own command."
+explanation: "A new path starts an empty buffer: the editor keeps the name you gave it, and the file appears on disk only when you save. Typos are text, not keys: the buffer is what you typed, and saving is what writes it under that name."

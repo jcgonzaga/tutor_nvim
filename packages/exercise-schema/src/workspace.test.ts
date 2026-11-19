@@ -223,6 +223,50 @@ describe("workspace exercise schema", () => {
     ).toMatch(/must name a file inside the simulated project, so it cannot be empty/);
   });
 
+  it("reads a text only with edit.insert, which cannot be declared without one", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      objective: { type: "file_text", path: "src/main.ts", text: "two" },
+      solutions: [
+        {
+          actions: [{ action: "edit.insert", text: "two" }, { action: "file.save" }],
+          classification: "optimal",
+        },
+      ],
+    });
+    expect(exercise.solutions[0]?.actions).toEqual([
+      { action: "edit.insert", text: "two" },
+      { action: "file.save" },
+    ]);
+
+    // Required: an insert that types nothing is not a step a learner can take.
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "edit.insert" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/"edit\.insert" needs a text: it types the text the solution names/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          {
+            actions: [{ action: "window.split-side-by-side", text: "two" }],
+            classification: "optimal",
+          },
+        ],
+      }).join("\n"),
+    ).toMatch(/"window\.split-side-by-side" takes no text: only edit\.insert types text/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "edit.insert", text: "" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/solutions\.0\.actions\.0\.text: must be the text to type, so it cannot be empty/);
+  });
+
   it("requires exactly one solution classified optimal", () => {
     expect(
       issuesOf({

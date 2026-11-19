@@ -1,7 +1,7 @@
 id: workspace-file-create-001
-title: "Crea un archivo nuevo"
-instruction: "Empieza un archivo nuevo llamado notes/todo.md. No está en el disco, así que el búfer se abre vacío y no se escribe nada hasta que guardes."
+title: "Crea un archivo nuevo, escríbelo y guárdalo"
+instruction: 'Empieza un archivo nuevo llamado notes/todo.md, escribe dentro las dos líneas "# TODO" y "- write the first exercise", y guárdalo. La ruta no está en el disco todavía, así que el búfer se abre vacío y no se escribe nada hasta que guardes.'
 hints:
   - "El archivo todavía no existe, así que abrirlo por su nombre sería rechazado."
-  - "Empieza un archivo nuevo y vacío con la ruta que quieres que tenga."
-explanation: "Una ruta nueva abre un búfer vacío: el editor guarda el nombre que le diste y escribe el archivo solo al guardar. Abrir una ruta que no está en el disco se rechaza, y por eso crear un archivo es un comando aparte."
+  - "Empieza un archivo nuevo y vacío con la ruta que quieres que tenga, escribe el texto y guárdalo."
+explanation: "Una ruta nueva abre un búfer vacío: el editor guarda el nombre que le diste, y el archivo aparece en el disco solo al guardar. Lo que escribes es texto, no atajos: el búfer es lo que has escrito, y guardar es lo que lo escribe con ese nombre."

@@ -27,13 +27,16 @@ export {
 export { dispatchWorkspace, runWorkspaceKeys } from "./keys";
 export {
   WORKSPACE_ACTIONS,
+  WORKSPACE_EDIT_ACTIONS,
   WORKSPACE_FILE_ACTIONS,
   WORKSPACE_PICKER_ACTIONS,
   applyWorkspaceAction,
   type WorkspaceActionName,
+  type WorkspaceEditActionName,
   type WorkspaceFileActionName,
   type WorkspacePickerActionName,
 } from "./actions";
+export { typeText } from "./editing";
 export { activeTab, focusLeaf, leafBufferIds } from "./windows";
 export {
   focusLeafIndex,

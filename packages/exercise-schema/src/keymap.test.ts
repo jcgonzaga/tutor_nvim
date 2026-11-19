@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ExerciseValidationError,
   KEYMAP_ACTIONS,
+  KEYMAP_TEXT_ACTIONS,
   parseKeymapLayer,
   validateKeymapLayers,
   type KeymapBindingInput,
@@ -147,7 +148,7 @@ describe("keymap layer schema v1", () => {
     );
   });
 
-  it("names the split actions by the layout they produce, not by \"horizontal\"", () => {
+  it('names the split actions by the layout they produce, not by "horizontal"', () => {
     for (const action of ["window.split-side-by-side", "window.split-stacked"]) {
       const input = validLayer();
       input.bindings = [binding({ action: action as never })];
@@ -273,5 +274,13 @@ describe("keymap layer catalog", () => {
       bindings: [binding({ modes: ["normal"], override: true })],
     });
     expect(collectionIssuesFor([base, child])).toEqual([]);
+  });
+});
+
+describe("the action that types text (workspace stories 1 and 6)", () => {
+  it("names edit.insert in the vocabulary, as the only action a solution gives a text", () => {
+    expect(KEYMAP_ACTIONS).toContain("edit.insert");
+    expect(KEYMAP_TEXT_ACTIONS).toEqual(["edit.insert"]);
+    for (const action of KEYMAP_TEXT_ACTIONS) expect(KEYMAP_ACTIONS).toContain(action);
   });
 });

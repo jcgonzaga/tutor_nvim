@@ -103,3 +103,27 @@ describe("an exercise may ask for an action, not for one tool's keys (S6)", () =
     ).toThrow(/twice/);
   });
 });
+
+describe("a text belongs to a workspace solution, not to the other kinds", () => {
+  it("rejects a text on a vim action solution, whose schema is unchanged", () => {
+    expect(() =>
+      parseExercise(
+        {
+          schemaVersion: 1,
+          id: "vim-split-001",
+          slug: "workspace.split.basic-001",
+          title: "Split the window",
+          skillIds: ["vim.window.split"],
+          mode: "learn",
+          difficulty: 1,
+          initialState: { buffer: "one" },
+          objective: { type: "buffer_equals", target: "one" },
+          evaluation: {},
+          solutions: [{ sequence: "dd", classification: "optimal" }],
+          actionSolutions: [{ action: "edit.insert", text: "two", classification: "optimal" }],
+        },
+        "a.yaml",
+      ),
+    ).toThrow(/text/);
+  });
+});

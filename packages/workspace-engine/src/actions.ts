@@ -6,6 +6,7 @@ import {
   saveActiveFile,
   type FileStepResult,
 } from "./files";
+import { typeText } from "./editing";
 import type {
   FocusStep,
   WindowLayout,
@@ -36,9 +37,10 @@ import { openBuffer } from "./workspace";
  * Goto-file, `n` in a file picker and `:e` reach the same `file.open`. This engine never learns what
  * a prefix is.
  *
- * Files and buffers are here for the same reason windows are (T4b): opening `src/other.ts` is one
- * thing however the learner does it, so `file.*` and `buffer.*` call the same state functions the
- * `:` command line calls, and the parity tests assert the two reach the same state.
+ * Files, buffers and typing are here for the same reason windows are (T4b, L9): opening
+ * `src/other.ts` is one thing however the learner does it, and a story says what it writes, so
+ * `file.*`, `buffer.*` and `edit.insert` call the same state functions the `:` command line calls
+ * (`edit.insert` typing through `vim-engine`), and the parity tests assert they agree.
  *
  * Every operation is total: one that cannot apply returns the state it was given, unchanged, with
  * `applied: false` and a reason. Nothing throws and nothing is a silent no-op.
@@ -77,6 +79,14 @@ export const WORKSPACE_FILE_ACTIONS = [
   "buffer.previous",
 ] as const;
 export type WorkspaceFileActionName = (typeof WORKSPACE_FILE_ACTIONS)[number];
+
+/**
+ * The editing action this engine applies: the one that changes text, and the only one whose keys are
+ * the content the solution names (L9). It types through `vim-engine`'s INSERT mode, never by writing
+ * a buffer (AGENTS.md 2.3).
+ */
+export const WORKSPACE_EDIT_ACTIONS = ["edit.insert"] as const;
+export type WorkspaceEditActionName = (typeof WORKSPACE_EDIT_ACTIONS)[number];
 
 /**
  * Actions that need an interactive picker. The simulation models no picker (S6), so they are
@@ -165,6 +175,8 @@ export function applyWorkspaceAction(
       return cycleBufferAction(state, action, 1);
     case "buffer.previous":
       return cycleBufferAction(state, action, -1);
+    case "edit.insert":
+      return insertTextAction(state, options);
     default:
       if (PICKER_ACTIONS.has(action)) {
         return refused(state, `${action}: no picker is modelled in the simulated workspace`);
@@ -213,6 +225,20 @@ function cycleBufferAction(
 ): WorkspaceActionResult {
   if (state.buffers.length < 2) return refused(state, `${action}: only one buffer is open`);
   return fromStep(cycleBuffer(state, offset));
+}
+
+/**
+ * `edit.insert` types the text the action names into the active buffer through the editor. An insert
+ * with no text, and one whose text is empty, have nothing to type: both are refusals with a reason,
+ * never a silent no-op.
+ */
+function insertTextAction(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const text = options.text;
+  if (text === undefined) return refused(state, "edit.insert: no text given");
+  return fromStep(typeText(state, text));
 }
 
 /**

@@ -134,6 +134,11 @@ export interface WorkspaceActionOptions {
    * `file.new` starts a buffer for it. No dialog is modelled, so the caller supplies it (S6).
    */
   readonly path?: string;
+  /**
+   * What `edit.insert` types. A solution carries the words the way a file action carries its path,
+   * because a binding names keys and can never name the text a story asks for (L9).
+   */
+  readonly text?: string;
 }
 
 export interface WorkspaceActionResult {

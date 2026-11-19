@@ -6,6 +6,7 @@ import type {
 import {
   applyWorkspaceAction,
   createWorkspace,
+  type WorkspaceActionOptions,
   type WorkspaceState,
 } from "@tutor-nvim/workspace-engine";
 
@@ -17,7 +18,9 @@ import type { WorkspaceAttempt } from "./attempt";
  * A workspace solution is a list of keymap actions, never one tool's keys, so the replay needs no
  * layer: it starts from the exercise's initial state and applies the actions through the engine's
  * own `applyWorkspaceAction`, which is the same code a learner's keys reach. A file action carries
- * the path it names (T4b), so `file.open src/other.ts` reaches the state `:e src/other.ts` reaches.
+ * the path it names (T4b), so `file.open src/other.ts` reaches the state `:e src/other.ts` reaches,
+ * and an insert carries the text it types (L9), so a story can say what it writes and assert the
+ * disk after saving.
  * The end state is then judged by the objective, and the cost in actions by the classification.
  *
  * An action the engine refuses is a *content* bug, not a learner error: the story asks for something
@@ -33,6 +36,17 @@ export interface RefusedWorkspaceAction {
   readonly index: number;
   /** Why the engine could not apply it, in the engine's words. */
   readonly reason: string;
+}
+
+/**
+ * What one action hands the engine: a path for the actions that name a file and a text for the one
+ * that types (the schema rejects either anywhere else), so an action without them is the action bare.
+ */
+function optionsOf(action: WorkspaceSolutionAction): WorkspaceActionOptions {
+  return {
+    ...(action.path === undefined ? {} : { path: action.path }),
+    ...(action.text === undefined ? {} : { text: action.text }),
+  };
 }
 
 /**
@@ -66,13 +80,7 @@ export function simulateWorkspaceSolution(
   let refused: RefusedWorkspaceAction | null = null;
 
   for (const [index, action] of solution.actions.entries()) {
-    // Only `file.open` and `file.new` carry a path (the schema rejects it anywhere else), so the
-    // options are exactly the file the action names, and an action without one is the action bare.
-    const result = applyWorkspaceAction(
-      state,
-      action.action,
-      action.path === undefined ? {} : { path: action.path },
-    );
+    const result = applyWorkspaceAction(state, action.action, optionsOf(action));
     if (!result.applied) {
       refused = {
         action,

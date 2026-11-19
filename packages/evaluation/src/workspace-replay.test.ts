@@ -316,3 +316,69 @@ describe("simulateWorkspaceSolution passes the path a file action names", () => 
     expect(goalMet(ex, replay)).toBe(false);
   });
 });
+
+/**
+ * A story about typing and saving: `edit.insert` is what lets content say what is written, so the
+ * objective can assert the disk (L9). Typing is never a layer's keystroke, so the action carries the
+ * text the way `file.open` carries its path.
+ */
+function editSaveExercise(): WorkspaceExercise {
+  return parseWorkspaceExercise({
+    schemaVersion: 1,
+    kind: "workspace",
+    id: "workspace-test-004",
+    slug: "workspace.test.edit-save-001",
+    title: "Write a line and save it",
+    skillIds: ["workspace.file.edit"],
+    mode: "learn",
+    difficulty: 1,
+    initialState: { files: { "src/notes.md": "" }, path: "src/notes.md", cwd: "/project" },
+    objective: { type: "file_text", path: "src/notes.md", text: "two" },
+    solutions: [
+      {
+        actions: [{ action: "edit.insert", text: "two" }, { action: "file.save" }],
+        classification: "optimal",
+      },
+    ],
+  });
+}
+
+describe("a solution may type text (edit.insert, L9)", () => {
+  it("replays edit.insert and file.save to the text the objective asserts on disk", () => {
+    const ex = editSaveExercise();
+    const optimal = ex.solutions[0];
+    if (optimal === undefined) throw new Error("the fixture declares an optimal solution");
+
+    const replay = simulateWorkspaceSolution(ex, optimal);
+
+    expect(replay.refused).toBeNull();
+    expect(replay.state.files["src/notes.md"]).toBe("two");
+    expect(activeBuffer(replay.state).modified).toBe(false);
+    expect(goalMet(ex, replay)).toBe(true);
+    expect(checkExercise(ex)).toEqual([]);
+  });
+
+  it("reports an insert the engine refuses as a content bug, not as a learner error", () => {
+    const ex = editSaveExercise();
+    const broken = {
+      ...ex,
+      solutions: [
+        {
+          ...ex.solutions[0]!,
+          actions: [{ action: "edit.insert" as const, text: "" }, { action: "file.save" as const }],
+        },
+      ],
+    };
+
+    const replay = simulateWorkspaceSolution(broken, broken.solutions[0]!);
+    expect(replay.refused).toEqual({
+      action: { action: "edit.insert", text: "" },
+      index: 0,
+      reason: "edit.insert: the text to type is empty",
+    });
+
+    const errors = checkExercise(broken);
+    expect(errors.join("\n")).toMatch(/workspace\.test\.edit-save-001: solution 1/);
+    expect(errors.join("\n")).toMatch(/edit\.insert: the text to type is empty/);
+  });
+});

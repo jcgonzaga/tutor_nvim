@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { KEYMAP_ACTIONS, KEYMAP_TARGETS, KEYMAP_TARGETED_ACTIONS } from "./keymap-vocabulary";
+import {
+  KEYMAP_ACTIONS,
+  KEYMAP_TARGETS,
+  KEYMAP_TARGETED_ACTIONS,
+  KEYMAP_TEXT_ACTIONS,
+} from "./keymap-vocabulary";
 import { SOLUTION_CLASSIFICATIONS } from "./primitives";
 
 /**
@@ -22,6 +27,12 @@ const projectPathSchema = z
       'must name a file inside the simulated project: it is relative, so it cannot start with "/"',
   });
 
+/**
+ * The text a solution types: non-empty, because an insert that types nothing is not a step a learner
+ * can take, and the engine refuses it.
+ */
+const typedTextSchema = z.string().min(1, "must be the text to type, so it cannot be empty");
+
 /** The name of an action and, for an operator, what it acts on: the fields every solution shares. */
 const actionFields = {
   action: z.enum(KEYMAP_ACTIONS),
@@ -37,6 +48,30 @@ function checkTarget(ref: { action: string; target?: string }, ctx: z.Refinement
     code: "custom",
     path: ["target"],
     message: `"${ref.action}" takes no target: only ${KEYMAP_TARGETED_ACTIONS.join(", ")} do`,
+  });
+}
+
+/**
+ * A `text` is read only where the vocabulary types one, and it is required there: the action exists
+ * to say what is written, so a solution that gives no text is as wrong as one that gives it to a
+ * verb that types nothing.
+ */
+function checkText(ref: { action: string; text?: string }, ctx: z.RefinementCtx): void {
+  if ((KEYMAP_TEXT_ACTIONS as readonly string[]).includes(ref.action)) {
+    if (ref.text === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["text"],
+        message: `"${ref.action}" needs a text: it types the text the solution names`,
+      });
+    }
+    return;
+  }
+  if (ref.text === undefined) return;
+  ctx.addIssue({
+    code: "custom",
+    path: ["text"],
+    message: `"${ref.action}" takes no text: only ${KEYMAP_TEXT_ACTIONS.join(", ")} types text`,
   });
 }
 
@@ -59,16 +94,23 @@ export const actionRefSchema = z
 export type ActionRef = z.output<typeof actionRefSchema>;
 
 /**
- * One action of a workspace solution: the shared fields plus the file a file action opens (T4b).
+ * One action of a workspace solution: the shared fields plus the file a file action opens and the
+ * text an insert types (T4b, L9).
  *
- * A workspace story is about files and buffers, so `file.open` and `file.new` must say which file;
- * keeping the field on a schema of its own is what makes `path` an error everywhere else, instead of
- * a field the vim and shell kinds silently accept without ever using it.
+ * A workspace story is about files and buffers, so `file.open` and `file.new` must say which file and
+ * `edit.insert` must say what is typed; keeping the fields on a schema of its own is what makes
+ * `path` and `text` an error everywhere else, instead of fields the vim and shell kinds silently
+ * accept without ever using them.
  */
 export const workspaceActionRefSchema = z
-  .strictObject({ ...actionFields, path: projectPathSchema.optional() })
+  .strictObject({
+    ...actionFields,
+    path: projectPathSchema.optional(),
+    text: typedTextSchema.optional(),
+  })
   .superRefine((solution, ctx) => {
     checkTarget(solution, ctx);
+    checkText(solution, ctx);
     if (solution.path === undefined) return;
     if ((PATHED_ACTIONS as readonly string[]).includes(solution.action)) return;
     ctx.addIssue({

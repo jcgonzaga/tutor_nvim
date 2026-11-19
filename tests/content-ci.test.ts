@@ -266,6 +266,41 @@ describe("content integrity gate (T-907)", () => {
     expect(result.output).toContain("no keymap catalog provides");
   }, 60_000);
 
+  it("exempts a text action no catalog can bind, and still blocks one that only a catalog can", async () => {
+    // Typing is the one action every layer performs by typing: a binding names keys, never the text,
+    // so `edit.insert` cannot be provided by a catalog and is not a missing layer (L9).
+    const accepted = copyOfContent();
+    const typedId = "workspace-split-typed-001";
+    addWorkspaceExercise(
+      accepted,
+      typedId,
+      workspaceYaml(
+        typedId,
+        '  - actions: [{ action: edit.insert, text: "two" }, file.save]\n    classification: optimal',
+        '  type: file_text\n  path: src/main.ts\n  text: "two"',
+      ),
+    );
+    expect((await run("content-validate", accepted)).code).toBe(0);
+
+    // The rule itself still holds: an action no binding offers is a story no layer can solve.
+    const rejected = copyOfContent();
+    const unprovidedId = "workspace-split-unprovided-002";
+    addWorkspaceExercise(
+      rejected,
+      unprovidedId,
+      workspaceYaml(
+        unprovidedId,
+        "  - actions: [window.resize-wider]\n    classification: optimal",
+        '  type: layout\n  text: "leaf"',
+      ),
+    );
+    const result = await run("content-validate", rejected);
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain(
+      `${unprovidedId}: declares action solution "window.resize-wider", which no keymap catalog provides`,
+    );
+  }, 60_000);
+
   it("blocks a prerequisite cycle", async () => {
     const root = copyOfContent();
     edit(root, "skills/vim.navigation.atomic.yaml", (text) =>

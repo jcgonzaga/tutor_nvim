@@ -365,3 +365,19 @@ the vocabulary already has, and the command line keeps working beside them.
   `neovim.search.grep-project`, `linux.shell.rename-file`) are theory-only until their stories can be
   expressed, and the gate's declared-solution rule matches on action and target only, so alternatives
   were kept distinct by action name; their bands were chosen by hand and are not pinned by a test yet.
+
+**L10 — evidence (T5b): typing is an action, and stories 1 and 6 are whole**
+
+- `edit.insert` with a required `text` is in the vocabulary and the engine applies it by delegating to
+  `vim-engine`'s INSERT (`i`, the characters, `Esc`), so the workspace still never edits text itself.
+  `text` is legal only there, like `path` is legal only for `file.open`/`file.new`; the vim and shell
+  kinds keep their own action schema.
+- The content gate learns the exception the vocabulary forced: an action that carries text is not
+  something a keymap binding can provide — typing is the one action every layer performs by typing —
+  so the "no catalog provides it" rule skips exactly those. A test proves both sides: the text action
+  passes, an unprovided key-shaped action still fails with the same message.
+- Stories 1 and 6 are whole now: open or create, type, save, with objectives asserting the simulated
+  disk. Typing starts where a fresh buffer leaves the cursor (top of the file), so content prepends;
+  an edit mid-file waits for a cursor action that does not exist yet.
+- Still out, and now for one reason only: stories 2, 3 and 8 need pickers (`file.find`, `grep.project`,
+  `buffer.list`) or a shell rename action. Those are engine capabilities, not content work.

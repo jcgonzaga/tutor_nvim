@@ -5,13 +5,16 @@
  * 1. every binding of every catalog resolves to itself, so no row is shadowed, duplicated or
  *    written in keys the resolver or a browser cannot read;
  * 2. every action an exercise declares is provided by at least one catalog, so an exercise cannot
- *    ask for keys that no layer offers.
+ *    ask for keys that no layer offers — except the actions whose keys are the content itself
+ *    (`edit.insert`, which types the text a solution names), because a binding can never carry that
+ *    text and the workspace engine types it through `vim-engine` instead (L9).
  *
  * Both return the same `path: problem` strings the other content checks produce, collected instead
  * of thrown one at a time, so a single run reports everything it can. Nothing here reads the
  * learner's enabled layers: the catalogs are checked against themselves and against each other.
  */
 import {
+  KEYMAP_TEXT_ACTIONS,
   parseKeymapKeys,
   type ActionSolution,
   type Exercise,
@@ -179,6 +182,14 @@ function declaredActions(exercise: Exercise): readonly ActionSolution[] {
   );
 }
 
+/**
+ * Actions no catalog can provide, because their keys *are* the content: `edit.insert` types the text
+ * the solution names, and a binding names keys, never the words (L9). Typing is the one action every
+ * layer performs by typing, so asking for it is not asking for a layer that is missing; the workspace
+ * engine applies it through `vim-engine`'s INSERT mode instead.
+ */
+const TYPED_ACTIONS: ReadonlySet<string> = new Set(KEYMAP_TEXT_ACTIONS);
+
 /** Every action an exercise declares must be provided by at least one catalog, or it cannot be solved. */
 function checkActionSolutions(
   exercises: readonly Exercise[],
@@ -187,6 +198,7 @@ function checkActionSolutions(
   const problems: string[] = [];
   for (const exercise of exercises) {
     for (const solution of declaredActions(exercise)) {
+      if (TYPED_ACTIONS.has(solution.action)) continue;
       if (planActionSolutions([solution], catalogs).length > 0) continue;
       problems.push(
         `${exercise.id}: declares action solution "${solution.action}"${solution.target === undefined ? "" : ` (${solution.target})`}, which no keymap catalog provides`,

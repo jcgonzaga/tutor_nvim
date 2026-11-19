@@ -2,12 +2,12 @@ schemaVersion: 1
 kind: workspace
 id: workspace-file-open-001
 slug: neovim.files.open.by-name-001
-title: "Open a file by name"
-instruction: "You are editing src/main.ts. Open src/util.ts, the file it imports from, without leaving the editor."
+title: "Open a file by name, edit it and save it"
+instruction: 'You are editing src/main.ts. Open src/util.ts, the file it imports from, add the header comment "// Shared helpers" as its first line, and save the file without leaving the editor.'
 skillIds:
   - neovim.files.open
 mode: learn
-difficulty: 1
+difficulty: 2
 environment:
   type: simulator
   profile: workspace-basic-v1
@@ -31,28 +31,28 @@ objective:
     - { type: open_buffers, paths: [src/main.ts, src/util.ts] }
     - type: buffer_text
       path: src/util.ts
-      text: "export const add = (a: number, b: number) => a + b;"
+      text: "// Shared helpers\nexport const add = (a: number, b: number) => a + b;"
+    - type: file_text
+      path: src/util.ts
+      text: "// Shared helpers\nexport const add = (a: number, b: number) => a + b;"
 solutions:
   - actions:
       - action: file.open
         path: src/util.ts
+      - action: edit.insert
+        text: "// Shared helpers\n"
+      - action: file.save
     classification: optimal
-  - actions:
-      - action: file.open
-        path: src/main.ts
-      - action: file.open
-        path: src/util.ts
-    classification: valid
 hints:
   - afterMs: 4000
     level: 1
     text: "Opening a file is one editor command, and it names the file."
   - afterMs: 8000
     level: 2
-    text: "Open a file by its path: src/util.ts."
+    text: "Open src/util.ts by its path, type the comment line at the top, then save the buffer writing it to disk."
 metadata:
   language: typescript
   context: source-code
-  estimatedSeconds: 12
+  estimatedSeconds: 20
   transferTags: []
-explanation: "Opening by path adds a second buffer and shows it, and the file you were editing stays open behind it. Naming the file you already have open first changes nothing and costs an extra step."
+explanation: "Opening by path adds a second buffer and shows it, and the file you were editing stays open behind it. The cursor starts at the top of the file, so typing there puts the comment above the code, and saving is what writes the change: until then only the buffer has it."
