@@ -59,7 +59,8 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 | T5b | S3, S4 | `edit.insert`: typing is an action, so stories 1 and 6 become whole | `270c3eb` |
 | T5c | S3, S4 | the picker as a deterministic query: `file.find`, `grep.project`, `buffer.list`, the `grep_matches` goal, stories 2, 3 and 5 | `7163d25`, `371267f`, `c6c8f5a` |
 | T6 | S3, S1 | windows and panes: the `windows` and `zoom` goals, the resize/swap catalog rows, six skills and stories 9-14 | `b168c44`, `57bcce9`, `d7e14da` |
-| T7 | S3 | content: stories 15-20 (sessions and the desktop) | pending |
+| T7 | S3, S2 | terminals, sessions, workspaces and resize mode in the engine, then six skills and stories 15-20 | `0f4d75c`, `e22e698`, `11cec6c`, `9843137` |
+| T8 | S7 | the practice view: an attempt that can advance, keys to actions, panes, terminal view, i18n | in progress |
 | T8 | S7 | web: workspace view, layout rendering, focus ring, keyboard only | pending |
 | T9 | S4-S6 | API: replay of workspace attempts with the same engine | pending |
 
@@ -579,3 +580,32 @@ attempt at all. The view is built in this order:
    otherwise), and the `workspace-notice` test boundary replaced by a real one: the screen shows the
    panes of the exercise, a key that a layer resolves moves focus, and a key that does not reach the
    buffer types into it.
+
+**L14 — evidence (T7): the twenty stories are told, and three of them say what they cannot prove**
+
+- Landed in four units. `0f4d75c` made a terminal a leaf (`WindowNode = LeafWindow | SplitWindow |
+  TerminalWindow`), so focus, split, zoom, resize, swap and close needed no special case: they walk
+  leaves. `e22e698` added the freeze (`detached`), `workspace.move` with its three refusals, the resize
+  mode gate and the refusal to edit while a terminal is focused. `9843137` gave each terminal its own
+  command line, run through the one body `shell.run` also calls. `11cec6c` wrote the six skills and the
+  six stories with their ES overlays.
+- The gate caught what a review would have: `workspace.move` had no catalog row, so story 17 was
+  refused rather than shipped soft. The answer was four omarchy rows (`Super-S-1`…`Super-S-4`) recorded
+  and not pressable, which is what that layer declares for every `Super-` chord — a shift chord reaches
+  a page as the character it produced, so no pressable form exists and claiming one would be a lie.
+  `content:ci` is green with 49 skills, 189 exercises and 239 solutions.
+- Three stories state their own limit instead of hiding it, and the limit is the same one: an objective
+  reads an end state.
+  - 19 (run the suite in a pane, then kill it) ends on the shell beside the editor with the scrollback
+    asserted; a killed pane has nothing left to read. It works because the engine models a split of a
+    terminal as one session shown twice, and the explanation says what real tmux would cost.
+  - 20 (detach, reattach) proves the workspace survived the freeze — layout, focus, saved text,
+    scrollback — because `detached` is back to false and leaves no other mark.
+  - 18 (resize mode) can only be observed as `mode: normal` at the end, so the declared optimal route is
+    the one that enters the mode and the objective pairs it with the ratio the steps produced.
+- Two behaviours the slice decided and a reader should check rather than assume: a second
+  `app.launch-terminal` opens a second session instead of reusing the first, and a zoom that named the
+  moved window is dropped by `workspace.move`. Both are tested; neither is inevitable.
+- `packages/workspace-engine/README.md` understates the engine again (no detached/mode, no session,
+  move, resize-mode or terminal actions). It is stale by three slices now, and it is the one file this
+  work has not kept up with; a follow-up unit should rewrite it from the action list the engine exports.
