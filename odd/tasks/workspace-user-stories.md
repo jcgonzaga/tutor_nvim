@@ -50,11 +50,14 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 
 | ID | Spec | Route | Commit |
 | --- | --- | --- | --- |
-| T1 | S4 | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests | pending commit |
-| T2 | S2, S4 | window tree, splits, resize, zoom, swap, tabs and workspaces as actions | pending commit |
-| T3 | S1, S2 | `kind: workspace` + objectives (`active_file`, `open_buffers`, `buffer_text`, `file_text`, `layout`, `focus`, `split_ratio`, `all`) + `evaluateWorkspaceObjective` | pending commit |
-| T4 | S5 | evaluation: action solutions, strategy classification, CI replay | pending |
-| T5 | S3 | content: stories 1-8 (files and buffers) | pending |
+| T1 | S4 | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests | `25dad94` |
+| T2 | S2, S4 | window tree, splits, resize, zoom, swap, tabs and workspaces as actions | `79bfd86` |
+| T3 | S1, S2 | `kind: workspace` + objectives (`active_file`, `open_buffers`, `buffer_text`, `file_text`, `layout`, `focus`, `split_ratio`, `all`) + `evaluateWorkspaceObjective` | `a24807e` |
+| T4 | S5 | evaluation: action solutions, strategy classification, CI replay | `7d6628b` |
+| T4b | S4, S5 | files and buffers as actions, each naming its path, and a solution that names it | `176e4a2` |
+| T5 | S3 | content: stories 1-8 (files and buffers) — stories 1-7 landed, story 8 waits on a shell action | `611db28` |
+| T5b | S3, S4 | `edit.insert`: typing is an action, so stories 1 and 6 become whole | `270c3eb` |
+| T5c | S3, S4 | the picker as a deterministic query: `file.find`, `grep.project`, `buffer.list`, the `grep_matches` goal, stories 2, 3 and 5 | `7163d25`, `371267f`, `c6c8f5a` |
 | T6 | S3 | content: stories 9-14 (windows and panes) | pending |
 | T7 | S3 | content: stories 15-20 (sessions and the desktop) | pending |
 | T8 | S7 | web: workspace view, layout rendering, focus ring, keyboard only | pending |
@@ -410,3 +413,46 @@ not as an interactive fuzzy scorer:
 - A future reviewer should read the feature log first: every non-obvious decision (save/close semantics,
   the split's buffer rule, the text action, the picker as a query) is recorded with its reason, and the
   decisions the owner made are marked as such.
+
+**L12 — evidence (T5c): the picker is a query, and stories 2, 3 and 5 are whole**
+
+- The engine answers a query from the project, not from a scorer: `file.find` opens the first file in
+  *path* order whose path holds the fragment (case-insensitively), `grep.project` records the matching
+  `(path, line, text)` rows in that same order into `state.matches`, and `buffer.list` focuses the open
+  buffer a path names. `picker.test.ts` pins the four properties that make a replay meaningful: path
+  order over disk order, case-insensitivity, determinism (same query twice, same state), and one
+  refusal shape per refusal (`file.find: no file matches "…"`, `grep.project: no line matches "…"`,
+  `buffer.list: no buffer is open for "…"`, and the empty-query refusals), each asserting the state is
+  unchanged.
+- The schema follows the same rule as `path` and `text`: `query` is required for
+  `KEYMAP_QUERY_ACTIONS` (`file.find`, `grep.project`) and rejected everywhere else, so the field
+  cannot be carried by a verb that searches nothing. `buffer.list` joins `PATHED_ACTIONS`; it picks an
+  *open* buffer, so a file that exists but was never opened is refused rather than opened by stealth.
+- The objective `grep_matches` compares rows in order and prints both sides on failure. Order is part of
+  the goal because the search's answer is what the learner reads: a reordering is a different list.
+- Stories 2 (find a file by a fragment), 3 (grep the project, open the file of a match) and 5 (pick a
+  buffer out of the list) are content now, with their ES overlays. Story 5's lesson changed: it taught
+  `buffer.next` while claiming `neovim.buffers.list`, so its optimal run is now `buffer.list` by path
+  and only stepping back remains as the costlier route.
+- Story 8 (rename a file from the shell and reopen it) is the one story of cluster 1 still out, and for
+  one reason: the workspace engine has no shell action yet. That is a T4b-shaped gap (an action that
+  names its command), not a picker gap.
+- Evidence: `pnpm typecheck` green; `pnpm content:ci` green (37 skills, 177 exercises, 224 solutions
+  reach their objective); `pnpm test` at 60 failed / 1990 passed, and every failure is accounted for
+  below. Baseline measured on a detached worktree of `4a251e9` for the curriculum suite: 16 failures
+  there against 15 now, so this slice closes one and opens none.
+  - `packages/shell-engine/src/oracle.test.ts` (42): the simulated shell against *this host's* bash and
+    coreutils, failing on umask-derived modes (664/775 vs 644/755) and `ls` formatting. Nothing in the
+    diff touches `shell-engine`; the same 42 fail at `4a251e9`.
+  - `tests/curriculum*.test.ts`, `tests/content.test.ts`, `tests/pedagogy-flow.test.ts`: content
+    coverage gates demanding at least five exercises per skill with a second context. Every skill named
+    is one whose stories are T6/T7 work, and the same eight curriculum failures exist at `4a251e9`.
+  - `tests/gamification-sync.test.ts` (2): the server rejects workspace submissions because the API
+    cannot replay a workspace attempt yet — exactly T9. Not new: the eight stories of `611db28` already
+    put the device ahead of the server.
+  - `tests/cloud-sync.test.ts` and `apps/api/src/gamification.test.ts` fail only inside a whole-suite run
+    (10 s hook timeout from parallel load); run alone they pass 14/14 and 18/18.
+- The embedded content the API serves had drifted behind `content/` (it named 28 skills for 36), so
+  `pnpm content:embed` is regenerated in `f05d6f4`; the equality test that guards it passes again.
+- **Slice boundary, recorded again:** 15,095 authored changed lines in 29 commits on `main` since the
+  branch point. `T1+T2`, `T3`, `T4+T4b+T5b` and `T5c` are the boundaries; the next slice is `T6`.
