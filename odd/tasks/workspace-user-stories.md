@@ -381,3 +381,20 @@ the vocabulary already has, and the command line keeps working beside them.
   an edit mid-file waits for a cursor action that does not exist yet.
 - Still out, and now for one reason only: stories 2, 3 and 8 need pickers (`file.find`, `grep.project`,
   `buffer.list`) or a shell rename action. Those are engine capabilities, not content work.
+
+## Design for T5c (the picker, decided)
+
+Owner said searching is shorthand for "a normal editing session", the project's files are fixed, and the
+point is a chain of commands that makes sense. So the picker is modelled as a **deterministic query**,
+not as an interactive fuzzy scorer:
+
+- `file.find` takes a `query` (the fragment the learner types) and opens the **first match** of the
+  project's files in sorted order; `file.find` with no match is refused naming the query. A story then
+  reads: find by fragment, edit, save — a sequence a person actually performs.
+- `grep.project` takes a `query` and records the matching (path, line, text) rows in the state, in a
+  stable order. An objective can assert the matches and the file the learner then opens; the picker's
+  *rendering* is T8's job, not the engine's.
+- `buffer.list` takes a `path` and focuses that open buffer: the buffer picker without pretending to
+  rank anything.
+- No scoring, no timers, no "best match": with fixed files, sorted order plus the query is deterministic
+  and a replay is the same state. What is not modelled stays refused with a reason.
