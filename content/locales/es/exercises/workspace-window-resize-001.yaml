@@ -1,0 +1,7 @@
+id: workspace-window-resize-001
+title: "Dar más sitio a la ventana que lees"
+instruction: "Divide el editor en paralelo con src/app.ts a la izquierda y src/router.ts a la derecha, y luego ensancha la ventana izquierda hasta que ocupe unos dos tercios del ancho, para que el archivo que lees sea el que tiene sitio."
+hints:
+  - "Una división nueva reparte el ancho mitad y mitad; redimensionar avanza ese reparto, no lo fija."
+  - "C-w> ensancha la ventana izquierda una vigésima parte cada vez, así que tres pulsaciones la llevan de la mitad a algo menos de dos tercios."
+explanation: "Los dos paneles comparten el ancho en una proporción que empieza en la mitad cada uno. C-w> avanza la proporción de la división una vigésima parte, así que tres pulsaciones llevan la ventana izquierda a 0,65 del ancho sin tocar lo que muestra ningún panel. El paso es una proporción y no un número de columnas, y por eso las mismas tres pulsaciones dan la misma disposición en cualquier pantalla."

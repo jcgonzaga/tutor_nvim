@@ -1,0 +1,10 @@
+id: neovim-windows-close
+title: "Cerrar una ventana"
+description: "Cierra el panel en el que estás sin salir del editor y sabe dónde queda el foco."
+lesson:
+  - title: "Cerrar una ventana no es cerrar un archivo"
+    body: "C-wq cierra el panel en el que estás. El búfer sigue abierto, así que el archivo sigue ahí para volver a él: solo desaparece lo que estaba en pantalla."
+  - title: "El foco aterriza en algún sitio"
+    body: "Cerrar entrega el cursor a la ventana que compartía la división con la que cerraste. Nunca te quedas sin un lugar donde escribir."
+  - title: "La última ventana se queda"
+    body: "Con una sola ventana no hay nada que cerrar: salir del editor es otro comando distinto de cerrar un panel. El rechazo lo dice en lugar de salir por su cuenta."

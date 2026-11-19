@@ -1,0 +1,7 @@
+id: workspace-window-close-001
+title: "Cerrar una ventana y conservar el archivo"
+instruction: "Dividiste el editor para ver src/router.ts junto a src/app.ts y ya has terminado con el panel del router. Cierra la ventana que muestra src/router.ts y sigue editando src/app.ts, sin cerrar el archivo del router."
+hints:
+  - "El panel y el archivo son dos cosas distintas: una puede irse sin la otra."
+  - "C-wq cierra la ventana en la que estás y devuelve el cursor al panel de al lado."
+explanation: "C-wq cierra la ventana, no el búfer: el archivo del router sigue abierto y se puede volver a él, mientras el editor vuelve a un solo panel con app.ts y el cursor dentro. Cerrar también el archivo lo sacaría de la lista de búferes, que es otra acción con otra consecuencia. La forma que tenía el panel no importa aquí, y por eso una división apilada llega al mismo espacio de trabajo."

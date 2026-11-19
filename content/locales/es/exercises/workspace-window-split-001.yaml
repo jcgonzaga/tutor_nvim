@@ -1,0 +1,7 @@
+id: workspace-window-split-001
+title: "Dividir la ventana y mostrar dos archivos"
+instruction: "Estás leyendo src/app.ts y necesitas mirar el router que importa sin perder el sitio. Divide el editor en dos paneles en paralelo y abre src/router.ts en el panel nuevo, para tener los dos archivos en pantalla a la vez y el foco en el router."
+hints:
+  - "La división copia el panel en el que estás, así que al principio las dos mitades muestran src/app.ts."
+  - "C-wv divide en paralelo y pone el cursor en el panel nuevo; abrir el router ahí deja app.ts a la izquierda."
+explanation: "Una división en paralelo corta la ventana en dos con el búfer en el que estabas a los dos lados, así que el editor empieza mostrando app.ts dos veces. Abrir src/router.ts en el panel nuevo cambia lo que muestra ese panel y, como un búfer se registra una sola vez, app.ts sigue abierto a la izquierda. Ese es justo el motivo de dividir: la misma sesión, dos archivos a la vista y el cursor en uno de ellos."

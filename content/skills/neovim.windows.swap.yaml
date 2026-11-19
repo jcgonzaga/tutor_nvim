@@ -1,0 +1,29 @@
+schemaVersion: 1
+
+id: neovim-windows-swap
+slug: neovim.windows.swap
+
+title: "Swap two windows"
+description: "Exchange the places of two windows without reopening anything."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.focus
+concepts:
+  - windows
+  - layout
+tags:
+  - windows
+  - layout
+
+lesson:
+  - title: "Exchange places"
+    body: "Swapping exchanges which window shows which file with its neighbour. Nothing is reopened or reloaded: the two panes trade contents."
+  - title: "The shape stays put"
+    body: "The layout and its ratios are untouched. Only what each pane shows moves, so the workspace looks the same and reads differently."
+  - title: "The cursor stays in the pane"
+    body: "Focus does not follow the file. After a swap the pane you were in shows what its neighbour showed, which is how you end up editing the other file."

@@ -1,0 +1,10 @@
+id: neovim-windows-zoom
+title: "Ampliar una ventana"
+description: "Dale a una ventana toda la pantalla por un momento y luego recupera la disposición."
+lesson:
+  - title: "Sitio para una sola ventana"
+    body: "Ampliar muestra una única ventana a tamaño completo sin cerrar nada: la división y su vecina siguen ahí, esperando detrás."
+  - title: "Ampliar es una nota, no una forma"
+    body: "El árbol de divisiones nunca cambia, así que las proporciones que pusiste son exactamente las que recuperas. Nada que recalcular, nada que recordar."
+  - title: "La misma tecla lo deshace"
+    body: "Ampliar funciona como un interruptor. Púlsala en una ventana ampliada y la disposición vuelve como estaba; no hay un comando de restaurar que buscar."

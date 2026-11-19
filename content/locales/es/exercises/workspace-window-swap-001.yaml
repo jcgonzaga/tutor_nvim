@@ -1,0 +1,7 @@
+id: workspace-window-swap-001
+title: "Intercambiar las dos ventanas"
+instruction: "Tienes src/app.ts a la izquierda y src/router.ts a la derecha, y preferirías leer el router primero. Intercambia los dos paneles sin reabrir ningún archivo, para que el router quede a la izquierda y la app a la derecha, y deja el cursor donde está."
+hints:
+  - "Intercambiar trueca lo que muestran dos paneles; no abre, cierra ni recarga nada."
+  - "C-wx intercambia la ventana en la que estás con su vecina, y la forma y sus proporciones se quedan donde estaban."
+explanation: "Un intercambio trueca el contenido de dos paneles: la ventana izquierda acaba mostrando el router y la derecha la app, mientras la disposición, la proporción y los dos búferes abiertos quedan exactamente como estaban. Como el cursor se queda en el panel y no con el archivo, el panel en el que estabas ahora muestra app.ts, y por eso ese es el archivo activo. Abrir los archivos en el otro orden se parecería y los habría recargado, con la división hecha al final en lugar de los archivos movidos."

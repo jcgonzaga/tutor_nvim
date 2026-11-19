@@ -1,0 +1,59 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-focus-001
+slug: neovim.windows.focus.001
+title: "Move the cursor to the other window"
+instruction: "Split the editor side by side with src/app.ts on the left and src/router.ts on the right, then move back to the left window: you want to keep editing src/app.ts with the router still in view."
+skillIds:
+  - neovim.windows.focus
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: windows, paths: [src/app.ts, src/router.ts] }
+    - { type: focus, leaf: 0 }
+    - { type: active_file, path: src/app.ts }
+    - { type: open_buffers, paths: [src/app.ts, src/router.ts] }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+      - action: window.focus-left
+    classification: optimal
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+      - action: window.focus-left
+      - action: file.open
+        path: src/app.ts
+    classification: efficient
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "A split leaves the cursor in the new pane, and the direction keys are what send it back."
+  - afterMs: 8000
+    level: 2
+    text: "C-wh moves to the window on the left. In a side-by-side split that is the pane you started in."
+explanation: "Splitting the window moves the focus into the new pane, so the files are right and the cursor is on the wrong side. C-wh answers the layout: in a side-by-side split it goes left, and the buffer of that pane becomes the active one, so what you type next lands in app.ts. Opening app.ts again would also put it back in front, but it costs a step the direction key does not: the pane was already there."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []

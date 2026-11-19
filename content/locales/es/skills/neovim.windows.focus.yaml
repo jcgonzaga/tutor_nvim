@@ -1,0 +1,10 @@
+id: neovim-windows-focus
+title: "Moverse entre ventanas"
+description: "Lleva el cursor a otra ventana con las teclas de dirección y sabe a cuál llega lo que escribes."
+lesson:
+  - title: "Las teclas nombran una dirección"
+    body: "C-wh, C-wj, C-wk y C-wl llevan a la ventana de la izquierda, de abajo, de arriba y de la derecha. No listas ventanas ni eliges una por número: dices hacia dónde ir."
+  - title: "La división decide qué direcciones existen"
+    body: "Una división en paralelo responde a izquierda y derecha; una apilada responde a arriba y abajo. Pedir una dirección que la disposición no tiene se rechaza, así que la forma te dice qué movimientos hay."
+  - title: "Lo que escribes va donde está el foco"
+    body: "El búfer activo es el del panel enfocado, nunca una elección aparte. Tras moverte, editar, guardar y cerrar actúan sobre el panel al que fuiste."

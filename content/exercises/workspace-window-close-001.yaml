@@ -1,0 +1,58 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-close-001
+slug: neovim.windows.close.001
+title: "Close one window and keep the file"
+instruction: "You split the editor to look at src/router.ts beside src/app.ts, and now you are done with the router pane. Close the window that shows src/router.ts and keep editing src/app.ts, without closing the router file itself."
+skillIds:
+  - neovim.windows.close
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "leaf" }
+    - { type: windows, paths: [src/app.ts] }
+    - { type: focus, leaf: 0 }
+    - { type: active_file, path: src/app.ts }
+    # The file stays open: only the window it was shown in went away.
+    - { type: open_buffers, paths: [src/app.ts, src/router.ts] }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+      - action: window.close
+    classification: optimal
+  - actions:
+      - action: window.split-stacked
+      - action: file.open
+        path: src/router.ts
+      - action: window.close
+    classification: valid
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The pane and the file are two different things: one of them can go without the other."
+  - afterMs: 8000
+    level: 2
+    text: "C-wq closes the window you are in and hands the cursor back to the pane beside it."
+explanation: "C-wq closes the window, not the buffer: the router file stays open and can be reached again, while the editor goes back to a single pane showing app.ts with the cursor in it. Closing the file as well would take it out of the buffer list, which is a different action with a different consequence. The shape the pane had does not matter here, which is why a stacked split reaches the same workspace."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []

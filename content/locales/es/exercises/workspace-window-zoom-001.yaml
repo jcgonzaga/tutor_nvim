@@ -1,0 +1,7 @@
+id: workspace-window-zoom-001
+title: "Ampliar un panel, editarlo y recuperar la disposición"
+instruction: 'Con src/app.ts a la izquierda y src/router.ts a la derecha, amplía el panel del router, añade el comentario "// Routes are declared here." como primera línea, guárdalo y luego restaura la división para volver a tener los dos archivos en pantalla.'
+hints:
+  - "Ampliar muestra una ventana a tamaño completo; la división de debajo queda intacta."
+  - "Amplía con la tecla que encontraste, edita y guarda mientras está ampliada y vuelve a ampliar para recuperar la división."
+explanation: "Ampliar no cambia el árbol de divisiones, solo dice qué ventana ocupa toda la pantalla, así que las proporciones, los dos paneles y sus archivos sobreviven. Por eso la misma tecla restaura la disposición exacta: no hay nada que recalcular. Editar mientras está ampliada es editar normal, y guardar es lo que escribe el archivo, así que la historia termina con el comentario en el archivo del disco y los dos paneles de vuelta."

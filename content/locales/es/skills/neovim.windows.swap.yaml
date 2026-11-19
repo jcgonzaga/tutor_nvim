@@ -1,0 +1,10 @@
+id: neovim-windows-swap
+title: "Intercambiar dos ventanas"
+description: "Intercambia el sitio de dos ventanas sin reabrir nada."
+lesson:
+  - title: "Intercambiar posiciones"
+    body: "Intercambiar cambia qué ventana muestra qué archivo con su vecina. No se reabre ni se recarga nada: los dos paneles truecan su contenido."
+  - title: "La forma no se mueve"
+    body: "La disposición y sus proporciones quedan intactas. Solo se mueve lo que muestra cada panel, así que el espacio de trabajo se ve igual y se lee distinto."
+  - title: "El cursor se queda en el panel"
+    body: "El foco no sigue al archivo. Después de intercambiar, el panel en el que estabas muestra lo que mostraba su vecino, y así acabas editando el otro archivo."

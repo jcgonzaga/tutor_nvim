@@ -1,0 +1,10 @@
+id: neovim-windows-resize
+title: "Redimensionar una división"
+description: "Dale más sitio a una ventana ajustando la proporción que comparten los dos paneles."
+lesson:
+  - title: "Una división es una proporción, no píxeles"
+    body: "Dos paneles se reparten el ancho o el alto en una proporción: mitad y mitad al dividir. Redimensionar avanza esa proporción, así que el resultado depende de la disposición y no del tamaño de tu pantalla."
+  - title: "Cada tecla avanza en un sentido"
+    body: "C-w> ensancha la ventana y C-w< la estrecha; C-w+ y C-w- hacen lo mismo con la altura. Cada pulsación mueve la división más cercana de esa orientación un paso pequeño."
+  - title: "Hay un límite"
+    body: "Un panel no puede encogerse hasta desaparecer: la proporción se detiene en un décimo y en nueve décimos. Pedir más se rechaza y lo dice, en lugar de no hacer nada en silencio."

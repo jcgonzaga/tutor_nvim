@@ -1,0 +1,29 @@
+schemaVersion: 1
+
+id: neovim-windows-close
+slug: neovim.windows.close
+
+title: "Close a window"
+description: "Close the pane you are in without quitting, and know where the focus lands."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.split
+concepts:
+  - windows
+  - buffers
+tags:
+  - windows
+  - buffers
+
+lesson:
+  - title: "Closing a window is not closing a file"
+    body: "C-wq closes the pane you are in. The buffer stays open, so the file is still there to be reached again: only what was on screen is gone."
+  - title: "The focus lands somewhere"
+    body: "Closing hands the cursor to the window that shared the split with the one you closed. You are never left without a place to type."
+  - title: "The last window stays"
+    body: "With a single window there is nothing to close: leaving the editor is a different command from closing a pane. The refusal says so instead of quitting on you."

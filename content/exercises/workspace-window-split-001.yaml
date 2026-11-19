@@ -1,0 +1,51 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-split-001
+slug: neovim.windows.split.001
+title: "Split the window and show two files"
+instruction: "You are reading src/app.ts and need to look at the router it imports without losing your place. Split the editor in two side by side and open src/router.ts in the new pane, so both files are on screen at once and the router has the focus."
+skillIds:
+  - neovim.windows.split
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    # The two panes, in reading order: the file you were in, and the one you split to see.
+    - { type: windows, paths: [src/app.ts, src/router.ts] }
+    - { type: focus, leaf: 1 }
+    - { type: active_file, path: src/router.ts }
+    - { type: open_buffers, paths: [src/app.ts, src/router.ts] }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "The split copies the pane you are in, so both halves show src/app.ts at first."
+  - afterMs: 8000
+    level: 2
+    text: "C-wv splits side by side and puts the cursor in the new pane; opening the router there leaves app.ts on the left."
+explanation: "A side-by-side split cuts the window in two with the buffer you were in on both sides, so the editor starts by showing app.ts twice. Opening src/router.ts in the new pane replaces what that pane shows, and because a buffer is registered once, app.ts stays open on the left. That is the whole point of splitting: the same session, two files in view, and the cursor in one of them."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []

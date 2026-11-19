@@ -1,0 +1,52 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-resize-001
+slug: neovim.windows.resize.001
+title: "Give the window you read more room"
+instruction: "Split the editor side by side with src/app.ts on the left and src/router.ts on the right, then widen the left window until it takes about two thirds of the width, so the file you are reading is the one with room."
+skillIds:
+  - neovim.windows.resize
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: windows, paths: [src/app.ts, src/router.ts] }
+    - { type: split_ratio, index: 0, ratio: 0.65 }
+    - { type: active_file, path: src/router.ts }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+      - action: window.resize-wider
+      - action: window.resize-wider
+      - action: window.resize-wider
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "A fresh split shares the width half and half; resizing steps that share, it does not set it."
+  - afterMs: 8000
+    level: 2
+    text: "C-w> widens the left window by a twentieth each time, so three presses take it from a half to just under two thirds."
+explanation: "The two panes share the width in a ratio that starts at one half each. C-w> steps the split's ratio by one twentieth, so three presses take the left window to 0.65 of the width without touching what either pane shows. The step is a ratio and not a number of columns, which is why the same three presses give the same layout on any screen."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []

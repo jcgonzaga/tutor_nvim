@@ -1,0 +1,29 @@
+schemaVersion: 1
+
+id: neovim-windows-zoom
+slug: neovim.windows.zoom
+
+title: "Zoom a window"
+description: "Give one window the whole screen for a moment, then bring the layout back."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.split
+concepts:
+  - windows
+  - layout
+tags:
+  - windows
+  - layout
+
+lesson:
+  - title: "Room for one window"
+    body: "Zooming shows a single window at full size without closing anything: the split and its neighbour are still there, waiting behind it."
+  - title: "Zoom is a note, not a shape"
+    body: "The tree of splits never changes, so the ratios you set are exactly the ones you get back. Nothing to compute, nothing to remember."
+  - title: "The same key undoes it"
+    body: "Zoom toggles. Press it on a zoomed window and the layout returns as it was; there is no separate restore command to look for."

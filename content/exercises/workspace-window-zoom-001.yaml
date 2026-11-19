@@ -1,0 +1,59 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-zoom-001
+slug: neovim.windows.zoom.001
+title: "Zoom a pane, edit it, and bring the layout back"
+instruction: 'With src/app.ts on the left and src/router.ts on the right, zoom the router pane, add the comment "// Routes are declared here." as its first line, save it, and then restore the split so both files are on screen again.'
+skillIds:
+  - neovim.windows.zoom
+mode: recall
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    - { type: windows, paths: [src/app.ts, src/router.ts] }
+    - { type: focus, leaf: 1 }
+    - { type: active_file, path: src/router.ts }
+    # Restored, not left zoomed: the layout is back and nothing is in front of it.
+    - { type: zoom, path: null }
+    - type: file_text
+      path: src/router.ts
+      text: "// Routes are declared here.\nexport const router = { get: () => null };"
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+      - action: window.zoom
+      - action: edit.insert
+        text: "// Routes are declared here.\n"
+      - action: file.save
+      - action: window.zoom
+    classification: optimal
+hints:
+  - afterMs: 5000
+    level: 1
+    text: "Zoom shows one window at full size; the split underneath is untouched."
+  - afterMs: 9000
+    level: 2
+    text: "Toggle zoom with the key you found, edit and save while zoomed, then toggle it again to get the split back."
+explanation: "Zooming does not change the tree of splits, it only says which window gets the whole screen, so the ratios, the two panes and their files survive it. That is why the same key restores the layout exactly: there is nothing to recompute. Editing while zoomed is ordinary editing, and saving is what writes the file, so the story ends with the file on disk holding the comment and both panes back in view."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 25
+  transferTags: []

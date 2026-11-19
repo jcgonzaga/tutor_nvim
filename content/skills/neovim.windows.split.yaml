@@ -1,0 +1,29 @@
+schemaVersion: 1
+
+id: neovim-windows-split
+slug: neovim.windows.split
+
+title: "Split the window"
+description: "Look at two places at once by splitting the window side by side or stacked."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.files.open
+concepts:
+  - windows
+  - layout
+tags:
+  - windows
+  - navigation
+
+lesson:
+  - title: "One window, several views"
+    body: "The editor starts with a single window. A split cuts it in two: tiling side by side or one above the other. Both halves stay windows of the same editor, and the cursor is in exactly one of them."
+  - title: "A split copies the pane, not the file"
+    body: "Splitting shows the buffer you were in on both sides, so you start with the same text twice. Open another file in one of them and the two panes stop agreeing, which is the point of splitting."
+  - title: "The shape belongs to the workspace"
+    body: "The layout outlives the files inside it. Closing a buffer empties nothing, and closing a window leaves its file open, so the tree of splits is a thing of its own, not a property of what it shows."

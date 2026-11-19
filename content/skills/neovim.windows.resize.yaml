@@ -1,0 +1,29 @@
+schemaVersion: 1
+
+id: neovim-windows-resize
+slug: neovim.windows.resize
+
+title: "Resize a split"
+description: "Give one window more room by stepping the ratio the two panes share."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.focus
+concepts:
+  - windows
+  - layout
+tags:
+  - windows
+  - layout
+
+lesson:
+  - title: "A split is a ratio, not pixels"
+    body: "Two panes share the width or the height in a ratio: half and half when the split is made. Resizing steps that ratio, so the result depends on the layout and not on the size of your screen."
+  - title: "Each key steps one way"
+    body: "C-w> makes the window wider and C-w< narrower; C-w+ and C-w- do the same for height. Each press moves the nearest split of that orientation by one small step."
+  - title: "There is a bound"
+    body: "A pane cannot shrink to nothing: the ratio stops at a tenth and at nine tenths. Asking for more is refused and says so, instead of silently doing nothing."

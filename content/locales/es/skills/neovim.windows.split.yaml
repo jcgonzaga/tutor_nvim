@@ -1,0 +1,10 @@
+id: neovim-windows-split
+title: "Dividir la ventana"
+description: "Mira dos sitios a la vez dividiendo la ventana en paralelo o en horizontal."
+lesson:
+  - title: "Una ventana, varias vistas"
+    body: "El editor empieza con una sola ventana. Una división la corta en dos: lado a lado o una encima de otra. Las dos mitades siguen siendo ventanas del mismo editor y el cursor está en una sola de ellas."
+  - title: "La división copia el panel, no el archivo"
+    body: "Al dividir, el búfer en el que estabas aparece a los dos lados, así que empiezas con el mismo texto dos veces. Abre otro archivo en uno de ellos y los paneles dejan de coincidir, que es justo el motivo de dividir."
+  - title: "La forma pertenece al espacio de trabajo"
+    body: "La disposición sobrevive a los archivos que contiene. Cerrar un búfer no vacía nada y cerrar una ventana deja su archivo abierto, así que el árbol de divisiones es algo propio y no una propiedad de lo que muestra."

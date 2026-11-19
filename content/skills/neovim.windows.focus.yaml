@@ -1,0 +1,29 @@
+schemaVersion: 1
+
+id: neovim-windows-focus
+slug: neovim.windows.focus
+
+title: "Move between windows"
+description: "Send the cursor to another window with the direction keys, and know which one typing reaches."
+
+domain: neovim
+tier: 5
+difficulty: 3
+enabled: true
+
+prerequisites:
+  - neovim.windows.split
+concepts:
+  - windows
+  - focus
+tags:
+  - windows
+  - navigation
+
+lesson:
+  - title: "The keys name a direction"
+    body: "C-wh, C-wj, C-wk and C-wl move to the window on the left, below, above and to the right. You never list windows or pick one by number: you say which way to go."
+  - title: "The split decides which directions exist"
+    body: "A side-by-side split answers left and right; a stacked one answers up and down. Asking for a direction the layout does not have is refused, so the layout tells you which moves are available."
+  - title: "What you type goes where the focus is"
+    body: "The active buffer is the buffer of the focused window, never a separate choice. After moving, editing, saving and closing all act on the pane you moved to."

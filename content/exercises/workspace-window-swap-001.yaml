@@ -1,0 +1,52 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-window-swap-001
+slug: neovim.windows.swap.001
+title: "Swap the two windows"
+instruction: "You have src/app.ts on the left and src/router.ts on the right, and you would rather read the router first. Exchange the two panes without reopening either file, so the router is on the left and the app on the right, and leave the cursor where it is."
+skillIds:
+  - neovim.windows.swap
+mode: recall
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: layout, text: "side(leaf, leaf)" }
+    # The same two files the other way round: this is what a swap changes and a reopen fakes.
+    - { type: windows, paths: [src/router.ts, src/app.ts] }
+    - { type: focus, leaf: 1 }
+    - { type: active_file, path: src/app.ts }
+    - { type: open_buffers, paths: [src/app.ts, src/router.ts] }
+solutions:
+  - actions:
+      - action: window.split-side-by-side
+      - action: file.open
+        path: src/router.ts
+      - action: window.swap
+    classification: optimal
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Swapping exchanges what two panes show; it does not open, close or reload anything."
+  - afterMs: 8000
+    level: 2
+    text: "C-wx exchanges the window you are in with its neighbour, and the shape and its ratios stay where they were."
+explanation: "A swap trades the contents of two panes: the left window ends up showing the router and the right one the app, while the layout, the ratio and the two open buffers are exactly as they were. Because the cursor stays in the pane and not with the file, the pane you were in now shows app.ts, which is why that is the active file. Opening the files in the other order would look similar and would have reloaded them, with the split made last instead of the files moved."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []

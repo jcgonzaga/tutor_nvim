@@ -1,0 +1,7 @@
+id: workspace-window-focus-001
+title: "Llevar el cursor a la otra ventana"
+instruction: "Divide el editor en paralelo con src/app.ts a la izquierda y src/router.ts a la derecha, y vuelve después a la ventana izquierda: quieres seguir editando src/app.ts con el router a la vista."
+hints:
+  - "Una división deja el cursor en el panel nuevo, y las teclas de dirección son las que lo devuelven."
+  - "C-wh va a la ventana de la izquierda. En una división en paralelo ese es el panel en el que empezaste."
+explanation: "Dividir la ventana lleva el foco al panel nuevo, así que los archivos quedan bien y el cursor en el lado equivocado. C-wh responde a la disposición: en una división en paralelo va a la izquierda, y el búfer de ese panel pasa a ser el activo, así que lo que escribas después cae en app.ts. Volver a abrir app.ts también lo pondría delante, pero cuesta un paso que la tecla de dirección no cuesta: el panel ya estaba ahí."
