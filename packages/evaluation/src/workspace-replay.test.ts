@@ -519,6 +519,8 @@ describe("a solution may open a terminal and run a command (T7a1)", () => {
         title: "dev",
         cwd: "/project",
         entries: [{ command: "npm test", output: ["Tests: 3 passed"] }],
+        // The whole session: `shell.run` appends an entry and never touches the prompt (T7a3).
+        pending: "",
       },
     ]);
     expect(goalMet(ex, replay)).toBe(true);

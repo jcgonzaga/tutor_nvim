@@ -4,6 +4,8 @@ import {
   applyWorkspaceAction,
   bufferId,
   createWorkspace,
+  dispatchWorkspace,
+  runWorkspaceKeys,
   windowPaths,
   WORKSPACE_TERMINAL_ACTIONS,
   type WindowNode,
@@ -75,7 +77,9 @@ describe("app.launch-terminal — a terminal is a window", () => {
 
     expect(applied).toBe(true);
     // One session, opened from the declaration the exercise owns: no process ran (S6).
-    expect(state.terminals).toEqual([{ id: "terminal:1", title: "dev", cwd: CWD, entries: [] }]);
+    expect(state.terminals).toEqual([
+      { id: "terminal:1", title: "dev", cwd: CWD, entries: [], pending: "" },
+    ]);
     expect(state.tabs[0]?.root).toEqual({
       kind: "split",
       layout: "side-by-side",
@@ -178,6 +182,151 @@ describe("app.launch-terminal — a terminal is a window", () => {
     const first = apply(before, "app.launch-terminal");
     expect(first).toEqual(apply(before, "app.launch-terminal"));
     expect(JSON.stringify(before)).toBe(frozen);
+  });
+});
+
+/**
+ * A terminal is a prompt, not a log (T7a3, story 19: "split a tmux pane, run the tests there").
+ *
+ * The keys reach the focused terminal's own command line instead of the buffer's editor, exactly as
+ * `:` opens the workspace's command line: printable keys append, Backspace removes, Esc clears and
+ * Enter runs the line through the one path `shell.run` uses, so a typed command and an action can
+ * never append two different entries. A command nobody declared is refused with `shell.run`'s own
+ * reason and the line is kept, because a refusal is something to correct, not text to lose.
+ */
+describe("typing into a terminal — its own command line", () => {
+  const key = (pressed: string) => ({ key: pressed });
+  const launched = (): WorkspaceState => apply(initial(), "app.launch-terminal");
+  const typed = (state: WorkspaceState, text: string): WorkspaceState =>
+    runWorkspaceKeys(state, [...text].map(key));
+  const runLine = (state: WorkspaceState, text: string): WorkspaceState =>
+    dispatchWorkspace(typed(state, text), key("Enter")).state;
+  const pendingOf = (state: WorkspaceState, index = 0): string | undefined =>
+    state.terminals[index]?.pending;
+
+  it("starts idle with an empty line, and keeps that line across unrelated actions", () => {
+    const before = launched();
+    expect(pendingOf(before)).toBe("");
+
+    const away = apply(before, "window.focus-left");
+    const back = apply(away, "window.focus-right");
+    expect(pendingOf(back)).toBe("");
+  });
+
+  it("appends printable keys to the focused terminal's line, not to the buffer's text", () => {
+    const before = launched();
+    const { state, accepted } = dispatchWorkspace(before, key("n"));
+
+    expect(accepted).toBe(true);
+    expect(pendingOf(state)).toBe("n");
+    // The file beside the terminal is not the window holding the keys: its text is untouched.
+    expect(state.buffers).toBe(before.buffers);
+    expect(state.files).toBe(before.files);
+    expect(typed(before, "npm test").terminals[0]?.pending).toBe("npm test");
+  });
+
+  it("gives each terminal its own line, so one session's prompt is not another's", () => {
+    const two = apply(launched(), "app.launch-terminal");
+    expect(two.tabs[0]?.focus).toEqual(["second", "second"]);
+
+    const firstLine = typed(two, "npm");
+    const left = apply(firstLine, "window.focus-left");
+    expect(left.tabs[0]?.focus).toEqual(["second", "first"]);
+    const secondLine = typed(left, "ls");
+
+    expect(secondLine.terminals.map((terminal) => terminal.pending)).toEqual(["ls", "npm"]);
+  });
+
+  it("removes the last character on Backspace and keeps an empty line empty", () => {
+    const line = typed(launched(), "ls");
+    const { state, accepted } = dispatchWorkspace(line, key("Backspace"));
+
+    expect(accepted).toBe(true);
+    expect(pendingOf(state)).toBe("l");
+
+    const empty = dispatchWorkspace(launched(), key("Backspace"));
+    expect(empty.accepted).toBe(true);
+    expect(pendingOf(empty.state)).toBe("");
+    expect(empty.state.terminals[0]?.entries).toEqual([]);
+  });
+
+  it("clears the line on Esc without running it", () => {
+    const typedLine = typed(launched(), "npm test");
+    const { state, accepted } = dispatchWorkspace(typedLine, key("Escape"));
+
+    expect(accepted).toBe(true);
+    expect(pendingOf(state)).toBe("");
+    // Esc drops the line; it never runs what was typed.
+    expect(state.terminals[0]?.entries).toEqual([]);
+  });
+
+  it("runs the line on Enter through the path shell.run uses, then clears it", () => {
+    const typedLine = typed(launched(), "npm test");
+    const action = act(typedLine, "shell.run", { command: "npm test" });
+    const { state, accepted } = dispatchWorkspace(typedLine, key("Enter"));
+
+    expect(accepted).toBe(true);
+    // The very entry the action appends: one body, so the two can never diverge.
+    expect(state.terminals[0]?.entries).toEqual(action.state.terminals[0]?.entries);
+    expect(state.terminals[0]?.entries).toEqual([
+      { command: "npm test", output: ["PASS src/main.test.ts", "Tests: 3 passed"] },
+    ]);
+    // The line Enter ran is gone; the scrollback is what stays.
+    expect(pendingOf(state)).toBe("");
+  });
+
+  it("refuses a command nobody declared with shell.run's reason, keeping the line to correct", () => {
+    const typedLine = typed(launched(), "rm -rf /");
+    const { state, accepted, reason } = dispatchWorkspace(typedLine, key("Enter"));
+
+    expect(accepted).toBe(false);
+    expect(reason).toBe('shell.run: no output is declared for "rm -rf /"');
+    // Unchanged: the refused line is still there to be corrected, and nothing was appended.
+    expect(state).toBe(typedLine);
+    expect(pendingOf(state)).toBe("rm -rf /");
+    expect(state.terminals[0]?.entries).toEqual([]);
+  });
+
+  it("refuses Enter on an empty line with a reason of its own, not a silent no-op", () => {
+    const before = launched();
+    const { state, accepted, reason } = dispatchWorkspace(before, key("Enter"));
+
+    expect(accepted).toBe(false);
+    expect(reason).toBe("shell.run: the terminal line is empty");
+    expect(state).toBe(before);
+  });
+
+  it("keeps the entries in the order the commands ran, so the scrollback reads as a session", () => {
+    const first = runLine(launched(), "ls");
+    const second = runLine(first, "npm test");
+
+    expect(second.terminals[0]?.entries.map((entry) => entry.command)).toEqual(["ls", "npm test"]);
+    expect(second.terminals[0]?.entries.map((entry) => entry.output)).toEqual([
+      ["src", "package.json"],
+      ["PASS src/main.test.ts", "Tests: 3 passed"],
+    ]);
+    expect(pendingOf(second)).toBe("");
+  });
+
+  it("is deterministic: the same keys on the same state give the same state", () => {
+    const before = launched();
+    const frozen = JSON.stringify(before);
+    const sequence = [..."npm test", "Enter"].map(key);
+
+    expect(runWorkspaceKeys(before, sequence)).toEqual(runWorkspaceKeys(before, sequence));
+    runWorkspaceKeys(before, sequence);
+    // The state it was given is never mutated: a replay starts from the recording's own state.
+    expect(JSON.stringify(before)).toBe(frozen);
+  });
+
+  it("leaves a file window's keys going to the editor, as they do today", () => {
+    const file = apply(launched(), "window.focus-left");
+    const { state, accepted } = dispatchWorkspace(file, key("x"));
+
+    expect(accepted).toBe(true);
+    // `x` deleted a character in the file: the terminal beside it received nothing.
+    expect(state.buffers[0]?.modified).toBe(true);
+    expect(pendingOf(state)).toBe("");
   });
 });
 

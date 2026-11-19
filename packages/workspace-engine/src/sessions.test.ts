@@ -4,6 +4,7 @@ import {
   applyWorkspaceAction,
   bufferId,
   createWorkspace,
+  dispatchWorkspace,
   runWorkspaceKeys,
   windowPaths,
   workspaceObjectiveView,
@@ -188,8 +189,11 @@ describe("session.detach and session.attach — the workspace frozen, then found
   });
 
   it("finds the editor still open, with the text typed before the freeze", () => {
-    // Story 20: detach, reattach, and the buffer you were editing is the buffer you find.
-    const typed = runWorkspaceKeys(busy(), [key("x")]);
+    // Story 20: detach, reattach, and the buffer you were editing is the buffer you find. `busy()`
+    // leaves the keys on the terminal, whose prompt now takes them (T7a3), so the editing happens
+    // where the learner would do it: after moving focus back to the file window.
+    const editor = apply(busy(), "window.focus-left");
+    const typed = runWorkspaceKeys(editor, [key("x")]);
     const edited = typed.buffers.find((buffer) => buffer.id === typed.activeBufferId);
     expect(edited?.modified).toBe(true);
 
@@ -387,5 +391,52 @@ describe("resize mode — an input mode that refuses everything but resizing", (
     expect(applied).toBe(false);
     expect(reason).toBe("window.leave-resize-mode: the workspace is not in resize mode");
     expect(state).toBe(before);
+  });
+});
+
+/**
+ * The keys of a terminal's own command line (T7a3) are the keys of a terminal action in the making,
+ * so the two states that freeze input refuse them exactly as they refuse `shell.run`: the same gate
+ * answers both, with the same words, and a refused key leaves the workspace untouched.
+ */
+describe("a frozen or resizing workspace refuses the terminal's keys", () => {
+  const launched = (): WorkspaceState => apply(initial(), "app.launch-terminal");
+
+  it("refuses every prompt key while the session is detached, with shell.run's own refusal", () => {
+    const detached = apply(launched(), "session.detach");
+
+    for (const pressed of ["l", "Backspace", "Escape", "Enter"]) {
+      const { state, accepted, reason } = dispatchWorkspace(detached, key(pressed));
+      expect(accepted).toBe(false);
+      expect(reason).toBe("shell.run: the session is detached; attach to it first");
+      expect(state).toBe(detached);
+    }
+    // The action says the same thing because both ask the same gate, not because both spell it out.
+    expect(act(detached, "shell.run", { command: "npm test" }).reason).toBe(
+      "shell.run: the session is detached; attach to it first",
+    );
+  });
+
+  it("refuses every prompt key in resize mode, with shell.run's own refusal", () => {
+    const resizing = apply(launched(), "window.enter-resize-mode");
+
+    for (const pressed of ["l", "Backspace", "Escape", "Enter"]) {
+      const { state, accepted, reason } = dispatchWorkspace(resizing, key(pressed));
+      expect(accepted).toBe(false);
+      expect(reason).toBe("shell.run: the workspace is in resize mode; leave it first");
+      expect(state).toBe(resizing);
+    }
+    expect(act(resizing, "shell.run", { command: "npm test" }).reason).toBe(
+      "shell.run: the workspace is in resize mode; leave it first",
+    );
+  });
+
+  it("types again once the session is attached and the mode left", () => {
+    const frozen = apply(apply(launched(), "window.enter-resize-mode"), "session.detach");
+    const back = apply(apply(frozen, "session.attach"), "window.leave-resize-mode");
+    const { state, accepted } = dispatchWorkspace(back, key("l"));
+
+    expect(accepted).toBe(true);
+    expect(state.terminals[0]?.pending).toBe("l");
   });
 });

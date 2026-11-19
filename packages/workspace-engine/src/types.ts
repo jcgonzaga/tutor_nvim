@@ -197,6 +197,15 @@ export interface WorkspaceTerminal {
   readonly cwd: string;
   /** The commands it ran, in the order it ran them. */
   readonly entries: readonly WorkspaceTerminalEntry[];
+  /**
+   * The line being typed at its prompt, empty when idle (T7a3).
+   *
+   * A terminal is a prompt, not a log (story 19: "run the tests there"), so each session carries
+   * what was typed to it and nothing else: printable keys append, Backspace and Esc edit it, and
+   * Enter runs it through the same path `shell.run` uses. Kept per terminal, because two sessions
+   * are two prompts, exactly as two command lines would be.
+   */
+  readonly pending: string;
 }
 
 /**
@@ -232,6 +241,14 @@ export interface WorkspaceDispatchResult {
    * consumed and a command that failed are `false`; a failed command still records its reason.
    */
   readonly accepted: boolean;
+  /**
+   * Why the key was refused; absent when it was accepted.
+   *
+   * A key refused by a state that freezes input says the same words its action says (T7a3), because
+   * the terminal's prompt runs the terminal's action: a detached workspace refuses a typed character
+   * with `shell.run`'s own refusal instead of making the learner guess why nothing appeared.
+   */
+  readonly reason?: string;
 }
 
 /** What a window or file action may need: the tab to select and the path it acts on. */

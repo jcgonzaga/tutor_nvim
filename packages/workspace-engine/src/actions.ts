@@ -61,7 +61,9 @@ import { openBuffer } from "./workspace";
  * Two states decide before the action does (T7a2). A detached session is frozen, so only attaching
  * and detaching reach it; resize mode is an input mode, so only resizing, leaving it and detaching
  * apply while it is on. Both refusals come first, before any effect, and name the state or the mode
- * they are in, so a key that does nothing says why.
+ * they are in, so a key that does nothing says why. `dispatchWorkspace` asks the same gate for a
+ * terminal's prompt keys (T7a3), so a frozen or resizing workspace refuses what the learner types
+ * with the words it refuses the action.
  */
 
 /** The window, tab and workspace actions of the keymap vocabulary this engine can apply. */
@@ -192,8 +194,11 @@ const sameFocus = (left: readonly FocusStep[], right: readonly FocusStep[]): boo
  * only resizing, leaving it and detaching apply. The detached check runs first because it is the
  * outer freeze, and because a workspace frozen while resizing must still be attachable: the mode it
  * was left in is what attaching finds, never a lock nobody can open.
+ *
+ * Exported because a terminal's prompt keys are refused by the same gate (T7a3): the words come from
+ * here and only here, so a typed character and `shell.run` can never explain the freeze differently.
  */
-function stateRefusal(state: WorkspaceState, action: string): string | null {
+export function stateRefusal(state: WorkspaceState, action: string): string | null {
   if (state.detached) {
     if ((WORKSPACE_SESSION_ACTIONS as readonly string[]).includes(action)) return null;
     return `${action}: the session is detached; attach to it first`;
@@ -630,6 +635,8 @@ function launchTerminal(state: WorkspaceState): WorkspaceActionResult {
     title: declared.title,
     cwd: declared.cwd ?? state.cwd,
     entries: [],
+    // A fresh session has an empty prompt: nothing was typed at it yet (T7a3).
+    pending: "",
   };
   const next = withPaneBeside(state, focused, terminalNode(terminal.id));
   return applied({ ...next, terminals: [...state.terminals, terminal] });
@@ -647,7 +654,9 @@ function nextTerminalId(terminals: readonly WorkspaceTerminal[]): string {
  *
  * Nothing is executed (S6): the table is content, so an undeclared command is refused *by name* and
  * never answered with invented text, and a command typed while a file window has the keys is refused
- * too instead of running somewhere the learner is not looking.
+ * too instead of running somewhere the learner is not looking. The action names its command; the
+ * terminal's own prompt names it by what was typed (T7a3), and both come through
+ * `runInFocusedTerminal`, so the two can never append different entries.
  */
 function runShellCommand(
   state: WorkspaceState,
@@ -655,12 +664,48 @@ function runShellCommand(
 ): WorkspaceActionResult {
   const command = options.command;
   if (command === undefined) return refused(state, "shell.run: no command given");
+  return runInFocusedTerminal(state, command);
+}
+
+/**
+ * The session the keys are on, or `undefined` when the focused window is not a terminal the state
+ * holds. One lookup for the action and for the prompt, so neither can address a session the other
+ * would not.
+ */
+export function focusedTerminal(state: WorkspaceState): WorkspaceTerminal | undefined {
   const focused = focusedWindow(state);
-  if (focused === undefined || focused.node.kind !== "terminal") {
-    return refused(state, "shell.run: the focused window is not a terminal");
-  }
-  const leaf = focused.node;
-  const terminal = state.terminals.find((candidate) => candidate.id === leaf.terminalId);
+  const node = focused?.node;
+  if (node === undefined || node.kind !== "terminal") return undefined;
+  return state.terminals.find((candidate) => candidate.id === node.terminalId);
+}
+
+/**
+ * The state with one session replaced, every other session untouched: the one way a terminal changes,
+ * so a prompt edit and a command that ran write the same list in the same order.
+ */
+export function withTerminal(state: WorkspaceState, terminal: WorkspaceTerminal): WorkspaceState {
+  return {
+    ...state,
+    terminals: state.terminals.map((candidate) =>
+      candidate.id === terminal.id ? terminal : candidate,
+    ),
+  };
+}
+
+/**
+ * Runs `command` in the focused terminal and appends the entry the exercise declared for it (T7a1,
+ * T7a3).
+ *
+ * This is the one body `shell.run` and Enter on a terminal's own command line share: a simulated
+ * machine has no processes (S6), so both look the command up in the declaration and both refuse an
+ * undeclared one with the same words, naming it. The caller owns the prompt, because the action runs
+ * a command the story named and leaves a half-typed line alone, while Enter clears the line it ran.
+ */
+export function runInFocusedTerminal(
+  state: WorkspaceState,
+  command: string,
+): WorkspaceActionResult {
+  const terminal = focusedTerminal(state);
   if (terminal === undefined) {
     return refused(state, "shell.run: the focused window is not a terminal");
   }
@@ -669,10 +714,7 @@ function runShellCommand(
     return refused(state, `shell.run: no output is declared for ${quoted(command)}`);
   }
   const entries = [...terminal.entries, { command, output: [...output] }];
-  const terminals = state.terminals.map((candidate) =>
-    candidate.id === terminal.id ? { ...candidate, entries } : candidate,
-  );
-  return applied({ ...state, terminals });
+  return applied(withTerminal(state, { ...terminal, entries }));
 }
 
 /** A new tab starts as one window on the buffer that was active, and takes the keys. */
