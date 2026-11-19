@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   KEYMAP_ACTIONS,
+  KEYMAP_COMMAND_ACTIONS,
   KEYMAP_QUERY_ACTIONS,
   KEYMAP_TARGETS,
   KEYMAP_TARGETED_ACTIONS,
@@ -40,6 +41,12 @@ const typedTextSchema = z.string().min(1, "must be the text to type, so it canno
  * is not a step a learner can take, and the engine refuses it (T5c).
  */
 const querySchema = z.string().min(1, "must be the query to search for, so it cannot be empty");
+
+/**
+ * The command a `shell.run` runs: non-empty, because running nothing is not a step a learner can
+ * take, and the engine looks its output up in the exercise's declared table (T7a1).
+ */
+const commandSchema = z.string().min(1, "must be the command to run, so it cannot be empty");
 
 /** The name of an action and, for an operator, what it acts on: the fields every solution shares. */
 const actionFields = {
@@ -108,6 +115,30 @@ function checkText(ref: { action: string; text?: string }, ctx: z.RefinementCtx)
 }
 
 /**
+ * A `command` is read only where the vocabulary runs one, and it is required there: the action exists
+ * to say what runs, so a solution that gives no command is as wrong as one that gives it to a verb
+ * that runs nothing (T7a1).
+ */
+function checkCommand(ref: { action: string; command?: string }, ctx: z.RefinementCtx): void {
+  if ((KEYMAP_COMMAND_ACTIONS as readonly string[]).includes(ref.action)) {
+    if (ref.command === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["command"],
+        message: `"${ref.action}" needs a command: it names the command to run`,
+      });
+    }
+    return;
+  }
+  if (ref.command === undefined) return;
+  ctx.addIssue({
+    code: "custom",
+    path: ["command"],
+    message: `"${ref.action}" takes no command: only ${KEYMAP_COMMAND_ACTIONS.join(", ")} runs a command`,
+  });
+}
+
+/**
  * A solution written as what the learner must accomplish, not as one tool's keys (S6).
  *
  * tmux, Herdr, Omarchy's tmux and Neovim all split a pane, with different keys and a different
@@ -127,13 +158,14 @@ export type ActionRef = z.output<typeof actionRefSchema>;
 
 /**
  * One action of a workspace solution: the shared fields plus the file a file action opens, the text
- * an insert types and the query a project picker searches for (T4b, L9, T5c).
+ * an insert types, the query a project picker searches for (T4b, L9, T5c) and the command a terminal
+ * runs (T7a1).
  *
  * A workspace story is about files and buffers, so `file.open` and `file.new` must say which file,
- * `edit.insert` must say what is typed and `file.find`/`grep.project` must say what is searched for;
- * keeping the fields on a schema of its own is what makes `path`, `text` and `query` an error
- * everywhere else, instead of fields the vim and shell kinds silently accept without ever using
- * them.
+ * `edit.insert` must say what is typed, `file.find`/`grep.project` must say what is searched for and
+ * `shell.run` must say what runs; keeping the fields on a schema of its own is what makes `path`,
+ * `text`, `query` and `command` an error everywhere else, instead of fields the vim and shell kinds
+ * silently accept without ever using them.
  */
 export const workspaceActionRefSchema = z
   .strictObject({
@@ -141,11 +173,13 @@ export const workspaceActionRefSchema = z
     path: projectPathSchema.optional(),
     text: typedTextSchema.optional(),
     query: querySchema.optional(),
+    command: commandSchema.optional(),
   })
   .superRefine((solution, ctx) => {
     checkTarget(solution, ctx);
     checkText(solution, ctx);
     checkQuery(solution, ctx);
+    checkCommand(solution, ctx);
     if (solution.path === undefined) return;
     if ((PATHED_ACTIONS as readonly string[]).includes(solution.action)) return;
     ctx.addIssue({

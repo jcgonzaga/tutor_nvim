@@ -48,7 +48,31 @@ const initialStateSchema = z.strictObject({
   path: diskPathSchema,
   /** Where a shell command would run. Absolute in content, e.g. `/project`. */
   cwd: z.string().default(""),
+  /**
+   * The terminal window this exercise may open (T7a1, S6): its title, where it opens and what the
+   * simulated machine prints for each command. The outputs are content because there is no process
+   * to ask, so `shell.run` can only append what a file declared and refuses a command nobody did.
+   */
+  terminal: z
+    .strictObject({
+      title: z.string().min(1),
+      /** Where it opens; omitted means the workspace's own cwd. */
+      cwd: z.string().optional(),
+      /** command -> the lines it prints, in the order it prints them. */
+      commands: z.record(z.string(), z.array(z.string())),
+    })
+    .optional(),
 });
+
+/** What content writes for the terminal, before `terminalSpec` normalizes it. */
+type RawTerminalSpec = z.input<typeof initialStateSchema>["terminal"];
+
+/** The terminal shape the engine reads: `cwd` is `null` and not absent when the content omits it. */
+export interface WorkspaceTerminalSpec {
+  readonly title: string;
+  readonly cwd: string | null;
+  readonly commands: Readonly<Record<string, readonly string[]>>;
+}
 
 export type RawWorkspaceObjective =
   | { type: "active_file"; path: string }
@@ -60,6 +84,7 @@ export type RawWorkspaceObjective =
   | { type: "split_ratio"; index: number; ratio: number }
   | { type: "windows"; paths: string[] }
   | { type: "zoom"; path: string | null }
+  | { type: "terminal_output"; lines: string[] }
   | { type: "grep_matches"; matches: WorkspaceGrepMatch[] }
   | { type: "all"; goals: RawWorkspaceObjective[] };
 
@@ -100,6 +125,14 @@ const workspaceObjectiveSchema: z.ZodType<RawWorkspaceObjective> = z.lazy(() =>
     z.strictObject({ type: z.literal("windows"), paths: z.array(diskPathSchema).min(1) }),
     /** The path the zoomed window shows, or `null` when nothing is zoomed (T6). */
     z.strictObject({ type: z.literal("zoom"), path: diskPathSchema.nullable() }),
+    /**
+     * The lines the focused terminal printed (T7a1): written as lines, normalized like `buffer_text`,
+     * so a story says what a command printed even when it printed nothing at all.
+     */
+    z.strictObject({
+      type: z.literal("terminal_output"),
+      lines: z.array(z.string()).min(1),
+    }),
     /** The rows `grep.project` recorded, in project order: path first, then line (T5c). */
     z.strictObject({
       type: z.literal("grep_matches"),
@@ -124,8 +157,18 @@ export type WorkspaceObjective =
   | { readonly type: "split_ratio"; readonly index: number; readonly ratio: number }
   | { readonly type: "windows"; readonly paths: readonly string[] }
   | { readonly type: "zoom"; readonly path: string | null }
+  | { readonly type: "terminal_output"; readonly targetLines: readonly string[] }
   | { readonly type: "grep_matches"; readonly matches: readonly WorkspaceGrepMatch[] }
   | { readonly type: "all"; readonly goals: readonly WorkspaceObjective[] };
+
+/**
+ * The declared terminal as the engine reads it, or `null`: an omitted `cwd` becomes `null` so the
+ * field says "the workspace's cwd" instead of vanishing from the state a replay starts from.
+ */
+function terminalSpec(raw: RawTerminalSpec): WorkspaceTerminalSpec | null {
+  if (raw === undefined) return null;
+  return { title: raw.title, cwd: raw.cwd ?? null, commands: raw.commands };
+}
 
 function normalizeObjective(raw: RawWorkspaceObjective): WorkspaceObjective {
   switch (raw.type) {
@@ -133,6 +176,10 @@ function normalizeObjective(raw: RawWorkspaceObjective): WorkspaceObjective {
     case "file_text":
       // Same normalization boundary as `buffer_equals`: content is text, the comparison is lines.
       return { type: raw.type, path: raw.path, targetLines: splitLines(raw.text) };
+    case "terminal_output":
+      // The same boundary for what a command printed: content may write a whole scrollback as one
+      // string, and the comparison is still lines against lines (T7a1).
+      return { type: "terminal_output", targetLines: raw.lines.flatMap(splitLines) };
     case "open_buffers":
       // A set: the order content lists the open buffers in is not the point.
       return { type: "open_buffers", paths: [...new Set(raw.paths)].sort() };
@@ -201,6 +248,9 @@ export const workspaceExerciseSchema = z
       files: exercise.initialState.files,
       path: exercise.initialState.path,
       cwd: exercise.initialState.cwd,
+      // Carried as `null` when undeclared: "may open a terminal" is a fact the state always holds,
+      // and an absent field would make the engine guess (T7a1).
+      terminal: terminalSpec(exercise.initialState.terminal),
     },
     objective: normalizeObjective(exercise.objective),
     solutions: exercise.solutions.map((solution) => ({
@@ -214,6 +264,7 @@ export const workspaceExerciseSchema = z
               ...(entry.path === undefined ? {} : { path: entry.path }),
               ...(entry.text === undefined ? {} : { text: entry.text }),
               ...(entry.query === undefined ? {} : { query: entry.query }),
+              ...(entry.command === undefined ? {} : { command: entry.command }),
             },
       ),
     })),
@@ -222,9 +273,10 @@ export const workspaceExerciseSchema = z
 /**
  * One action of a workspace solution: the target only where the vocabulary takes one, the path only
  * where the action names a file (`file.open`, `file.new`, `buffer.list`), the text only where it
- * types one (`edit.insert`) and the query only where it searches the project (`file.find`,
- * `grep.project`), so the replay can hand them to the engine instead of guessing which file, which
- * words or which fragment the story meant.
+ * types one (`edit.insert`), the query only where it searches the project (`file.find`,
+ * `grep.project`) and the command only where it runs one (`shell.run`), so the replay can hand them
+ * to the engine instead of guessing which file, which words, which fragment or which command the
+ * story meant.
  */
 export interface WorkspaceSolutionAction {
   readonly action: KeymapAction;
@@ -234,6 +286,8 @@ export interface WorkspaceSolutionAction {
   readonly text?: string;
   /** What `file.find` and `grep.project` search for, handed to the engine the way `path` is. */
   readonly query?: string;
+  /** What `shell.run` runs in the focused terminal, handed to the engine the way `path` is. */
+  readonly command?: string;
 }
 
 /**

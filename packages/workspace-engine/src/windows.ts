@@ -2,7 +2,9 @@ import type {
   FocusStep,
   LeafWindow,
   SplitWindow,
+  TerminalWindow,
   WindowLayout,
+  WindowLeaf,
   WindowNode,
   WorkspaceState,
   WorkspaceTab,
@@ -20,6 +22,19 @@ import type {
 
 export const leafNode = (bufferId: string): LeafWindow => ({ kind: "leaf", bufferId });
 
+export const terminalNode = (terminalId: string): TerminalWindow => ({
+  kind: "terminal",
+  terminalId,
+});
+
+/**
+ * Whether a node is a window rather than a layout between windows (T7a1). A leaf shows one thing —
+ * a file or a terminal session — and that is the only property the tree's helpers care about.
+ */
+export function isLeafNode(node: WindowNode): node is WindowLeaf {
+  return node.kind !== "split";
+}
+
 export const splitNode = (
   layout: WindowLayout,
   ratio: number,
@@ -31,7 +46,7 @@ export const splitNode = (
 export function nodeAt(node: WindowNode, path: readonly FocusStep[]): WindowNode | undefined {
   const [step, ...rest] = path;
   if (step === undefined) return node;
-  if (node.kind === "leaf") return undefined;
+  if (isLeafNode(node)) return undefined;
   return nodeAt(step === "first" ? node.first : node.second, rest);
 }
 
@@ -43,7 +58,7 @@ export function replaceAt(
 ): WindowNode {
   const [step, ...rest] = path;
   if (step === undefined) return replacement;
-  if (node.kind === "leaf") return node;
+  if (isLeafNode(node)) return node;
   return step === "first"
     ? { ...node, first: replaceAt(node.first, rest, replacement) }
     : { ...node, second: replaceAt(node.second, rest, replacement) };
@@ -54,13 +69,21 @@ export function replaceAt(
  * a direction or a swap treats as "the other side".
  */
 export function lastLeafPath(node: WindowNode): readonly FocusStep[] {
-  return node.kind === "leaf" ? [] : ["second", ...lastLeafPath(node.second)];
+  return isLeafNode(node) ? [] : ["second", ...lastLeafPath(node.second)];
 }
 
 /** The leaf a tab's focus path points at, or `undefined` when the tree and the path disagree. */
 export function focusLeaf(tab: WorkspaceTab): LeafWindow | undefined {
-  const node = nodeAt(tab.root, tab.focus);
+  const node = focusedNode(tab);
   return node?.kind === "leaf" ? node : undefined;
+}
+
+/**
+ * The window a tab's focus path points at, whichever it shows: focus belongs to the window, and a
+ * terminal window takes the keys exactly as a file window does (T7a1).
+ */
+export function focusedNode(tab: WorkspaceTab): WindowNode | undefined {
+  return nodeAt(tab.root, tab.focus);
 }
 
 /** The tab the keys go to. */
@@ -74,6 +97,8 @@ export function activeTab(state: WorkspaceState): WorkspaceTab | undefined {
  * split that showed the buffer twice re-points both leaves.
  */
 export function replaceBuffer(node: WindowNode, from: string, to: string): WindowNode {
+  // A terminal leaf shows a session: no buffer id of its own to re-point.
+  if (node.kind === "terminal") return node;
   if (node.kind === "leaf") return node.bufferId === from ? leafNode(to) : node;
   const first = replaceBuffer(node.first, from, to);
   const second = replaceBuffer(node.second, from, to);
@@ -82,9 +107,21 @@ export function replaceBuffer(node: WindowNode, from: string, to: string): Windo
 
 /** Every buffer a tree shows, in tree order. The same id may appear twice: a split does that. */
 export function leafBufferIds(node: WindowNode): readonly string[] {
-  return node.kind === "leaf"
-    ? [node.bufferId]
-    : [...leafBufferIds(node.first), ...leafBufferIds(node.second)];
+  if (node.kind === "terminal") return [];
+  if (node.kind === "leaf") return [node.bufferId];
+  return [...leafBufferIds(node.first), ...leafBufferIds(node.second)];
+}
+
+/**
+ * Every window a tree holds, in tree order, whatever each one shows. `leafBufferIds` answers "what is
+ * on screen as files" and this answers "how many windows are there": a terminal leaf is one window
+ * and no buffer, so counting windows by their buffers would undercount it (T7a1).
+ */
+export function leafNodes(node: WindowNode): readonly WindowLeaf[] {
+  if (node.kind === "split") {
+    return [...leafNodes(node.first), ...leafNodes(node.second)];
+  }
+  return [node];
 }
 
 /**
@@ -98,12 +135,15 @@ function pruneZoom(
   if (zoom === null) return null;
   const tab = tabs.find((candidate) => candidate.id === zoom.tabId);
   if (tab === undefined) return null;
-  return nodeAt(tab.root, zoom.leafPath)?.kind === "leaf" ? zoom : null;
+  const node = nodeAt(tab.root, zoom.leafPath);
+  return node !== undefined && isLeafNode(node) ? zoom : null;
 }
 
 /**
  * The state with a new tab list and active tab, and everything derived from them: the active buffer
- * is the focused window's buffer, never a second source of truth.
+ * is the focused window's buffer, never a second source of truth. A focused terminal window has no
+ * buffer, so the active buffer stays the last one a file window focused: a session is not a file and
+ * must not silently unload the file the learner was editing (T7a1).
  */
 export function withTabs(
   state: WorkspaceState,
@@ -143,6 +183,9 @@ export function withFocus(
 /**
  * Points the focused window at a buffer and makes it active. This is how `:e`, `:bn` and `:bp`
  * change what is on screen: focus and the active buffer move together, never apart.
+ *
+ * A window showing a terminal is still a window, so opening a file in it replaces what it shows, the
+ * way `:e` inside Neovim's terminal window does; the session stays in `state.terminals`.
  */
 export function withActiveBuffer(state: WorkspaceState, bufferId: string): WorkspaceState {
   const tabs = state.tabs.map((tab) =>

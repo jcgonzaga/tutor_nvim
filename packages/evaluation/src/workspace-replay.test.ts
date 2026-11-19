@@ -166,18 +166,20 @@ describe("simulateWorkspaceSolution replays actions through the engine", () => {
 
   it("reports an action no layer can apply as a content bug naming the exercise and the action", () => {
     const ex = exercise();
-    // `app.launch-terminal` is in the vocabulary, but the simulation launches no application (S6):
-    // a story written this way could never be solved, and the gate says which action is missing.
+    // `motion.word-forward` is in the vocabulary and a layer binds it, but a workspace article is not
+    // edited by a motion: the workspace engine applies none, so a story written this way could never
+    // be solved and the gate says which action is missing. (T7a1 made this pin move again: it named
+    // `app.launch-terminal` until a terminal existed.)
     const broken = {
       ...ex,
-      solutions: [{ ...ex.solutions[0]!, actions: [action("app.launch-terminal")] }],
+      solutions: [{ ...ex.solutions[0]!, actions: [action("motion.word-forward")] }],
     };
 
     const errors = checkExercise(broken);
     expect(errors.join("\n")).toMatch(/workspace\.test\.split-001/);
     expect(errors.join("\n")).toMatch(/solution 1/);
-    expect(errors.join("\n")).toMatch(/app\.launch-terminal/);
-    expect(errors.join("\n")).toMatch(/Unknown workspace action: app\.launch-terminal/);
+    expect(errors.join("\n")).toMatch(/motion\.word-forward/);
+    expect(errors.join("\n")).toMatch(/Unknown workspace action: motion\.word-forward/);
   });
 
   it("reports a picker action that names no query with the query's own message", () => {
@@ -468,5 +470,79 @@ describe("a solution may search the project (grep.project, T5c)", () => {
     expect(errors.join("\n")).toMatch(/workspace\.test\.grep-project-001/);
     expect(errors.join("\n")).toMatch(/solution 1/);
     expect(errors.join("\n")).toMatch(/grep\.project: no line matches "sql"/);
+  });
+});
+
+/**
+ * A story that opens a terminal and runs the tests in it (story 19, T7a1). The terminal is a window
+ * on a session, so a launch is a split and a run appends the output the exercise declared: the
+ * replay needs no process, and `terminal_output` is what the learner reads.
+ */
+function terminalExercise(): WorkspaceExercise {
+  return parseWorkspaceExercise({
+    schemaVersion: 1,
+    kind: "workspace",
+    id: "workspace-test-006",
+    slug: "workspace.test.terminal-001",
+    title: "Open a terminal and run the tests",
+    skillIds: ["neovim.terminal.run"],
+    mode: "learn",
+    difficulty: 2,
+    initialState: {
+      files: { "src/main.ts": "one" },
+      path: "src/main.ts",
+      cwd: "/project",
+      terminal: { title: "dev", commands: { "npm test": ["Tests: 3 passed"] } },
+    },
+    objective: { type: "terminal_output", lines: ["Tests: 3 passed"] },
+    solutions: [
+      {
+        actions: [{ action: "app.launch-terminal" }, { action: "shell.run", command: "npm test" }],
+        classification: "optimal",
+      },
+    ],
+  });
+}
+
+describe("a solution may open a terminal and run a command (T7a1)", () => {
+  it("replays the launch and the run into the lines the objective asserts", () => {
+    const ex = terminalExercise();
+    const optimal = ex.solutions[0];
+    if (optimal === undefined) throw new Error("the fixture declares an optimal solution");
+
+    const replay = simulateWorkspaceSolution(ex, optimal);
+
+    expect(replay.refused).toBeNull();
+    expect(replay.state.terminals).toEqual([
+      {
+        id: "terminal:1",
+        title: "dev",
+        cwd: "/project",
+        entries: [{ command: "npm test", output: ["Tests: 3 passed"] }],
+      },
+    ]);
+    expect(goalMet(ex, replay)).toBe(true);
+    expect(checkExercise(ex)).toEqual([]);
+  });
+
+  it("reports a command the exercise never declared as a content bug naming it", () => {
+    const ex = terminalExercise();
+    const broken = {
+      ...ex,
+      solutions: [
+        {
+          ...ex.solutions[0]!,
+          actions: [
+            { action: "app.launch-terminal" as const },
+            { action: "shell.run" as const, command: "npm run build" },
+          ],
+        },
+      ],
+    };
+
+    const errors = checkExercise(broken);
+    expect(errors.join("\n")).toMatch(/workspace\.test\.terminal-001/);
+    expect(errors.join("\n")).toMatch(/solution 1/);
+    expect(errors.join("\n")).toMatch(/shell\.run: no output is declared for "npm run build"/);
   });
 });

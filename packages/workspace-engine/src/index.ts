@@ -3,7 +3,9 @@ export type {
   LeafWindow,
   PendingWorkspaceCommand,
   SplitWindow,
+  TerminalWindow,
   WindowLayout,
+  WindowLeaf,
   WindowNode,
   WorkspaceActionOptions,
   WorkspaceActionResult,
@@ -14,6 +16,9 @@ export type {
   WorkspaceInit,
   WorkspaceState,
   WorkspaceTab,
+  WorkspaceTerminal,
+  WorkspaceTerminalDeclaration,
+  WorkspaceTerminalEntry,
   WorkspaceZoom,
 } from "./types";
 export {
@@ -31,16 +36,27 @@ export {
   WORKSPACE_EDIT_ACTIONS,
   WORKSPACE_FILE_ACTIONS,
   WORKSPACE_PICKER_ACTIONS,
+  WORKSPACE_TERMINAL_ACTIONS,
   applyWorkspaceAction,
   type WorkspaceActionName,
   type WorkspaceEditActionName,
   type WorkspaceFileActionName,
   type WorkspacePickerActionName,
+  type WorkspaceTerminalActionName,
 } from "./actions";
 export { typeText } from "./editing";
-export { activeTab, focusLeaf, leafBufferIds } from "./windows";
+export {
+  activeTab,
+  focusLeaf,
+  focusedNode,
+  isLeafNode,
+  leafBufferIds,
+  leafNodes,
+  terminalNode,
+} from "./windows";
 export {
   focusLeafIndex,
+  focusedTerminalOutput,
   layoutText,
   splitRatios,
   windowPaths,

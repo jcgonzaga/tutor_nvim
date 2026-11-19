@@ -43,6 +43,10 @@ export function createWorkspace(input: WorkspaceInit): WorkspaceState {
     zoom: null,
     pending: null,
     lastCommand: null,
+    // The declaration is carried, not opened: `app.launch-terminal` is what creates a session, so
+    // an exercise that never launches one never has a terminal window (T7a1).
+    declaredTerminal: input.terminal ?? null,
+    terminals: [],
   };
 }
 

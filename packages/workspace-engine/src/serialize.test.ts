@@ -25,7 +25,20 @@ const FILES: Readonly<Record<string, string>> = {
   "src/lib/format.ts": FORMAT_TEXT,
 };
 const MAIN = "src/main.ts";
-const INIT = { files: FILES, path: MAIN, cwd: "/project" };
+const CWD = "/project";
+const INIT = { files: FILES, path: MAIN, cwd: CWD };
+
+/**
+ * The same workspace with the terminal an exercise declares (T7a1). A terminal is a window that
+ * shows a session, not a file, so `windows` prints its leaf as `terminal:<title>` while the layout
+ * keeps calling every leaf a `leaf`.
+ */
+const TERMINAL_INIT = {
+  files: FILES,
+  path: MAIN,
+  cwd: CWD,
+  terminal: { title: "dev", cwd: CWD, commands: { "npm test": ["Tests: 3 passed"] } },
+};
 
 /** Applies an action that must apply; a refused one is a bug in the test, not a tolerated result. */
 function apply(state: WorkspaceState, action: string): WorkspaceState {
@@ -129,6 +142,7 @@ describe("workspaceObjectiveView projects the state an objective is judged again
       matches: [],
       zoomedPath: null,
       windowPaths: [MAIN],
+      terminalOutput: null,
     });
   });
 
@@ -173,6 +187,38 @@ describe("workspaceObjectiveView projects the state an objective is judged again
       { path: "src/lib/format.ts", text: FORMAT_TEXT },
     ]);
     expect(view.activePath).toBe("src/lib/format.ts");
+  });
+});
+
+describe("a terminal window prints as a terminal, not as a file", () => {
+  const launched = () => apply(createWorkspace(TERMINAL_INIT), "app.launch-terminal");
+
+  it("prints the leaf as terminal:<title> beside the file it split", () => {
+    const state = launched();
+    expect(workspaceObjectiveView(state).windowPaths).toEqual([MAIN, "terminal:dev"]);
+    // The layout is the shape of the tree, and a terminal leaf is still one window.
+    expect(workspaceObjectiveView(state).layout).toBe("side(leaf, leaf)");
+    expect(layoutText(state.tabs[0]!.root)).toBe("side(leaf, leaf)");
+  });
+
+  it("counts the terminal leaf when it indexes the focused window", () => {
+    expect(focusLeafIndex(launched())).toBe(1);
+  });
+
+  it("names a zoomed terminal the way windows names it", () => {
+    expect(workspaceObjectiveView(apply(launched(), "window.zoom")).zoomedPath).toBe(
+      "terminal:dev",
+    );
+  });
+
+  it("carries the lines the focused terminal printed, and none while a file is focused", () => {
+    const ran = applyWorkspaceAction(launched(), "shell.run", { command: "npm test" });
+    if (!ran.applied) throw new Error("shell.run was refused");
+    expect(workspaceObjectiveView(ran.state).terminalOutput).toEqual(["Tests: 3 passed"]);
+
+    // Focus is back on the file: no terminal is focused, so no output is the answer.
+    const left = apply(ran.state, "window.focus-left");
+    expect(workspaceObjectiveView(left).terminalOutput).toBeNull();
   });
 });
 

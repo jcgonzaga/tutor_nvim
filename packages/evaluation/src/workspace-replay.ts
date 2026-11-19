@@ -40,14 +40,15 @@ export interface RefusedWorkspaceAction {
 
 /**
  * What one action hands the engine: a path for the actions that name a file, a text for the one that
- * types and a query for the ones that search the project (the schema rejects each anywhere else),
- * so an action without them is the action bare.
+ * types, a query for the ones that search the project and a command for the one that runs in a
+ * terminal (the schema rejects each anywhere else), so an action without them is the action bare.
  */
 function optionsOf(action: WorkspaceSolutionAction): WorkspaceActionOptions {
   return {
     ...(action.path === undefined ? {} : { path: action.path }),
     ...(action.text === undefined ? {} : { text: action.text }),
     ...(action.query === undefined ? {} : { query: action.query }),
+    ...(action.command === undefined ? {} : { command: action.command }),
   };
 }
 
@@ -76,6 +77,9 @@ export function simulateWorkspaceSolution(
     files: exercise.initialState.files,
     path: exercise.initialState.path,
     cwd: exercise.initialState.cwd,
+    // The terminal the exercise declares, so `app.launch-terminal` and `shell.run` reach the same
+    // sessions a learner's actions reach (T7a1).
+    terminal: exercise.initialState.terminal,
   });
   let state: WorkspaceState = initialState;
   const applied: WorkspaceSolutionAction[] = [];

@@ -2,11 +2,17 @@
 #
 # Every binding here is behaviour `packages/shell-engine/src/keys.ts` already models, or says with
 # `notModelled` why it cannot be exercised yet. Keep it honest and small (S3).
+#
+# `shell.run` is the one row the terminal story needed (T7a1): Enter runs the line, and what a command
+# prints is declared by the exercise, because the simulated machine has no processes (S6).
 schemaVersion: 1
 id: linux
 label: "Linux"
 owns: [shell]
 bindings:
+  - keys: "Enter"
+    action: shell.run
+    description: "Run the command line you typed."
   - keys: "C-u"
     action: shell.clear-line
     description: "Clear the line you are typing without running it."

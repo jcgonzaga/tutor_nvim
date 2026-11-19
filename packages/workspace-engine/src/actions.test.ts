@@ -7,7 +7,7 @@ import {
   bufferId,
   createWorkspace,
   dispatchWorkspace,
-  focusLeaf,
+  focusedNode,
   leafBufferIds,
   runWorkspaceKeys,
   WORKSPACE_ACTIONS,
@@ -1013,7 +1013,8 @@ describe("totality", () => {
 
 /** Ratios, children and leaf buffers of one tree: an empty or out-of-bounds split is the bug. */
 function expectSoundTree(node: WindowNode): void {
-  if (node.kind === "leaf") return;
+  // A window, whichever it shows: a terminal leaf is a window like a file leaf (T7a1).
+  if (node.kind !== "split") return;
   expect(node.first).toBeDefined();
   expect(node.second).toBeDefined();
   expect(["side-by-side", "stacked"]).toContain(node.layout);
@@ -1023,14 +1024,21 @@ function expectSoundTree(node: WindowNode): void {
   expectSoundTree(node.second);
 }
 
-/** The design's invariants, asserted after every step of a scenario script. */
+/**
+ * The design's invariants, asserted after every step of a scenario script.
+ *
+ * `activeBufferId` follows the focused window's buffer, and a focused terminal window has none, so
+ * the equality holds whenever focus is on a file and the buffer keeps its last value otherwise: a
+ * session is not a file and must not unload the file the learner was editing (T7a1).
+ */
 function expectInvariants(state: WorkspaceState): void {
   const tab = activeTab(state);
   expect(tab).toBeDefined();
   if (tab === undefined) return;
-  const focused = focusLeaf(tab);
+  const focused = focusedNode(tab);
   expect(focused).toBeDefined();
-  expect(state.activeBufferId).toBe(focused?.bufferId);
+  // A focused terminal window has no buffer, so only a file window pins the active buffer.
+  if (focused?.kind === "leaf") expect(state.activeBufferId).toBe(focused.bufferId);
 
   for (const each of state.tabs) {
     expectSoundTree(each.root);

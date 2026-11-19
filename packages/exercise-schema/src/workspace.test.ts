@@ -93,6 +93,9 @@ describe("workspace exercise schema", () => {
       },
       path: "src/main.ts",
       cwd: "/project",
+      // No terminal leaf is declared here, and `null` says so instead of leaving the field absent:
+      // the state always carries the answer to "may this exercise open a terminal?" (T7a1).
+      terminal: null,
     });
     expect(exercise.objective).toEqual({
       type: "all",
@@ -549,5 +552,128 @@ describe("the windows objective", () => {
 
   it("rejects a windows objective that names no window", () => {
     expect(issuesOf({ ...validInput(), objective: { type: "windows", paths: [] } })).not.toEqual([]);
+  });
+});
+
+/**
+ * A terminal is a window that shows a session, not a file (T7a1, S6). The exercise declares what the
+ * simulated machine prints and nothing else: there is no process to ask, so a command's output is
+ * content, and `shell.run` can only append what a file declared.
+ */
+describe("the terminal an exercise declares", () => {
+  it("reads its title, cwd and declared outputs, and null when it declares none", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      initialState: {
+        ...validInput().initialState,
+        terminal: { title: "dev", cwd: "/project", commands: { "npm test": ["Tests: 3 passed"] } },
+      },
+    });
+    expect(exercise.initialState.terminal).toEqual({
+      title: "dev",
+      cwd: "/project",
+      commands: { "npm test": ["Tests: 3 passed"] },
+    });
+
+    // No declaration is a fact the state carries, not a field the caller has to know is missing.
+    expect(parseWorkspaceExercise(validInput()).initialState.terminal).toBeNull();
+
+    // The cwd is optional: an undeclared one opens the terminal where the workspace is.
+    expect(
+      parseWorkspaceExercise({
+        ...validInput(),
+        initialState: {
+          ...validInput().initialState,
+          terminal: { title: "dev", commands: { ls: ["src"] } },
+        },
+      }).initialState.terminal,
+    ).toEqual({ title: "dev", cwd: null, commands: { ls: ["src"] } });
+  });
+
+  it("refuses a declaration with no title or with fields the engine does not read", () => {
+    expect(
+      issuesOf({
+        ...validInput(),
+        initialState: {
+          ...validInput().initialState,
+          terminal: { title: "", commands: {} },
+        },
+      }),
+    ).not.toEqual([]);
+    expect(
+      issuesOf({
+        ...validInput(),
+        initialState: {
+          ...validInput().initialState,
+          terminal: { title: "dev", commands: {}, shell: "bash" },
+        },
+      }),
+    ).not.toEqual([]);
+  });
+
+  it("reads a command only with shell.run, which cannot be declared without one", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      solutions: [
+        {
+          actions: [{ action: "shell.run", command: "npm test" }, { action: "window.zoom" }],
+          classification: "optimal",
+        },
+      ],
+    });
+    expect(exercise.solutions[0]?.actions).toEqual([
+      { action: "shell.run", command: "npm test" },
+      { action: "window.zoom" },
+    ]);
+
+    // Required: a shell.run that names no command runs nothing a story can assert.
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "shell.run" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/"shell\.run" needs a command: it names the command to run/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          {
+            actions: [{ action: "file.open", path: "src/other.ts", command: "npm test" }],
+            classification: "optimal",
+          },
+        ],
+      }).join("\n"),
+    ).toMatch(/"file\.open" takes no command: only shell\.run runs a command/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "shell.run", command: "" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/must be the command to run, so it cannot be empty/);
+  });
+
+  it("records a terminal_output objective, splitting its text into lines", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      objective: { type: "terminal_output", lines: ["PASS", "Tests: 3 passed"] },
+    });
+    expect(exercise.objective).toEqual({
+      type: "terminal_output",
+      targetLines: ["PASS", "Tests: 3 passed"],
+    });
+
+    // Normalized where the boundary is, like `buffer_text`: multi-line content compares as lines.
+    expect(
+      parseWorkspaceExercise({
+        ...validInput(),
+        objective: { type: "terminal_output", lines: ["PASS\nTests: 3 passed"] },
+      }).objective,
+    ).toEqual({ type: "terminal_output", targetLines: ["PASS", "Tests: 3 passed"] });
+
+    expect(
+      issuesOf({ ...validInput(), objective: { type: "terminal_output", lines: [] } }),
+    ).not.toEqual([]);
   });
 });

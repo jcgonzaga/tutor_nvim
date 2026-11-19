@@ -13,19 +13,24 @@ import { typeText } from "./editing";
 import type {
   FocusStep,
   WindowLayout,
+  WindowLeaf,
+  WindowNode,
   WorkspaceActionOptions,
   WorkspaceActionResult,
   WorkspaceState,
   WorkspaceTab,
+  WorkspaceTerminal,
 } from "./types";
 import {
   activeTab,
-  focusLeaf,
+  focusedNode,
+  isLeafNode,
   lastLeafPath,
   leafNode,
   nodeAt,
   replaceAt,
   splitNode,
+  terminalNode,
   withActiveTab,
   withFocus,
   withTabs,
@@ -106,6 +111,18 @@ export type WorkspacePickerActionName = (typeof WORKSPACE_PICKER_ACTIONS)[number
 export const WORKSPACE_EDIT_ACTIONS = ["edit.insert"] as const;
 export type WorkspaceEditActionName = (typeof WORKSPACE_EDIT_ACTIONS)[number];
 
+/**
+ * The terminal actions this engine applies (T7a1, stories 15 and 19): `app.launch-terminal` opens a
+ * window on a session and `shell.run` appends the output the exercise declared for a command.
+ *
+ * They are actions and not keys like every other one, so Omarchy's `Super-Enter`, tmux's pane split
+ * and a shell's `Enter` reach them through the catalogs instead of this engine learning a prefix. A
+ * simulated machine has no processes (S6), so what a command prints is content: the exercise declares
+ * it and the engine never invents a line.
+ */
+export const WORKSPACE_TERMINAL_ACTIONS = ["app.launch-terminal", "shell.run"] as const;
+export type WorkspaceTerminalActionName = (typeof WORKSPACE_TERMINAL_ACTIONS)[number];
+
 /** A resize is a step of the ratio, never a number of pixels, so it stays deterministic. */
 const RATIO_STEP = 0.05;
 const RATIO_MIN = 0.1;
@@ -123,10 +140,47 @@ const refused = (state: WorkspaceState, reason: string): WorkspaceActionResult =
 const fromStep = (step: FileStepResult): WorkspaceActionResult =>
   step.reason === undefined ? applied(step.state) : refused(step.state, step.reason);
 
+/** Quotes a command so a refusal shows exactly what was asked to run, as the pickers' do. */
+const quoted = (value: string): string => JSON.stringify(value);
+
 /** The direction a focus action moves in, matched against a split's layout. */
 interface Direction {
   readonly layout: WindowLayout;
   readonly towards: FocusStep;
+}
+
+/**
+ * The tab and the window the keys go to, or `undefined` when there is no active tab or the focus
+ * path does not reach a window. A terminal leaf is a window here like any other (T7a1).
+ */
+function focusedWindow(
+  state: WorkspaceState,
+): { readonly tab: WorkspaceTab; readonly node: WindowLeaf } | undefined {
+  const tab = activeTab(state);
+  const node = tab === undefined ? undefined : focusedNode(tab);
+  if (tab === undefined || node === undefined || !isLeafNode(node)) return undefined;
+  return { tab, node };
+}
+
+/**
+ * The state with a side-by-side pane beside the focused window, focused, showing `node`.
+ *
+ * `window.new` and `app.launch-terminal` both open something beside the window the learner is in, so
+ * they reach the tree through here: only what the new pane shows differs, and a terminal window is
+ * therefore split, focused and cleaned up by the same code a file window is.
+ */
+function withPaneBeside(
+  state: WorkspaceState,
+  focused: { readonly tab: WorkspaceTab; readonly node: WindowLeaf },
+  node: WindowNode,
+): WorkspaceState {
+  const { tab } = focused;
+  const root = replaceAt(
+    tab.root,
+    tab.focus,
+    splitNode("side-by-side", DEFAULT_RATIO, focused.node, node),
+  );
+  return withActiveTab(state, { ...tab, root, focus: [...tab.focus, "second"] });
 }
 
 export function applyWorkspaceAction(
@@ -163,6 +217,10 @@ export function applyWorkspaceAction(
       return swapFocused(state);
     case "window.new":
       return newWindow(state, options);
+    case "app.launch-terminal":
+      return launchTerminal(state);
+    case "shell.run":
+      return runShellCommand(state, options);
     case "tab.new":
       return newTab(state);
     case "tab.next":
@@ -286,18 +344,16 @@ function insertTextAction(
 }
 
 /**
- * Splits the focused window in two, both showing the buffer it already showed, and focuses the new
- * pane. A split of one window therefore shows that buffer twice, exactly as tmux and nvim do; the
- * buffer is still registered once, and `:e` in either pane separates them.
+ * Splits the focused window in two and focuses the new pane. A split of one file window shows that
+ * buffer twice, exactly as tmux and nvim do; the buffer is still registered once, and `:e` in either
+ * pane separates them. A split of a terminal window shows the same session twice, which is what
+ * splitting a tmux pane does: the session is one session (T7a1).
  */
 function splitFocused(state: WorkspaceState, layout: WindowLayout): WorkspaceActionResult {
-  const tab = activeTab(state);
-  const focused = tab === undefined ? undefined : focusLeaf(tab);
-  if (tab === undefined || focused === undefined) {
-    return refused(state, `window.split-${layout}: no focused window`);
-  }
-  const pane = leafNode(focused.bufferId);
-  const root = replaceAt(tab.root, tab.focus, splitNode(layout, DEFAULT_RATIO, pane, pane));
+  const focused = focusedWindow(state);
+  if (focused === undefined) return refused(state, `window.split-${layout}: no focused window`);
+  const { tab, node } = focused;
+  const root = replaceAt(tab.root, tab.focus, splitNode(layout, DEFAULT_RATIO, node, node));
   return applied(withActiveTab(state, { ...tab, root, focus: [...tab.focus, "second"] }));
 }
 
@@ -338,7 +394,7 @@ function focusByDirection(
   for (let depth = tab.focus.length - 1; depth >= 0; depth -= 1) {
     const step = tab.focus[depth];
     const ancestor = nodeAt(tab.root, tab.focus.slice(0, depth));
-    if (step === undefined || ancestor === undefined || ancestor.kind === "leaf") continue;
+    if (step === undefined || ancestor === undefined || isLeafNode(ancestor)) continue;
     if (ancestor.layout !== direction.layout || step === direction.towards) continue;
     const sibling = step === "first" ? ancestor.second : ancestor.first;
     const focus = [...tab.focus.slice(0, depth), direction.towards, ...lastLeafPath(sibling)];
@@ -381,7 +437,7 @@ function toggleZoom(state: WorkspaceState): WorkspaceActionResult {
   return applied({ ...state, zoom: { tabId: tab.id, leafPath: [...tab.focus] } });
 }
 
-/** Exchanges the focused window's buffer with the nearest sibling leaf's: shape and ratios stay. */
+/** Exchanges the focused window with the nearest sibling leaf's: shape and ratios stay. */
 function swapFocused(state: WorkspaceState): WorkspaceActionResult {
   const tab = activeTab(state);
   if (tab === undefined) return refused(state, "window.swap: no active tab");
@@ -397,12 +453,11 @@ function swapFocused(state: WorkspaceState): WorkspaceActionResult {
       ...lastLeafPath(sibling),
     ];
     const counterpart = nodeAt(tab.root, counterpartPath);
-    if (focused === undefined || focused.kind !== "leaf" || counterpart?.kind !== "leaf") continue;
-    const root = replaceAt(
-      replaceAt(tab.root, counterpartPath, leafNode(focused.bufferId)),
-      tab.focus,
-      leafNode(counterpart.bufferId),
-    );
+    // The windows trade places, not their buffers: a terminal window and a file window swap exactly
+    // as two file windows do, so what each one shows moves and the tree does not (T7a1).
+    if (focused === undefined || !isLeafNode(focused) || counterpart === undefined) continue;
+    if (!isLeafNode(counterpart)) continue;
+    const root = replaceAt(replaceAt(tab.root, counterpartPath, focused), tab.focus, counterpart);
     return applied(withActiveTab(state, { ...tab, root }));
   }
   return refused(state, "window.swap: the tab has a single window");
@@ -422,20 +477,77 @@ function newWindow(state: WorkspaceState, options: WorkspaceActionOptions): Work
     );
   }
   if (state.files[path] === undefined) return refused(state, `E484: Can't open file ${path}`);
-  const tab = activeTab(state);
-  const focused = tab === undefined ? undefined : focusLeaf(tab);
-  if (tab === undefined || focused === undefined)
-    return refused(state, "window.new: no focused window");
+  const focused = focusedWindow(state);
+  if (focused === undefined) return refused(state, "window.new: no focused window");
   const existing = state.buffers.find((buffer) => buffer.path === path);
   const buffer = existing ?? openBuffer(state.files, path);
   const buffers = existing === undefined ? [...state.buffers, buffer] : state.buffers;
-  const root = replaceAt(
-    tab.root,
-    tab.focus,
-    splitNode("side-by-side", DEFAULT_RATIO, leafNode(focused.bufferId), leafNode(buffer.id)),
-  );
-  const next = withActiveTab(state, { ...tab, root, focus: [...tab.focus, "second"] });
+  const next = withPaneBeside(state, focused, leafNode(buffer.id));
   return applied({ ...next, buffers });
+}
+
+/**
+ * A terminal window is opened beside the focused one and takes the keys (T7a1, story 15). The pane
+ * shows a session, so the file window beside it keeps its file and the active buffer does not move.
+ *
+ * Each launch opens its own session instead of reusing the first one: `Super-Enter` twice is two
+ * terminals everywhere, and sharing a scrollback would make one story's commands read in another's.
+ */
+function launchTerminal(state: WorkspaceState): WorkspaceActionResult {
+  const declared = state.declaredTerminal;
+  if (declared === null) {
+    return refused(state, "app.launch-terminal: the exercise declares no terminal");
+  }
+  const focused = focusedWindow(state);
+  if (focused === undefined) return refused(state, "app.launch-terminal: no focused window");
+  const terminal: WorkspaceTerminal = {
+    id: nextTerminalId(state.terminals),
+    title: declared.title,
+    cwd: declared.cwd ?? state.cwd,
+    entries: [],
+  };
+  const next = withPaneBeside(state, focused, terminalNode(terminal.id));
+  return applied({ ...next, terminals: [...state.terminals, terminal] });
+}
+
+/** Terminal ids come from the position in the state, so the same script gives the same ids. */
+function nextTerminalId(terminals: readonly WorkspaceTerminal[]): string {
+  let index = terminals.length + 1;
+  while (terminals.some((terminal) => terminal.id === `terminal:${index}`)) index += 1;
+  return `terminal:${index}`;
+}
+
+/**
+ * Runs a command in the focused terminal and appends what the exercise declared it prints (T7a1).
+ *
+ * Nothing is executed (S6): the table is content, so an undeclared command is refused *by name* and
+ * never answered with invented text, and a command typed while a file window has the keys is refused
+ * too instead of running somewhere the learner is not looking.
+ */
+function runShellCommand(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const command = options.command;
+  if (command === undefined) return refused(state, "shell.run: no command given");
+  const focused = focusedWindow(state);
+  if (focused === undefined || focused.node.kind !== "terminal") {
+    return refused(state, "shell.run: the focused window is not a terminal");
+  }
+  const leaf = focused.node;
+  const terminal = state.terminals.find((candidate) => candidate.id === leaf.terminalId);
+  if (terminal === undefined) {
+    return refused(state, "shell.run: the focused window is not a terminal");
+  }
+  const output = state.declaredTerminal?.commands[command];
+  if (output === undefined) {
+    return refused(state, `shell.run: no output is declared for ${quoted(command)}`);
+  }
+  const entries = [...terminal.entries, { command, output: [...output] }];
+  const terminals = state.terminals.map((candidate) =>
+    candidate.id === terminal.id ? { ...candidate, entries } : candidate,
+  );
+  return applied({ ...state, terminals });
 }
 
 /** A new tab starts as one window on the buffer that was active, and takes the keys. */

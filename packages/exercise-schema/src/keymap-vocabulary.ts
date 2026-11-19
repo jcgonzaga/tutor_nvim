@@ -90,6 +90,8 @@ export const KEYMAP_ACTIONS = [
   "shell.clear-line",
   "shell.history-search",
   "shell.complete",
+  // Runs the command line in the terminal window that has the keys (T7a1).
+  "shell.run",
 ] as const;
 export type KeymapAction = (typeof KEYMAP_ACTIONS)[number];
 
@@ -129,3 +131,11 @@ export const KEYMAP_TEXT_ACTIONS = ["edit.insert"] as const;
  * fixed project answers, and the workspace engine applies it deterministically.
  */
 export const KEYMAP_QUERY_ACTIONS = ["file.find", "grep.project"] as const;
+
+/**
+ * The actions that name the command they run: `shell.run` and nothing else (T7a1). A binding names
+ * keys, never the command a story asks for, so the solution carries the command the way it carries a
+ * path or a query, and the workspace engine looks its output up in what the exercise declared. A
+ * solution gives a `command` to these actions and to no other.
+ */
+export const KEYMAP_COMMAND_ACTIONS = ["shell.run"] as const;

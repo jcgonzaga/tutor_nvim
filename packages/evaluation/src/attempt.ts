@@ -97,6 +97,9 @@ export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
       files: exercise.initialState.files,
       path: exercise.initialState.path,
       cwd: exercise.initialState.cwd,
+      // Carried from the declaration, so a learner's attempt can open the terminal the exercise
+      // describes and the replay of the same story starts from the same workspace (T7a1).
+      terminal: exercise.initialState.terminal,
     });
     return {
       kind: "workspace",

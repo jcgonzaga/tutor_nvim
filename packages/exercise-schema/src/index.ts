@@ -36,6 +36,7 @@ export {
   type WorkspaceObjective,
   type WorkspaceSolution,
   type WorkspaceSolutionAction,
+  type WorkspaceTerminalSpec,
 } from "./workspace";
 export {
   SKILL_DOMAINS,
@@ -48,6 +49,7 @@ export {
 } from "./skill";
 export {
   KEYMAP_ACTIONS,
+  KEYMAP_COMMAND_ACTIONS,
   KEYMAP_MODES,
   KEYMAP_NAMED_KEYS,
   KEYMAP_QUERY_ACTIONS,

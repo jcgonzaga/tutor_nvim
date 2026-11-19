@@ -26,6 +26,11 @@ function state(): WorkspaceObjectiveView {
     splitRatios: [0.5, 0.3],
     zoomedPath: null,
     windowPaths: ["src/main.ts", "src/other.ts"],
+    /**
+     * The lines the focused terminal printed (T7a1), or `null` when a file is focused. The fixture
+     * focuses a file, so the goal that asserts a terminal is the one that has to say so.
+     */
+    terminalOutput: null,
     matches: [
       { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
       { path: "src/server.ts", line: 3, text: "export const server = { port: config.port };" },
@@ -307,5 +312,77 @@ describe("evaluateWorkspaceObjective reports what it expected and what it found"
     expect(
       evaluateWorkspaceObjective({ type: "split_ratio", index: 0, ratio: 0.51 }, half).met,
     ).toBe(true);
+  });
+});
+
+/**
+ * A terminal is a window that shows a session, not a file (T7a1, S6). The engine hands evaluation
+ * the lines the focused terminal printed, and `null` when a file is focused, so a story can assert
+ * what a command printed and a failed one tells the reader which of the two situations happened.
+ */
+describe("the terminal_output objective", () => {
+  const printed = { ...state(), terminalOutput: ["PASS src/main.test.ts", "Tests: 3 passed"] };
+
+  it("is met when the focused terminal printed the lines the story declares", () => {
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "terminal_output", targetLines: ["PASS src/main.test.ts", "Tests: 3 passed"] },
+        printed,
+      ),
+    ).toEqual({ met: true, failures: [] });
+  });
+
+  it("lists both sides on failure, in the shape the text goals use", () => {
+    expect(
+      evaluateWorkspaceObjective({ type: "terminal_output", targetLines: ["0 failed"] }, printed)
+        .failures,
+    ).toEqual([
+      'terminal_output: expected the terminal to print "0 failed", found "PASS src/main.test.ts\\nTests: 3 passed"',
+    ]);
+  });
+
+  it("says the focused window is not a terminal instead of printing nothing", () => {
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "terminal_output", targetLines: ["Tests: 3 passed"] },
+        state(),
+      ).failures,
+    ).toEqual([
+      'terminal_output: expected the terminal to print "Tests: 3 passed", found no terminal in the focused window',
+    ]);
+  });
+
+  it("compares the lines, so the same output compared as a whole string still passes", () => {
+    const oneLine = { ...state(), terminalOutput: ["Tests: 3 passed"] };
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "terminal_output", targetLines: ["Tests: 3 passed"] },
+        oneLine,
+      ).met,
+    ).toBe(true);
+  });
+});
+
+describe("a terminal leaf beside a file", () => {
+  it("leaves open_buffers alone: a terminal window loads no buffer", () => {
+    // `open_buffers` is the set of what is loaded, never what is on screen, so a terminal leaf that
+    // `windows` prints cannot make a story believe a file is open.
+    const withTerminal = { ...state(), windowPaths: ["src/main.ts", "terminal:dev"] };
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "open_buffers", paths: ["src/main.ts", "src/other.ts"] },
+        withTerminal,
+      ),
+    ).toEqual({ met: true, failures: [] });
+  });
+
+  it("is a window `windows` prints by its title", () => {
+    const withTerminal = { ...state(), windowPaths: ["src/main.ts", "terminal:dev"] };
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "windows", paths: ["src/main.ts", "terminal:dev"] },
+        withTerminal,
+      ),
+    ).toEqual({ met: true, failures: [] });
   });
 });

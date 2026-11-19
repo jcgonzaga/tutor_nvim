@@ -43,6 +43,19 @@ export interface LeafWindow {
   readonly bufferId: string;
 }
 
+/**
+ * A window showing a terminal session instead of a file (T7a1, stories 15 and 19).
+ *
+ * A session is not a file and not a buffer: it has a scrollback in `WorkspaceState.terminals`, it is
+ * never edited and no `:` command opens it. Keeping it a *leaf* is what makes focus, split, zoom,
+ * resize, swap and close work on it with no special case: every window shows one thing, and only
+ * what it shows differs.
+ */
+export interface TerminalWindow {
+  readonly kind: "terminal";
+  readonly terminalId: string;
+}
+
 /** Two windows, one on each side or one above the other, with the share the first one takes. */
 export interface SplitWindow {
   readonly kind: "split";
@@ -54,7 +67,13 @@ export interface SplitWindow {
 }
 
 /** The window tree of one tab: leaves are windows, splits are the layout between them. */
-export type WindowNode = LeafWindow | SplitWindow;
+export type WindowNode = LeafWindow | SplitWindow | TerminalWindow;
+
+/**
+ * The node kinds nothing sits under: a window shows one thing, so the pair is what focus, printing
+ * and swapping treat as "a leaf", whatever that leaf shows.
+ */
+export type WindowLeaf = LeafWindow | TerminalWindow;
 
 /** One tab: a tree plus the path from its root to the focused leaf. */
 export interface WorkspaceTab {
@@ -124,6 +143,58 @@ export interface WorkspaceState {
   readonly zoom: WorkspaceZoom | null;
   readonly pending: PendingWorkspaceCommand | null;
   readonly lastCommand: WorkspaceCommandResult | null;
+  /**
+   * The terminal the exercise declares, or `null` when it declares none (T7a1). It is what
+   * `app.launch-terminal` opens and where `shell.run` reads the outputs, so an exercise without one
+   * cannot open a terminal at all — a refusal, never an invented session.
+   */
+  readonly declaredTerminal: WorkspaceTerminalDeclaration | null;
+  /**
+   * The terminal sessions this workspace opened, in the order they were opened. A session outlives
+   * the window that showed it, exactly as a buffer outlives the window that showed the file.
+   */
+  readonly terminals: readonly WorkspaceTerminal[];
+}
+
+/** One line a terminal printed, and the command that printed it. */
+export interface WorkspaceTerminalEntry {
+  /** The command as it was run, so the scrollback reads as a session. */
+  readonly command: string;
+  /** What it printed, line by line. The exercise declared this text; the engine invents none. */
+  readonly output: readonly string[];
+}
+
+/**
+ * One terminal session: what a terminal window shows (T7a1).
+ *
+ * A session is not a buffer: nothing edits it, nothing saves it, and it holds the scrollback of the
+ * commands it has run. Its id comes from the order it was opened in, never from a clock or from
+ * randomness, so a replay is the same state.
+ */
+export interface WorkspaceTerminal {
+  /** Stable and derived from how many terminals came before it. */
+  readonly id: string;
+  readonly title: string;
+  /** Where its commands would run: the shell's working directory, carried but never executed. */
+  readonly cwd: string;
+  /** The commands it ran, in the order it ran them. */
+  readonly entries: readonly WorkspaceTerminalEntry[];
+}
+
+/**
+ * The terminal an exercise declares (`initialState.terminal`): the title, where it opens and, above
+ * all, what the simulated machine prints for each command.
+ *
+ * The table is content because a simulated machine has no processes (S6): `shell.run` looks a command
+ * up here and appends what it finds, so the engine never invents output and a command the exercise never
+ * declared is refused by name instead of answered with fiction.
+ */
+export interface WorkspaceTerminalDeclaration {
+  readonly title: string;
+  /** Where it opens; `null` means the workspace's own `cwd`. */
+  readonly cwd: string | null;
+  /** command -> the lines it prints. */
+  readonly commands: Readonly<Record<string, readonly string[]>>;
 }
 
 /** What `createWorkspace` needs: the simulated disk, the path to open first and the cwd. */
@@ -131,6 +202,8 @@ export interface WorkspaceInit {
   readonly files: Readonly<Record<string, string>>;
   readonly path: string;
   readonly cwd: string;
+  /** The terminal the exercise declares, if any: without one no terminal window can open (T7a1). */
+  readonly terminal?: WorkspaceTerminalDeclaration | null;
 }
 
 export interface WorkspaceDispatchResult {
@@ -163,6 +236,12 @@ export interface WorkspaceActionOptions {
    * carries a path, because a binding names keys and can never name the query.
    */
   readonly query?: string;
+  /**
+   * What `shell.run` runs: the command whose declared output is appended to the focused terminal
+   * (T7a1). A story carries it the way it carries a path, because a binding names keys and can
+   * never name the command.
+   */
+  readonly command?: string;
 }
 
 export interface WorkspaceActionResult {

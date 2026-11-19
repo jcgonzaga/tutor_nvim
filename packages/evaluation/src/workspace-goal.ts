@@ -190,6 +190,31 @@ export function evaluateWorkspaceObjective(
         ],
       };
     }
+    case "terminal_output": {
+      // What the focused terminal printed, compared as lines like `buffer_text`. `null` is the honest
+      // answer for a file window, so the reader of the failure learns that the wrong window had the
+      // keys instead of reading "found nothing" for a terminal that printed nothing (T7a1).
+      const found = state.terminalOutput;
+      if (found === null) {
+        return {
+          met: false,
+          failures: [
+            `terminal_output: expected the terminal to print ${quoted(
+              objective.targetLines.join("\n"),
+            )}, found no terminal in the focused window`,
+          ],
+        };
+      }
+      if (sameLines(found, objective.targetLines)) return { met: true, failures: [] };
+      return {
+        met: false,
+        failures: [
+          `terminal_output: expected the terminal to print ${quoted(
+            objective.targetLines.join("\n"),
+          )}, found ${quoted(found.join("\n"))}`,
+        ],
+      };
+    }
     case "windows": {
       // One entry per leaf, in pre-order: a split is two, and a swap is the same two pipes the other
       // way round, so this compares as a list and never as a set.
