@@ -10,7 +10,8 @@
 # and the `keys` notation has no key-code form. Recorded, not invented — see
 # odd/tasks/keymap-catalogs-research.md.
 #
-# Nothing here can be exercised yet: there is no window-manager engine, so every binding says why.
+# The engine applies most of these actions now, but no pressable form stands behind a `Super-` chord:
+# the desktop takes it before any window sees it, so every binding still says why with `notModelled`.
 schemaVersion: 1
 id: omarchy
 label: "Omarchy"
@@ -19,7 +20,7 @@ bindings:
   - keys: "Super-Enter"
     action: app.launch-terminal
     description: "Open a terminal window."
-    notModelled: "No window-manager engine yet: nothing in this repository models a desktop, so this key is recorded but cannot be exercised."
+    notModelled: "The engine applies `app.launch-terminal`; what is missing is the key itself: `Super-Enter` is the desktop's own chord, taken before any window sees it, so the `Super-` notation has no pressable form in the practice area."
   - keys: "Super-q"
     action: window.close
     description: "Close the window you are in."

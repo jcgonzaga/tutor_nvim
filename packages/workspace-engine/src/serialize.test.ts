@@ -143,6 +143,25 @@ describe("workspaceObjectiveView projects the state an objective is judged again
       zoomedPath: null,
       windowPaths: [MAIN],
       terminalOutput: null,
+      detached: false,
+      mode: "normal",
+    });
+  });
+
+  it("carries the mode and whether the session is detached, so a story can assert both", () => {
+    const state = apply(createWorkspace(INIT), "window.split-side-by-side");
+    expect(workspaceObjectiveView(state)).toMatchObject({ detached: false, mode: "normal" });
+
+    const resizing = apply(state, "window.enter-resize-mode");
+    expect(workspaceObjectiveView(resizing).mode).toBe("resize");
+
+    // The freeze is a flag beside the workspace, not a shape of it: the layout still prints.
+    const detached = applyWorkspaceAction(resizing, "session.detach");
+    if (!detached.applied) throw new Error("session.detach was refused");
+    expect(workspaceObjectiveView(detached.state)).toMatchObject({
+      detached: true,
+      mode: "resize",
+      layout: "side(leaf, leaf)",
     });
   });
 

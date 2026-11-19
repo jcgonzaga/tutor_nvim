@@ -4,6 +4,7 @@ import {
   KEYMAP_ACTIONS,
   KEYMAP_COMMAND_ACTIONS,
   KEYMAP_QUERY_ACTIONS,
+  KEYMAP_TAB_ACTIONS,
   KEYMAP_TARGETS,
   KEYMAP_TARGETED_ACTIONS,
   KEYMAP_TEXT_ACTIONS,
@@ -47,6 +48,14 @@ const querySchema = z.string().min(1, "must be the query to search for, so it ca
  * take, and the engine looks its output up in the exercise's declared table (T7a1).
  */
 const commandSchema = z.string().min(1, "must be the command to run, so it cannot be empty");
+
+/**
+ * The tab a `workspace.move` moves the window into: non-empty, because a move that names nothing
+ * moves nothing, and the engine matches tabs by the id it gives them (`tab:2`, T7a2).
+ */
+const tabSchema = z
+  .string()
+  .min(1, "must be the tab to move the window into, so it cannot be empty");
 
 /** The name of an action and, for an operator, what it acts on: the fields every solution shares. */
 const actionFields = {
@@ -139,6 +148,30 @@ function checkCommand(ref: { action: string; command?: string }, ctx: z.Refineme
 }
 
 /**
+ * A `tab` is read only where the vocabulary moves a window between tabs, and it is required there:
+ * the action exists to say where the window goes, so a move that names no tab is as wrong as a tab
+ * given to a verb that moves nothing (T7a2).
+ */
+function checkTab(ref: { action: string; tab?: string }, ctx: z.RefinementCtx): void {
+  if ((KEYMAP_TAB_ACTIONS as readonly string[]).includes(ref.action)) {
+    if (ref.tab === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["tab"],
+        message: `"${ref.action}" needs a tab: it names the workspace the window moves into`,
+      });
+    }
+    return;
+  }
+  if (ref.tab === undefined) return;
+  ctx.addIssue({
+    code: "custom",
+    path: ["tab"],
+    message: `"${ref.action}" takes no tab: only ${KEYMAP_TAB_ACTIONS.join(", ")} names a tab`,
+  });
+}
+
+/**
  * A solution written as what the learner must accomplish, not as one tool's keys (S6).
  *
  * tmux, Herdr, Omarchy's tmux and Neovim all split a pane, with different keys and a different
@@ -158,14 +191,14 @@ export type ActionRef = z.output<typeof actionRefSchema>;
 
 /**
  * One action of a workspace solution: the shared fields plus the file a file action opens, the text
- * an insert types, the query a project picker searches for (T4b, L9, T5c) and the command a terminal
- * runs (T7a1).
+ * an insert types, the query a project picker searches for (T4b, L9, T5c), the command a terminal
+ * runs (T7a1) and the tab a move moves the window into (T7a2).
  *
- * A workspace story is about files and buffers, so `file.open` and `file.new` must say which file,
- * `edit.insert` must say what is typed, `file.find`/`grep.project` must say what is searched for and
- * `shell.run` must say what runs; keeping the fields on a schema of its own is what makes `path`,
- * `text`, `query` and `command` an error everywhere else, instead of fields the vim and shell kinds
- * silently accept without ever using them.
+ * A workspace story is about files, buffers and windows, so `file.open` and `file.new` must say which
+ * file, `edit.insert` must say what is typed, `file.find`/`grep.project` must say what is searched for,
+ * `shell.run` must say what runs and `workspace.move` must say where the window goes; keeping the
+ * fields on a schema of its own is what makes `path`, `text`, `query`, `command` and `tab` an error
+ * everywhere else, instead of fields the vim and shell kinds silently accept without ever using them.
  */
 export const workspaceActionRefSchema = z
   .strictObject({
@@ -174,12 +207,14 @@ export const workspaceActionRefSchema = z
     text: typedTextSchema.optional(),
     query: querySchema.optional(),
     command: commandSchema.optional(),
+    tab: tabSchema.optional(),
   })
   .superRefine((solution, ctx) => {
     checkTarget(solution, ctx);
     checkText(solution, ctx);
     checkQuery(solution, ctx);
     checkCommand(solution, ctx);
+    checkTab(solution, ctx);
     if (solution.path === undefined) return;
     if ((PATHED_ACTIONS as readonly string[]).includes(solution.action)) return;
     ctx.addIssue({

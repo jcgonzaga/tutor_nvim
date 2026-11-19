@@ -33,8 +33,9 @@ import { ExerciseValidationError, formatIssues, parseYamlDocument } from "./vali
 /**
  * The actions of one solution: a name, or `{ action, target }` where the verb takes a text object,
  * `path` where the action names a file (`file.open`, `file.new`, `buffer.list`, T4b/T5c), `text`
- * where it types one (`edit.insert`, L9) and `query` where it searches the project (`file.find`,
- * `grep.project`, T5c).
+ * where it types one (`edit.insert`, L9), `query` where it searches the project (`file.find`,
+ * `grep.project`, T5c), `command` where it runs one (`shell.run`, T7a1) and `tab` where it moves the
+ * focused window between tabs (`workspace.move`, T7a2).
  */
 const solutionActionSchema = z.union([z.enum(KEYMAP_ACTIONS), workspaceActionRefSchema]);
 
@@ -85,6 +86,8 @@ export type RawWorkspaceObjective =
   | { type: "windows"; paths: string[] }
   | { type: "zoom"; path: string | null }
   | { type: "terminal_output"; lines: string[] }
+  | { type: "session"; state: "attached" | "detached" }
+  | { type: "mode"; mode: "normal" | "resize" }
   | { type: "grep_matches"; matches: WorkspaceGrepMatch[] }
   | { type: "all"; goals: RawWorkspaceObjective[] };
 
@@ -126,6 +129,20 @@ const workspaceObjectiveSchema: z.ZodType<RawWorkspaceObjective> = z.lazy(() =>
     /** The path the zoomed window shows, or `null` when nothing is zoomed (T6). */
     z.strictObject({ type: z.literal("zoom"), path: diskPathSchema.nullable() }),
     /**
+     * Whether the session is attached or detached (T7a2): the freeze `session.detach` sets and
+     * `session.attach` clears. The two words are the whole goal, because what a story asserts about
+     * story 20 is that the learner is in the session or out of it, never a layout inside it.
+     */
+    z.strictObject({
+      type: z.literal("session"),
+      state: z.enum(["attached", "detached"]),
+    }),
+    /**
+     * The input mode (T7a2): "widen a window in resize mode, then leave it" ends in `normal` with the
+     * wider ratio, so the mode is asserted next to the `split_ratio` that records the widening.
+     */
+    z.strictObject({ type: z.literal("mode"), mode: z.enum(["normal", "resize"]) }),
+    /**
      * The lines the focused terminal printed (T7a1): written as lines, normalized like `buffer_text`,
      * so a story says what a command printed even when it printed nothing at all.
      */
@@ -158,6 +175,8 @@ export type WorkspaceObjective =
   | { readonly type: "windows"; readonly paths: readonly string[] }
   | { readonly type: "zoom"; readonly path: string | null }
   | { readonly type: "terminal_output"; readonly targetLines: readonly string[] }
+  | { readonly type: "session"; readonly state: "attached" | "detached" }
+  | { readonly type: "mode"; readonly mode: "normal" | "resize" }
   | { readonly type: "grep_matches"; readonly matches: readonly WorkspaceGrepMatch[] }
   | { readonly type: "all"; readonly goals: readonly WorkspaceObjective[] };
 
@@ -183,6 +202,11 @@ function normalizeObjective(raw: RawWorkspaceObjective): WorkspaceObjective {
     case "open_buffers":
       // A set: the order content lists the open buffers in is not the point.
       return { type: "open_buffers", paths: [...new Set(raw.paths)].sort() };
+    case "session":
+      // Nothing to normalize: the two words are the goal, and a state the schema already narrowed.
+      return { type: "session", state: raw.state };
+    case "mode":
+      return { type: "mode", mode: raw.mode };
     case "grep_matches":
       // The order *is* the point here: project order is what the engine records, and a reordering
       // would hide a search that answered rows the story never asked for.
@@ -265,6 +289,7 @@ export const workspaceExerciseSchema = z
               ...(entry.text === undefined ? {} : { text: entry.text }),
               ...(entry.query === undefined ? {} : { query: entry.query }),
               ...(entry.command === undefined ? {} : { command: entry.command }),
+              ...(entry.tab === undefined ? {} : { tab: entry.tab }),
             },
       ),
     })),
@@ -274,9 +299,9 @@ export const workspaceExerciseSchema = z
  * One action of a workspace solution: the target only where the vocabulary takes one, the path only
  * where the action names a file (`file.open`, `file.new`, `buffer.list`), the text only where it
  * types one (`edit.insert`), the query only where it searches the project (`file.find`,
- * `grep.project`) and the command only where it runs one (`shell.run`), so the replay can hand them
- * to the engine instead of guessing which file, which words, which fragment or which command the
- * story meant.
+ * `grep.project`), the command only where it runs one (`shell.run`) and the tab only where it moves a
+ * window between tabs (`workspace.move`), so the replay can hand them to the engine instead of
+ * guessing which file, which words, which fragment, which command or which workspace the story meant.
  */
 export interface WorkspaceSolutionAction {
   readonly action: KeymapAction;
@@ -288,6 +313,8 @@ export interface WorkspaceSolutionAction {
   readonly query?: string;
   /** What `shell.run` runs in the focused terminal, handed to the engine the way `path` is. */
   readonly command?: string;
+  /** The tab `workspace.move` moves the focused window into, handed to the engine the same way. */
+  readonly tab?: string;
 }
 
 /**

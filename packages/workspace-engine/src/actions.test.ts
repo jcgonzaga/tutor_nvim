@@ -977,6 +977,8 @@ describe("totality", () => {
       "window.resize-narrower",
       "window.resize-taller",
       "window.resize-shorter",
+      "window.enter-resize-mode",
+      "window.leave-resize-mode",
       "window.zoom",
       "window.swap",
       "window.new",
@@ -984,6 +986,7 @@ describe("totality", () => {
       "tab.next",
       "tab.previous",
       "workspace.switch",
+      "workspace.move",
     ]);
   });
 

@@ -7,12 +7,13 @@
 # configuration: it shares tmux's default prefix C-b but not its keys (splits are v and -, not % and
 # "). So it does not extend tmux; inheriting tmux's rows would invent bindings Herdr does not have (S3).
 #
-# Every binding is pressed after the prefix. None can be exercised yet: there is no multiplexer
-# engine, so each row says why with `notModelled`.
+# Every binding is pressed after the prefix. A row the simulator cannot exercise says so with
+# `notModelled`; the resize-mode entry below is one `packages/workspace-engine` applies today, so it
+# carries none.
 #
-# Left out on purpose, real bindings with no action in the vocabulary yet: `r` (resize mode),
-# `[` (copy mode), `1`-`9` (jump to tab), `g` (goto picker), `b` (toggle sidebar), `?` (help),
-# `S-t`/`S-x` (rename/close tab), `S-n`/`S-w`/`S-d` (new/rename/close workspace).
+# Left out on purpose, real bindings with no action in the vocabulary yet: `[` (copy mode), `1`-`9`
+# (jump to tab), `g` (goto picker), `b` (toggle sidebar), `?` (help), `S-t`/`S-x` (rename/close tab),
+# `S-n`/`S-w`/`S-d` (new/rename/close workspace).
 schemaVersion: 1
 id: herdr
 label: "Herdr"
@@ -87,3 +88,17 @@ bindings:
     action: session.detach
     description: "Detach and leave everything running."
     notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no pane to act on."
+  # Herdr's own resize mode, the `r` its keyboard guide lists after the prefix: the one layer whose
+  # catalog owns a mode for resizing instead of resize chords the way tmux and Neovim write them.
+  - keys: "r"
+    action: window.enter-resize-mode
+    description: "Enter resize mode, where the resize keys give the focused pane more or less room."
+    modes: [normal]
+  # What leaves the mode is pressed *inside* it, with no prefix, and this layer writes every binding
+  # after C-b: the row records the action and the gap rather than inventing a prefixed chord for a
+  # key Herdr presses on its own.
+  - keys: "Esc"
+    action: window.leave-resize-mode
+    description: "Leave resize mode and go back to the ordinary keys."
+    modes: [resize]
+    notModelled: "Resize mode's own keys are pressed inside the mode, without the prefix, so the prefix this layer writes every binding after cannot express them: the row records the action instead of inventing a chord."

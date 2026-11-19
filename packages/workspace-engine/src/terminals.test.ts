@@ -181,6 +181,65 @@ describe("app.launch-terminal — a terminal is a window", () => {
   });
 });
 
+/**
+ * A terminal window has no buffer behind it, so the actions that write through the active buffer have
+ * nowhere to go while it is focused (T7a2). They are refused with a reason instead of editing a file
+ * the learner cannot see, and the file keeps editing normally once focus is back on it.
+ */
+describe("editing has nowhere to go while a terminal is focused", () => {
+  const launched = (): WorkspaceState => apply(initial(), "app.launch-terminal");
+
+  it("refuses edit.insert, naming the terminal that has the keys", () => {
+    const before = launched();
+    const { state, applied, reason } = act(before, "edit.insert", { text: "hello" });
+
+    expect(applied).toBe(false);
+    expect(reason).toBe(
+      "edit.insert: the focused window is a terminal, so there is no buffer to edit",
+    );
+    expect(state).toBe(before);
+  });
+
+  it("refuses file.save even when a buffer elsewhere has unsaved changes", () => {
+    // The buffer really is modified: the file window was edited before the terminal took the keys.
+    const edited = apply(apply(launched(), "window.focus-left"), "edit.insert", { text: "x" });
+    expect(edited.buffers[0]?.modified).toBe(true);
+    const terminal = apply(edited, "app.launch-terminal");
+
+    const saved = act(terminal, "file.save");
+    expect(saved.applied).toBe(false);
+    expect(saved.reason).toBe(
+      "file.save: the focused window is a terminal, so there is no buffer to save",
+    );
+    expect(saved.state).toBe(terminal);
+  });
+
+  it("refuses file.close-buffer, so a session cannot unload a file it does not show", () => {
+    const before = launched();
+    const { state, applied, reason } = act(before, "file.close-buffer");
+
+    expect(applied).toBe(false);
+    expect(reason).toBe(
+      "file.close-buffer: the focused window is a terminal, so there is no buffer to close",
+    );
+    expect(state).toBe(before);
+  });
+
+  it("edits and saves normally again once a file window has the keys", () => {
+    const edited = apply(apply(launched(), "window.focus-left"), "edit.insert", { text: "x" });
+    const terminal = apply(edited, "app.launch-terminal");
+    const backToFile = apply(terminal, "window.focus-left");
+
+    const saved = act(backToFile, "file.save");
+    expect(saved.applied).toBe(true);
+    expect(saved.state.files[MAIN]).toBe(`x${MAIN_TEXT}`);
+
+    const typed = act(saved.state, "edit.insert", { text: "y" });
+    expect(typed.applied).toBe(true);
+    expect(typed.state.buffers[0]?.modified).toBe(true);
+  });
+});
+
 describe("shell.run — the output the exercise declared, appended", () => {
   const launched = (): WorkspaceState => apply(initial(), "app.launch-terminal");
 

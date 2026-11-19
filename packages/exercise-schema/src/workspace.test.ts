@@ -359,7 +359,8 @@ describe("workspace exercise schema", () => {
     ).toEqual({ type: "zoom", path: "src/main.ts" });
     // `null` is how a story says nothing is zoomed, which is a state a restored zoom reaches.
     expect(
-      parseWorkspaceExercise({ ...validInput(), objective: { type: "zoom", path: null } }).objective,
+      parseWorkspaceExercise({ ...validInput(), objective: { type: "zoom", path: null } })
+        .objective,
     ).toEqual({ type: "zoom", path: null });
 
     // A zoom names a path or the absence of one: an omitted path is not an objective.
@@ -551,7 +552,9 @@ describe("the windows objective", () => {
   });
 
   it("rejects a windows objective that names no window", () => {
-    expect(issuesOf({ ...validInput(), objective: { type: "windows", paths: [] } })).not.toEqual([]);
+    expect(issuesOf({ ...validInput(), objective: { type: "windows", paths: [] } })).not.toEqual(
+      [],
+    );
   });
 });
 
@@ -652,6 +655,77 @@ describe("the terminal an exercise declares", () => {
         solutions: [{ actions: [{ action: "shell.run", command: "" }], classification: "optimal" }],
       }).join("\n"),
     ).toMatch(/must be the command to run, so it cannot be empty/);
+  });
+
+  it("records a session objective and a mode objective", () => {
+    expect(
+      parseWorkspaceExercise({ ...validInput(), objective: { type: "session", state: "detached" } })
+        .objective,
+    ).toEqual({ type: "session", state: "detached" });
+    expect(
+      parseWorkspaceExercise({ ...validInput(), objective: { type: "session", state: "attached" } })
+        .objective,
+    ).toEqual({ type: "session", state: "attached" });
+    expect(
+      parseWorkspaceExercise({ ...validInput(), objective: { type: "mode", mode: "resize" } })
+        .objective,
+    ).toEqual({ type: "mode", mode: "resize" });
+
+    // The story names one of the two states, never nothing and never a third one.
+    expect(issuesOf({ ...validInput(), objective: { type: "session" } })).not.toEqual([]);
+    expect(
+      issuesOf({ ...validInput(), objective: { type: "session", state: "open" } }),
+    ).not.toEqual([]);
+    expect(issuesOf({ ...validInput(), objective: { type: "mode" } })).not.toEqual([]);
+    expect(issuesOf({ ...validInput(), objective: { type: "mode", mode: "insert" } })).not.toEqual(
+      [],
+    );
+  });
+
+  it("reads a tab only with workspace.move, which cannot be declared without one", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      solutions: [
+        {
+          actions: [{ action: "workspace.move", tab: "tab:2" }, "window.zoom"],
+          classification: "optimal",
+        },
+      ],
+    });
+    // Carried to the engine, so the replay moves the window into the tab the story names.
+    expect(exercise.solutions[0]?.actions).toEqual([
+      { action: "workspace.move", tab: "tab:2" },
+      { action: "window.zoom" },
+    ]);
+
+    // Required: a move that names no tab moves nothing a story can assert.
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "workspace.move" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/"workspace\.move" needs a tab: it names the workspace the window moves into/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          {
+            actions: [{ action: "file.open", path: "src/main.ts", tab: "tab:2" }],
+            classification: "optimal",
+          },
+        ],
+      }).join("\n"),
+    ).toMatch(/"file\.open" takes no tab: only workspace\.move names a tab/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          { actions: [{ action: "workspace.move", tab: "" }], classification: "optimal" },
+        ],
+      }).join("\n"),
+    ).toMatch(/must be the tab to move the window into, so it cannot be empty/);
   });
 
   it("records a terminal_output objective, splitting its text into lines", () => {

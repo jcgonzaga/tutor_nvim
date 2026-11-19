@@ -37,6 +37,13 @@ export interface WorkspaceGrepMatch {
  */
 export type WindowLayout = "side-by-side" | "stacked";
 
+/**
+ * Which input mode the workspace is in (T7a2, story 18): the ordinary one, or the one where the keys
+ * resize instead of moving and editing. A mode is a field of the state, not a shape of the tree, so
+ * leaving it costs one action and changes no layout.
+ */
+export type WorkspaceMode = "normal" | "resize";
+
 /** A window showing one buffer. The same buffer may be shown by more than one leaf (a split does). */
 export interface LeafWindow {
   readonly kind: "leaf";
@@ -141,6 +148,17 @@ export interface WorkspaceState {
   readonly activeTabId: string;
   /** The window a `window.zoom` selected, or `null`; the tree itself is never changed by zooming. */
   readonly zoom: WorkspaceZoom | null;
+  /**
+   * Whether the session is frozen (`session.detach`, T7a2). Detaching keeps every tab, tree, buffer,
+   * terminal and zoom in this state and refuses every action but attaching, so coming back finds
+   * exactly what was left: story 20 is this one flag.
+   */
+  readonly detached: boolean;
+  /**
+   * The input mode: the ordinary one, or resize mode, where only the resize actions and leaving it
+   * apply (T7a2). A field beside the tree, so a mode change never touches a layout.
+   */
+  readonly mode: WorkspaceMode;
   readonly pending: PendingWorkspaceCommand | null;
   readonly lastCommand: WorkspaceCommandResult | null;
   /**

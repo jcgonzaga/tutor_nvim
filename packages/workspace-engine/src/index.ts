@@ -19,6 +19,7 @@ export type {
   WorkspaceTerminal,
   WorkspaceTerminalDeclaration,
   WorkspaceTerminalEntry,
+  WorkspaceMode,
   WorkspaceZoom,
 } from "./types";
 export {
@@ -36,12 +37,14 @@ export {
   WORKSPACE_EDIT_ACTIONS,
   WORKSPACE_FILE_ACTIONS,
   WORKSPACE_PICKER_ACTIONS,
+  WORKSPACE_SESSION_ACTIONS,
   WORKSPACE_TERMINAL_ACTIONS,
   applyWorkspaceAction,
   type WorkspaceActionName,
   type WorkspaceEditActionName,
   type WorkspaceFileActionName,
   type WorkspacePickerActionName,
+  type WorkspaceSessionActionName,
   type WorkspaceTerminalActionName,
 } from "./actions";
 export { typeText } from "./editing";

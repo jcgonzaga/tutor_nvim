@@ -57,6 +57,11 @@ import { openBuffer } from "./workspace";
  *
  * Every operation is total: one that cannot apply returns the state it was given, unchanged, with
  * `applied: false` and a reason. Nothing throws and nothing is a silent no-op.
+ *
+ * Two states decide before the action does (T7a2). A detached session is frozen, so only attaching
+ * and detaching reach it; resize mode is an input mode, so only resizing, leaving it and detaching
+ * apply while it is on. Both refusals come first, before any effect, and name the state or the mode
+ * they are in, so a key that does nothing says why.
  */
 
 /** The window, tab and workspace actions of the keymap vocabulary this engine can apply. */
@@ -72,6 +77,8 @@ export const WORKSPACE_ACTIONS = [
   "window.resize-narrower",
   "window.resize-taller",
   "window.resize-shorter",
+  "window.enter-resize-mode",
+  "window.leave-resize-mode",
   "window.zoom",
   "window.swap",
   "window.new",
@@ -79,6 +86,7 @@ export const WORKSPACE_ACTIONS = [
   "tab.next",
   "tab.previous",
   "workspace.switch",
+  "workspace.move",
 ] as const;
 export type WorkspaceActionName = (typeof WORKSPACE_ACTIONS)[number];
 
@@ -123,6 +131,35 @@ export type WorkspaceEditActionName = (typeof WORKSPACE_EDIT_ACTIONS)[number];
 export const WORKSPACE_TERMINAL_ACTIONS = ["app.launch-terminal", "shell.run"] as const;
 export type WorkspaceTerminalActionName = (typeof WORKSPACE_TERMINAL_ACTIONS)[number];
 
+/**
+ * The session actions this engine applies (T7a2, story 20): `session.detach` freezes the workspace
+ * and `session.attach` restores it, and they are the only two a frozen workspace accepts.
+ *
+ * They are actions and not keys like every other one, so tmux's `C-b d` and Herdr's `q` reach them
+ * through the catalogs. What they change is one flag: detaching keeps every tab, tree, buffer,
+ * terminal, zoom and search exactly where it was, because detaching is leaving the session running,
+ * not closing it.
+ */
+export const WORKSPACE_SESSION_ACTIONS = ["session.detach", "session.attach"] as const;
+export type WorkspaceSessionActionName = (typeof WORKSPACE_SESSION_ACTIONS)[number];
+
+/**
+ * The actions resize mode still accepts (T7a2, story 18): resizing, leaving the mode, and detaching.
+ * Everything else is refused with the mode named, so a learner is told why their key did nothing
+ * instead of watching a pane not move.
+ */
+const RESIZE_MODE_ACTIONS: readonly string[] = [
+  "window.resize-wider",
+  "window.resize-narrower",
+  "window.resize-taller",
+  "window.resize-shorter",
+  "window.leave-resize-mode",
+  // Entering again reaches its own refusal, which says the workspace is already in the mode instead
+  // of telling the learner to leave the mode they are trying to enter.
+  "window.enter-resize-mode",
+  "session.detach",
+];
+
 /** A resize is a step of the ratio, never a number of pixels, so it stays deterministic. */
 const RATIO_STEP = 0.05;
 const RATIO_MIN = 0.1;
@@ -142,6 +179,40 @@ const fromStep = (step: FileStepResult): WorkspaceActionResult =>
 
 /** Quotes a command so a refusal shows exactly what was asked to run, as the pickers' do. */
 const quoted = (value: string): string => JSON.stringify(value);
+
+/** The same focus path: two steps lists that reach the same window. */
+const sameFocus = (left: readonly FocusStep[], right: readonly FocusStep[]): boolean =>
+  left.length === right.length && left.every((step, index) => step === right[index]);
+
+/**
+ * Why the state refuses an action before the action runs, or `null` when it does not (T7a2).
+ *
+ * A detached session is frozen, so only attaching and detaching reach it: nothing the learner presses
+ * can change what they will find when they come back. Resize mode is an input mode, so while it is on
+ * only resizing, leaving it and detaching apply. The detached check runs first because it is the
+ * outer freeze, and because a workspace frozen while resizing must still be attachable: the mode it
+ * was left in is what attaching finds, never a lock nobody can open.
+ */
+function stateRefusal(state: WorkspaceState, action: string): string | null {
+  if (state.detached) {
+    if ((WORKSPACE_SESSION_ACTIONS as readonly string[]).includes(action)) return null;
+    return `${action}: the session is detached; attach to it first`;
+  }
+  if (state.mode === "resize") {
+    if (RESIZE_MODE_ACTIONS.includes(action)) return null;
+    return `${action}: the workspace is in resize mode; leave it first`;
+  }
+  return null;
+}
+
+/**
+ * Whether the focused window shows a terminal. A session has no buffer behind it, so an action that
+ * writes through the active buffer has nowhere to go while a terminal has the keys (T7a2, T7a1).
+ */
+function terminalFocused(state: WorkspaceState): boolean {
+  const focused = focusedWindow(state);
+  return focused !== undefined && focused.node.kind === "terminal";
+}
 
 /** The direction a focus action moves in, matched against a split's layout. */
 interface Direction {
@@ -188,6 +259,9 @@ export function applyWorkspaceAction(
   action: string,
   options: WorkspaceActionOptions = {},
 ): WorkspaceActionResult {
+  const frozen = stateRefusal(state, action);
+  if (frozen !== null) return refused(state, frozen);
+
   switch (action) {
     case "window.split-side-by-side":
       return splitFocused(state, "side-by-side");
@@ -211,6 +285,10 @@ export function applyWorkspaceAction(
       return resizeFocused(state, action, "stacked", 1);
     case "window.resize-shorter":
       return resizeFocused(state, action, "stacked", -1);
+    case "window.enter-resize-mode":
+      return enterResizeMode(state, action);
+    case "window.leave-resize-mode":
+      return leaveResizeMode(state, action);
     case "window.zoom":
       return toggleZoom(state);
     case "window.swap":
@@ -229,6 +307,12 @@ export function applyWorkspaceAction(
       return cycleTab(state, -1);
     case "workspace.switch":
       return switchTab(state, options);
+    case "workspace.move":
+      return moveWindow(state, options);
+    case "session.detach":
+      return detachSession(state);
+    case "session.attach":
+      return attachSession(state);
     case "file.open":
       return openFileAction(state, options);
     case "file.new":
@@ -236,7 +320,7 @@ export function applyWorkspaceAction(
     case "file.save":
       return saveFileAction(state);
     case "file.close-buffer":
-      return fromStep(closeBuffer(state));
+      return closeBufferAction(state);
     case "buffer.next":
       return cycleBufferAction(state, action, 1);
     case "buffer.previous":
@@ -277,13 +361,31 @@ function newFileAction(
 /**
  * `file.save` is applied only when there is something to save; `:w` on an unchanged buffer is a
  * write that changes nothing and is accepted, so the two agree on the state and differ only in
- * whether the action had an effect.
+ * whether the action had an effect. A focused terminal window shows a session, not a buffer, so there
+ * is nothing there to write either (T7a2).
  */
 function saveFileAction(state: WorkspaceState): WorkspaceActionResult {
+  if (terminalFocused(state)) {
+    return refused(
+      state,
+      "file.save: the focused window is a terminal, so there is no buffer to save",
+    );
+  }
   const active = state.buffers.find((buffer) => buffer.id === state.activeBufferId);
   if (active === undefined) return refused(state, "E32: No file name");
   if (!active.modified) return refused(state, "file.save: the active buffer has no changes");
   return fromStep(saveActiveFile(state));
+}
+
+/** `file.close-buffer` unloads the buffer in front of the learner, and a terminal shows none (T7a2). */
+function closeBufferAction(state: WorkspaceState): WorkspaceActionResult {
+  if (terminalFocused(state)) {
+    return refused(
+      state,
+      "file.close-buffer: the focused window is a terminal, so there is no buffer to close",
+    );
+  }
+  return fromStep(closeBuffer(state));
 }
 
 /** Cycling needs somewhere to go: with one buffer open there is no other buffer to apply it to. */
@@ -332,12 +434,19 @@ function listBufferAction(
 /**
  * `edit.insert` types the text the action names into the active buffer through the editor. An insert
  * with no text, and one whose text is empty, have nothing to type: both are refusals with a reason,
- * never a silent no-op.
+ * never a silent no-op. A focused terminal window shows a session and no buffer, so there is nothing
+ * to type into either (T7a2).
  */
 function insertTextAction(
   state: WorkspaceState,
   options: WorkspaceActionOptions,
 ): WorkspaceActionResult {
+  if (terminalFocused(state)) {
+    return refused(
+      state,
+      "edit.insert: the focused window is a terminal, so there is no buffer to edit",
+    );
+  }
   const text = options.text;
   if (text === undefined) return refused(state, "edit.insert: no text given");
   return fromStep(typeText(state, text));
@@ -366,17 +475,33 @@ function closeFocused(state: WorkspaceState): WorkspaceActionResult {
   if (tab === undefined || tab.focus.length === 0) {
     return refused(state, "window.close: the last window cannot be closed");
   }
+  const trimmed = withoutFocusedLeaf(tab);
+  if (trimmed === undefined) {
+    return refused(state, "window.close: the focus path does not reach a split");
+  }
+  return applied(withActiveTab(state, trimmed));
+}
+
+/**
+ * The tab with its focused leaf taken out, focus handed to the sibling's last leaf: the one removal
+ * `window.close` and `workspace.move` both need, so closing a window and moving one out of a tab
+ * cannot disagree about what is left behind.
+ *
+ * `undefined` when the tab holds a single window or its focus path does not reach a split: a tab
+ * never becomes empty, because a workspace is never nobody's (T7a2).
+ */
+function withoutFocusedLeaf(tab: WorkspaceTab): WorkspaceTab | undefined {
+  if (tab.focus.length === 0) return undefined;
   const parentPath = tab.focus.slice(0, -1);
   const step = tab.focus[tab.focus.length - 1];
   const parent = nodeAt(tab.root, parentPath);
-  if (step === undefined || parent === undefined || parent.kind !== "split") {
-    return refused(state, "window.close: the focus path does not reach a split");
-  }
+  if (step === undefined || parent === undefined || parent.kind !== "split") return undefined;
   const sibling = step === "first" ? parent.second : parent.first;
-  const root = replaceAt(tab.root, parentPath, sibling);
-  return applied(
-    withActiveTab(state, { ...tab, root, focus: [...parentPath, ...lastLeafPath(sibling)] }),
-  );
+  return {
+    ...tab,
+    root: replaceAt(tab.root, parentPath, sibling),
+    focus: [...parentPath, ...lastLeafPath(sibling)],
+  };
 }
 
 /**
@@ -585,4 +710,90 @@ function switchTab(state: WorkspaceState, options: WorkspaceActionOptions): Work
   if (target === undefined)
     return refused(state, `workspace.switch: no tab named ${options.tabId}`);
   return applied(withTabs(state, state.tabs, target.id));
+}
+
+/**
+ * Moves the focused window into another tab, as a split of that tab's root (T7a2, story 17).
+ *
+ * The window that moves is the focused *leaf*, never the split it sits in, so moving a pane out of a
+ * nested tree leaves the rest of that subtree where it was. The tab it leaves keeps its remaining
+ * windows: a move that would empty the source tab is refused, because a workspace is never nobody's.
+ * The keys stay in the tab the window came from, which is what makes `workspace.switch` the action
+ * that brings you back to it.
+ */
+function moveWindow(state: WorkspaceState, options: WorkspaceActionOptions): WorkspaceActionResult {
+  const targetId = options.tabId;
+  if (targetId === undefined || targetId === "") {
+    return refused(state, "workspace.move: no tab given");
+  }
+  const source = activeTab(state);
+  if (source === undefined) return refused(state, "workspace.move: no active tab");
+  if (targetId === source.id) {
+    return refused(state, `workspace.move: the focused window is already in ${targetId}`);
+  }
+  const destination = state.tabs.find((tab) => tab.id === targetId);
+  if (destination === undefined) return refused(state, `workspace.move: no tab named ${targetId}`);
+
+  const moved = focusedNode(source);
+  if (moved === undefined || !isLeafNode(moved)) {
+    return refused(state, "workspace.move: no focused window");
+  }
+  const trimmed = withoutFocusedLeaf(source);
+  if (trimmed === undefined) {
+    return refused(
+      state,
+      "workspace.move: the source tab holds a single window, so moving it would leave it empty",
+    );
+  }
+
+  const tabs = state.tabs.map((tab) => {
+    if (tab.id === source.id) return trimmed;
+    if (tab.id !== destination.id) return tab;
+    // The arriving window is the second child and the tab's own tree keeps the first one, so the
+    // focus path that tab already had still reaches the same window under its new root.
+    return {
+      ...tab,
+      root: splitNode("side-by-side", DEFAULT_RATIO, tab.root, moved),
+      focus: ["first" as const, ...tab.focus],
+    };
+  });
+  const next = withTabs(state, tabs, source.id);
+  // A zoom names a window inside a tab. The window it named is the one that left, so the note goes
+  // with it: the path would otherwise point at whichever window took its place.
+  const zoomedMoved =
+    state.zoom !== null &&
+    state.zoom.tabId === source.id &&
+    sameFocus(state.zoom.leafPath, source.focus);
+  return applied(zoomedMoved ? { ...next, zoom: null } : next);
+}
+
+/**
+ * Freezes the workspace (T7a2, story 20). Nothing is closed and nothing is copied: every tab, tree,
+ * buffer, terminal, zoom and search stays in the state and the flag refuses the rest, so attaching
+ * later finds exactly what detaching left — which is the whole of "detach, reattach, find the editor
+ * still open".
+ */
+function detachSession(state: WorkspaceState): WorkspaceActionResult {
+  return applied({ ...state, detached: true });
+}
+
+/** Restores a frozen workspace: the state it restores is the one that was frozen, field by field. */
+function attachSession(state: WorkspaceState): WorkspaceActionResult {
+  return applied({ ...state, detached: false });
+}
+
+/** Enters resize mode; entering it when it is already on is a refusal, never a silent no-op. */
+function enterResizeMode(state: WorkspaceState, action: string): WorkspaceActionResult {
+  if (state.mode === "resize") {
+    return refused(state, `${action}: the workspace is already in resize mode`);
+  }
+  return applied({ ...state, mode: "resize" });
+}
+
+/** Leaves resize mode, keeping whatever the resize actions widened: the mode is not the layout. */
+function leaveResizeMode(state: WorkspaceState, action: string): WorkspaceActionResult {
+  if (state.mode === "normal") {
+    return refused(state, `${action}: the workspace is not in resize mode`);
+  }
+  return applied({ ...state, mode: "normal" });
 }

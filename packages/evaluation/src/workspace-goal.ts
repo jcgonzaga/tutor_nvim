@@ -240,6 +240,26 @@ export function evaluateWorkspaceObjective(
         ],
       };
     }
+    case "mode": {
+      // The input mode is a field beside the tree, so "widen in resize mode, then leave it" ends in
+      // `normal` with a wider ratio: the two goals record the two facts, and neither implies the other.
+      const found = state.mode;
+      if (found === objective.mode) return { met: true, failures: [] };
+      return {
+        met: false,
+        failures: [`mode: expected ${quoted(objective.mode)}, found ${quoted(found)}`],
+      };
+    }
+    case "session": {
+      // Attached or detached, in the same words the action uses, so the failure reads as the state a
+      // learner is in rather than as a boolean (T7a2, story 20).
+      const found = state.detached ? "detached" : "attached";
+      if (found === objective.state) return { met: true, failures: [] };
+      return {
+        met: false,
+        failures: [`session: expected ${quoted(objective.state)}, found ${quoted(found)}`],
+      };
+    }
     case "all": {
       const failures = objective.goals.flatMap(
         (goal) => evaluateWorkspaceObjective(goal, state).failures,

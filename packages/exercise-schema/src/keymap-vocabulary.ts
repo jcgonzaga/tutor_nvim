@@ -77,11 +77,16 @@ export const KEYMAP_ACTIONS = [
   "window.resize-narrower",
   "window.resize-taller",
   "window.resize-shorter",
+  // Resize mode is an input mode, not a layout: entering it and leaving it are their own actions.
+  "window.enter-resize-mode",
+  "window.leave-resize-mode",
   "window.zoom",
   "window.swap",
   "window.new",
   "app.launch-terminal",
   "workspace.switch",
+  // Moves the focused window into another workspace (tab), named by the solution (T7a2).
+  "workspace.move",
   "session.detach",
   "session.attach",
   "tab.new",
@@ -139,3 +144,10 @@ export const KEYMAP_QUERY_ACTIONS = ["file.find", "grep.project"] as const;
  * solution gives a `command` to these actions and to no other.
  */
 export const KEYMAP_COMMAND_ACTIONS = ["shell.run"] as const;
+
+/**
+ * The actions that name the tab they act on: `workspace.move` and nothing else (T7a2). A move has to
+ * say where the window goes, so a solution carries the tab the way it carries a path or a query;
+ * `workspace.switch` selects by position instead, so it takes none and keeps accepting a bare action.
+ */
+export const KEYMAP_TAB_ACTIONS = ["workspace.move"] as const;

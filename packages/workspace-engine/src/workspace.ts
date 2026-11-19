@@ -41,6 +41,9 @@ export function createWorkspace(input: WorkspaceInit): WorkspaceState {
     tabs: [tab],
     activeTabId: tab.id,
     zoom: null,
+    // Attached and in the ordinary input mode until an action says otherwise (T7a2).
+    detached: false,
+    mode: "normal",
     pending: null,
     lastCommand: null,
     // The declaration is carried, not opened: `app.launch-terminal` is what creates a session, so

@@ -40,8 +40,9 @@ export interface RefusedWorkspaceAction {
 
 /**
  * What one action hands the engine: a path for the actions that name a file, a text for the one that
- * types, a query for the ones that search the project and a command for the one that runs in a
- * terminal (the schema rejects each anywhere else), so an action without them is the action bare.
+ * types, a query for the ones that search the project, a command for the one that runs in a terminal
+ * and a tab for the one that moves a window (the schema rejects each anywhere else), so an action
+ * without them is the action bare.
  */
 function optionsOf(action: WorkspaceSolutionAction): WorkspaceActionOptions {
   return {
@@ -49,6 +50,8 @@ function optionsOf(action: WorkspaceSolutionAction): WorkspaceActionOptions {
     ...(action.text === undefined ? {} : { text: action.text }),
     ...(action.query === undefined ? {} : { query: action.query }),
     ...(action.command === undefined ? {} : { command: action.command }),
+    // A move says which tab it moves the window into, the way a file action says which file (T7a2).
+    ...(action.tab === undefined ? {} : { tabId: action.tab }),
   };
 }
 

@@ -5,6 +5,7 @@ import type {
   WindowNode,
   WindowLeaf,
   WorkspaceGrepMatch,
+  WorkspaceMode,
   WorkspaceState,
 } from "./types";
 import { activeTab, focusedNode, isLeafNode, leafNodes, nodeAt } from "./windows";
@@ -115,6 +116,17 @@ export interface WorkspaceObjectiveView {
    * is no terminal there, and a goal that confused the two would pass on the wrong screen.
    */
   readonly terminalOutput: readonly string[] | null;
+  /**
+   * Whether the session is frozen (T7a2): `session.detach` sets it and `session.attach` clears it,
+   * and nothing else in this projection changes while it is on. A story asserts it as `session`.
+   */
+  readonly detached: boolean;
+  /**
+   * The input mode, ordinary or resize (T7a2). It is a field beside the tree, so the layout above is
+   * the same whether a learner resized in resize mode or never entered it; a story asserts it as
+   * `mode`.
+   */
+  readonly mode: WorkspaceMode;
   /** The rows `grep.project` recorded, in project order, as `grep_matches` asserts them. */
   readonly matches: readonly WorkspaceGrepMatch[];
 }
@@ -134,6 +146,8 @@ export function workspaceObjectiveView(state: WorkspaceState): WorkspaceObjectiv
     zoomedPath: zoomedPath(state),
     windowPaths: windowPaths(state),
     terminalOutput: focusedTerminalOutput(state),
+    detached: state.detached,
+    mode: state.mode,
     matches: state.matches.map((match) => ({
       path: match.path,
       line: match.line,

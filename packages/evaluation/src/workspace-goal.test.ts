@@ -31,6 +31,12 @@ function state(): WorkspaceObjectiveView {
      * focuses a file, so the goal that asserts a terminal is the one that has to say so.
      */
     terminalOutput: null,
+    /**
+     * The input mode and whether the session is frozen (T7a2): the fixture is attached and in the
+     * ordinary mode, so the goals that assert the other half are the ones that have to say so.
+     */
+    detached: false,
+    mode: "normal",
     matches: [
       { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
       { path: "src/server.ts", line: 3, text: "export const server = { port: config.port };" },
@@ -384,5 +390,88 @@ describe("a terminal leaf beside a file", () => {
         withTerminal,
       ),
     ).toEqual({ met: true, failures: [] });
+  });
+});
+
+/**
+ * Detaching freezes the workspace and resize mode is an input mode (T7a2, stories 18 and 20): both
+ * are a field of the state and not a shape of the tree, so a story asserts them as their own goals
+ * and the failure says which of the two states it found.
+ */
+describe("the session and mode objectives", () => {
+  const detached = { ...state(), detached: true };
+  const resizing = { ...state(), mode: "resize" as const };
+
+  it("is met when the session is in the state the story names", () => {
+    expect(evaluateWorkspaceObjective({ type: "session", state: "detached" }, detached)).toEqual({
+      met: true,
+      failures: [],
+    });
+    expect(evaluateWorkspaceObjective({ type: "session", state: "attached" }, state())).toEqual({
+      met: true,
+      failures: [],
+    });
+  });
+
+  it("names both sides when the session is in the other state", () => {
+    expect(
+      evaluateWorkspaceObjective({ type: "session", state: "attached" }, detached).failures,
+    ).toEqual(['session: expected "attached", found "detached"']);
+    expect(
+      evaluateWorkspaceObjective({ type: "session", state: "detached" }, state()).failures,
+    ).toEqual(['session: expected "detached", found "attached"']);
+  });
+
+  it("is met when the workspace is in the mode the story names", () => {
+    expect(evaluateWorkspaceObjective({ type: "mode", mode: "resize" }, resizing)).toEqual({
+      met: true,
+      failures: [],
+    });
+    // "Widen in resize mode, then leave it" ends in the ordinary mode.
+    expect(evaluateWorkspaceObjective({ type: "mode", mode: "normal" }, state())).toEqual({
+      met: true,
+      failures: [],
+    });
+  });
+
+  it("names both sides when the workspace is in the other mode", () => {
+    expect(evaluateWorkspaceObjective({ type: "mode", mode: "normal" }, resizing).failures).toEqual(
+      ['mode: expected "normal", found "resize"'],
+    );
+    expect(evaluateWorkspaceObjective({ type: "mode", mode: "resize" }, state()).failures).toEqual([
+      'mode: expected "resize", found "normal"',
+    ]);
+  });
+
+  it("is a goal of the union like any other, so it can sit inside all", () => {
+    const both = {
+      ...state(),
+      detached: true,
+      mode: "resize" as const,
+    };
+    expect(
+      evaluateWorkspaceObjective(
+        {
+          type: "all",
+          goals: [
+            { type: "session", state: "detached" },
+            { type: "mode", mode: "resize" },
+          ],
+        },
+        both,
+      ),
+    ).toEqual({ met: true, failures: [] });
+    expect(
+      evaluateWorkspaceObjective(
+        {
+          type: "all",
+          goals: [
+            { type: "session", state: "detached" },
+            { type: "mode", mode: "normal" },
+          ],
+        },
+        both,
+      ).failures,
+    ).toEqual(['mode: expected "normal", found "resize"']);
   });
 });

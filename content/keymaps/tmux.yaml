@@ -64,3 +64,10 @@ bindings:
     action: session.detach
     description: "Detach from the session and leave it running in the background."
     notModelled: "No multiplexer engine yet: packages/workspace-engine does not exist, so there is no session to detach from."
+  # Attaching is the one tmux key that is not a key: `tmux a` is a command typed at the shell prompt,
+  # and this layer writes every binding after `C-b`, so the row records the action and says why it
+  # cannot be pressed here instead of inventing a chord tmux does not have (S3).
+  - keys: "a"
+    action: session.attach
+    description: "Attach to a session that was detached and left running."
+    notModelled: "Attaching is the command `tmux a` typed at the shell prompt, not a key pressed after the prefix, and this layer writes every binding after C-b: the row records the action instead of inventing a chord for it."

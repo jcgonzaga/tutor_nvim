@@ -546,3 +546,60 @@ describe("a solution may open a terminal and run a command (T7a1)", () => {
     expect(errors.join("\n")).toMatch(/shell\.run: no output is declared for "npm run build"/);
   });
 });
+
+/**
+ * Story 17 replayed: a window leaves one tab for another, and the story asserts where it ended up
+ * (T7a2). The solution names the tab the way it names a path, and the replay hands that tab to the
+ * engine, so the action means the same thing in a replay as in a learner's session.
+ */
+describe("a solution that moves a window into another tab", () => {
+  function moveExercise(): WorkspaceExercise {
+    return parseWorkspaceExercise({
+      schemaVersion: 1,
+      kind: "workspace",
+      id: "workspace-test-move-001",
+      slug: "workspace.test.move-001",
+      title: "Move a window to another workspace",
+      skillIds: ["neovim.workspace.move"],
+      mode: "learn",
+      difficulty: 4,
+      initialState: { files: { "src/main.ts": "one" }, path: "src/main.ts", cwd: "/project" },
+      objective: {
+        type: "all",
+        goals: [
+          { type: "layout", text: "side(leaf, leaf)" },
+          { type: "windows", paths: ["src/main.ts", "src/main.ts"] },
+          { type: "focus", leaf: 0 },
+        ],
+      },
+      solutions: [
+        {
+          actions: [
+            "tab.new",
+            "tab.previous",
+            "window.split-side-by-side",
+            { action: "workspace.move", tab: "tab:2" },
+            "tab.next",
+          ],
+          classification: "optimal",
+        },
+      ],
+    });
+  }
+
+  it("moves the window into the tab the story names and reaches the objective", () => {
+    const ex = moveExercise();
+    const replay = simulateWorkspaceSolution(ex, ex.solutions[0]!);
+
+    expect(replay.refused).toBeNull();
+    // The source tab kept one window and the target is now a split of two.
+    expect(replay.state.tabs.map((tab) => layoutText(tab.root))).toEqual([
+      "leaf",
+      "side(leaf, leaf)",
+    ]);
+    expect(activeTab(replay.state)?.id).toBe("tab:2");
+    expect(activeBuffer(replay.state).path).toBe("src/main.ts");
+    expect(goalMet(ex, replay)).toBe(true);
+    expect(checkExercise(ex)).toEqual([]);
+  });
+});
