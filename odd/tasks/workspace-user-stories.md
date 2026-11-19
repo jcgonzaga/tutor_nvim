@@ -496,3 +496,42 @@ not as an interactive fuzzy scorer:
   needs `app.launch-terminal`, `session.detach`/`session.attach` and `window.new`, none of which any
   catalog or the engine models yet, so it starts with the terminal and session actions rather than
   with content.
+
+## Design for T7 (terminals, sessions and the desktop, decided)
+
+Stories 15-20 leave the editor, so three models have to exist before content can name them. All three
+follow S6 (nothing faked, nothing refused silently) and the engine's existing rules (pure functions,
+total operations, refusals that name what is missing).
+
+**T7a1 — a terminal is a window that shows a session, not a file (story 15, 19).**
+
+- The window tree gains a second leaf: `{ kind: "terminal", terminalId }`. A leaf still shows exactly
+  one thing, so focus, swap, resize, zoom and close work on a terminal leaf with no special case.
+- A terminal is `{ id, title, cwd, entries }`, where an entry is `{ command, output: string[] }`. The
+  *exercise* declares the outputs (`initialState.terminal.commands: Record<string, string[]>`), because
+  a simulated machine has no processes (S6): `shell.run` looks the command up, appends the entry and
+  returns the state; a command with no declared output is refused, naming the command and the file that
+  declares it, never invented text.
+- `app.launch-terminal` opens a terminal leaf beside the focused window, focused. `open_buffers` keeps
+  meaning "what is loaded"; `windows` prints a terminal leaf as `terminal:<title>` so a story can assert
+  the shape without a second grammar, and the new `terminal_output` goal asserts the lines the focused
+  terminal printed (`{ type: "terminal_output", lines: [...] }`, compared as lines like `buffer_text`).
+
+**T7a2 — sessions and workspaces (stories 17, 18, 20).**
+
+- `session.detach` freezes the workspace: every tab, tree, buffer and terminal stays in the state behind
+  `detached: true`, and no action applies while detached except `session.attach`, which restores exactly
+  what was frozen. That is the whole of "detach, reattach, find the editor still open", and it is
+  assertable: `{ type: "session", state: "detached" | "attached" }`.
+- `workspace.move` moves the focused window to another tab, as a split of that tab's root, and leaves the
+  focus in the tab it came from; `workspace.switch` (already modelled) brings you back. A move that would
+  empty the source tab is refused, because a workspace is never nobody's.
+- Resize mode is an input mode, not a layout: `window.enter-resize-mode` / `window.leave-resize-mode` set
+  `mode: "normal" | "resize"`, and while it is `resize` only the `window.resize-*` actions and leaving it
+  apply — everything else is refused with a reason naming the mode. `{ type: "mode", mode: "normal" | "resize" }`
+  asserts it, so "widen a window in resize mode, then leave it" ends with `mode: normal` and a wider ratio.
+
+**T7b — content (stories 15-20).** Six skills (`neovim.terminal.launch`, `...terminal.run`,
+`...workspace.move`, `...workspace.resize-mode`, `...terminal.panes`, `...session.detach`) and six
+stories, with ES overlays, each declaring the outputs its terminal needs. Catalog rows for the keys no
+layer declares yet: `session.attach` (tmux `tmux a`) and the resize-mode pair.
