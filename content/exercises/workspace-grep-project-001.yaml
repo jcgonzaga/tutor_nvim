@@ -1,0 +1,74 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-grep-project-001
+slug: neovim.search.grep-project.match-001
+title: "Grep the project and open the file of a match"
+instruction: "You need to change the port the server binds to, and you only remember that the project mentions a port in a few places. Grep the project for port, then open the file that holds the default so you can change it. src/server.ts stays open behind it."
+skillIds:
+  - neovim.search.grep-project
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    README.md: |
+      # Shop API
+
+      Run pnpm dev to start the server.
+    src/server.ts: |
+      import { config } from "./config";
+
+      export const server = { port: config.port };
+    src/config.ts: |
+      export const config = { port: 3000 };
+    tests/server.test.ts: |
+      import { server } from "../src/server";
+
+      server.port;
+  path: src/server.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: src/config.ts }
+    - { type: open_buffers, paths: [src/server.ts, src/config.ts] }
+    # The rows the search records, in project order: the config first, then the two files that use
+    # it. Reading the list is how you find the file the port is defined in.
+    - type: grep_matches
+      matches:
+        - { path: src/config.ts, line: 1, text: "export const config = { port: 3000 };" }
+        - { path: src/server.ts, line: 1, text: 'import { config } from "./config";' }
+        - { path: src/server.ts, line: 3, text: "export const server = { port: config.port };" }
+        - { path: tests/server.test.ts, line: 1, text: 'import { server } from "../src/server";' }
+        - { path: tests/server.test.ts, line: 3, text: "server.port;" }
+solutions:
+  - actions:
+      - action: grep.project
+        query: port
+      - action: file.open
+        path: src/config.ts
+    classification: optimal
+  - actions:
+      - action: grep.project
+        query: port
+      - action: file.open
+        path: src/server.ts
+      - action: file.open
+        path: src/config.ts
+    classification: valid
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "You do not have to know which file holds the text: a project search looks inside every file."
+  - afterMs: 8000
+    level: 2
+    text: "Search the project for port, read the rows it returns, then open src/config.ts, the file that defines the default."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 25
+  transferTags:
+    - context:source-code
+explanation: "A project search answers with file-and-line rows in a stable order, so the list itself is the map: the config holds the default and the server and its test only read it. The search opens nothing, which is why reaching the file you picked is a step of its own. Reopening the file you already had in front of you costs a step and reaches the same place."

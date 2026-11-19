@@ -1,0 +1,74 @@
+schemaVersion: 1
+kind: workspace
+id: workspace-file-find-001
+slug: neovim.files.find.by-fragment-001
+title: "Find a file by a fragment of its path"
+instruction: 'You are editing src/app.ts and want the router it imports. Find the router file by typing a fragment of its path instead of the whole path, add the comment "// Routes are declared here." as its first line, and save it. src/app.ts stays open behind it.'
+skillIds:
+  - neovim.files.find
+mode: learn
+difficulty: 3
+environment:
+  type: simulator
+  profile: workspace-basic-v1
+initialState:
+  files:
+    README.md: |
+      # Shop API
+
+      Run it with pnpm dev.
+    src/app.ts: |
+      import { router } from "./router";
+
+      export const app = router;
+    src/router.ts: |
+      export const router = { get: () => null };
+    src/config.ts: |
+      export const config = { port: 3000 };
+    docs/setup.md: |
+      # Setup
+
+      Copy config/dev.env before starting.
+  path: src/app.ts
+  cwd: /project
+objective:
+  type: all
+  goals:
+    - { type: active_file, path: src/router.ts }
+    - { type: open_buffers, paths: [src/app.ts, src/router.ts] }
+    - type: buffer_text
+      path: src/router.ts
+      text: "// Routes are declared here.\nexport const router = { get: () => null };"
+    - type: file_text
+      path: src/router.ts
+      text: "// Routes are declared here.\nexport const router = { get: () => null };"
+solutions:
+  - actions:
+      - action: file.find
+        query: rout
+      - action: edit.insert
+        text: "// Routes are declared here.\n"
+      - action: file.save
+    classification: optimal
+  - actions:
+      - action: file.find
+        query: rout
+      - action: file.open
+        path: src/router.ts
+      - action: edit.insert
+        text: "// Routes are declared here.\n"
+      - action: file.save
+    classification: efficient
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "You do not need the whole path: a finder narrows the project while you type a fragment of it."
+  - afterMs: 8000
+    level: 2
+    text: "Search for rout, and the first file whose path holds it is the router. Then type the comment at the top and save."
+metadata:
+  language: typescript
+  context: source-code
+  estimatedSeconds: 20
+  transferTags: []
+explanation: "The finder searches paths, not text, so a fragment you recognise is enough: rout reaches src/router.ts without spelling out src/ and .ts. It opens the file in a buffer of its own, which leaves src/app.ts open behind it, and the cursor starts at the top, so the comment goes above the code. Saving is what writes it: until then only the buffer has it. Typing the path as well as searching for it reaches the same file, but costs the step the finder just spared you."

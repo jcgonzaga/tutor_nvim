@@ -3,7 +3,7 @@ kind: workspace
 id: workspace-buffer-pick-001
 slug: neovim.buffers.list.001
 title: "Pick one of the open buffers"
-instruction: "Open src/util.ts and then README.md, so the session has three buffers in this order: src/main.ts, src/util.ts, README.md. Then finish in src/main.ts by moving through those buffers, not by opening its path again."
+instruction: "Open src/util.ts and then README.md, so the session has three buffers in this order: src/main.ts, src/util.ts, README.md. Then come back to src/main.ts by picking it out of the buffer list by its path, not by opening the path again and not by stepping through the buffers."
 skillIds:
   - neovim.buffers.list
 mode: recall
@@ -35,7 +35,8 @@ solutions:
         path: src/util.ts
       - action: file.open
         path: README.md
-      - action: buffer.next
+      - action: buffer.list
+        path: src/main.ts
     classification: optimal
   - actions:
       - action: file.open
@@ -48,13 +49,13 @@ solutions:
 hints:
   - afterMs: 4000
     level: 1
-    text: "The list of buffers keeps the order you opened them in."
+    text: "The list of buffers keeps the order you opened them in, and every row names the file's path."
   - afterMs: 8000
     level: 2
-    text: "From the last buffer, moving forward wraps around to the first one."
+    text: "Picking rows by path goes straight to the buffer you name, however far down the list it sits."
 metadata:
   language: typescript
   context: source-code
   estimatedSeconds: 20
   transferTags: []
-explanation: "The session opened main.ts, util.ts and README.md in that order, so from the last buffer one step forward wraps around to the first. Two steps back reach main.ts too, but crossing util.ts on the way costs a step."
+explanation: "The session opened main.ts, util.ts and README.md in that order, and the list shows all three paths, so naming main.ts is one step from wherever you are. Stepping back reaches it too, but crossing util.ts on the way costs a step for each buffer you pass."

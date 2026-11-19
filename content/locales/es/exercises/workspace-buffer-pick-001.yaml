@@ -1,7 +1,7 @@
 id: workspace-buffer-pick-001
 title: "Elige uno de los búferes abiertos"
-instruction: "Abre src/util.ts y después README.md, para que la sesión tenga tres búferes en este orden: src/main.ts, src/util.ts y README.md. Después termina en src/main.ts moviéndote entre esos búferes, sin abrir su ruta otra vez."
+instruction: "Abre src/util.ts y después README.md, para que la sesión tenga tres búferes en este orden: src/main.ts, src/util.ts y README.md. Después vuelve a src/main.ts eligiéndolo de la lista de búferes por su ruta, no abriendo la ruta otra vez y no recorriendo los búferes uno a uno."
 hints:
-  - "La lista de búferes mantiene el orden en que los abriste."
-  - "Desde el último búfer, avanzar da la vuelta hasta el primero."
-explanation: "La sesión abrió main.ts, util.ts y README.md en ese orden, así que desde el último búfer un paso hacia delante da la vuelta hasta el primero. Dos pasos atrás llegan a main.ts también, pero cruzar util.ts por el camino cuesta un paso más."
+  - "La lista de búferes mantiene el orden en que los abriste, y cada fila muestra la ruta del archivo."
+  - "Elegir por ruta va directo al búfer que nombras, esté donde esté en la lista."
+explanation: "La sesión abrió main.ts, util.ts y README.md en ese orden, y la lista muestra las tres rutas, así que nombrar main.ts es un paso desde donde estés. Recorrer los búferes también llega, pero cruzar util.ts por el camino cuesta un paso por cada búfer que pasas."

@@ -1,0 +1,7 @@
+id: workspace-grep-project-001
+title: "Busca en el proyecto y abre el archivo de una coincidencia"
+instruction: "Tienes que cambiar el puerto al que se enlaza el servidor, y solo recuerdas que el proyecto menciona un puerto en varios sitios. Busca port en todo el proyecto y después abre el archivo que define el valor por defecto para poder cambiarlo. src/server.ts sigue abierto detrás."
+hints:
+  - "No hace falta saber qué archivo contiene el texto: una búsqueda en el proyecto mira dentro de todos."
+  - "Busca port en el proyecto, lee las filas que devuelve y abre src/config.ts, el archivo que define el valor por defecto."
+explanation: "Una búsqueda en el proyecto responde con filas de archivo y línea en un orden estable, así que la lista es el mapa: la configuración tiene el valor por defecto y el servidor y su test solo lo leen. La búsqueda no abre nada, por eso llegar al archivo que elegiste es un paso aparte. Volver a abrir el archivo que ya tenías delante cuesta un paso y llega al mismo sitio."

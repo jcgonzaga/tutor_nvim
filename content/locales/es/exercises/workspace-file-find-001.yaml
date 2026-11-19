@@ -1,0 +1,7 @@
+id: workspace-file-find-001
+title: "Encuentra un archivo por un fragmento de su ruta"
+instruction: 'Estás editando src/app.ts y quieres el router que importa. Encuentra el archivo del router escribiendo un fragmento de su ruta en lugar de la ruta completa, añade el comentario "// Routes are declared here." como primera línea y guárdalo. src/app.ts sigue abierto detrás.'
+hints:
+  - "No necesitas la ruta completa: un buscador va filtrando el proyecto mientras escribes un fragmento."
+  - "Busca rout y el primer archivo cuya ruta lo contiene es el router. Después escribe el comentario arriba y guarda."
+explanation: "El buscador mira rutas, no texto, así que basta un fragmento que reconozcas: rout llega a src/router.ts sin escribir src/ ni .ts. Abre el archivo en un búfer propio, lo que deja src/app.ts abierto detrás, y el cursor empieza arriba, así que el comentario queda encima del código. Guardar es lo que lo escribe: hasta entonces solo lo tiene el búfer. Escribir además la ruta que el buscador te acaba de ahorrar llega al mismo archivo, pero cuesta un paso más."
