@@ -127,6 +127,8 @@ describe("workspaceObjectiveView projects the state an objective is judged again
       focus: 0,
       splitRatios: [],
       matches: [],
+      zoomedPath: null,
+      windowPaths: [MAIN],
     });
   });
 
@@ -151,6 +153,15 @@ describe("workspaceObjectiveView projects the state an objective is judged again
     expect(view.layout).toBe("side(leaf, stacked(leaf, leaf))");
     expect(view.focus).toBe(2);
     expect(view.splitRatios).toEqual([0.5, 0.5]);
+    expect(view.zoomedPath).toBeNull();
+  });
+
+  it("prints the path of the zoomed window, and none once it is restored", () => {    const opened = apply(createWorkspace(INIT), "window.split-side-by-side");
+    expect(workspaceObjectiveView(opened).zoomedPath).toBeNull();
+    const zoomed = apply(opened, "window.zoom");
+    expect(workspaceObjectiveView(zoomed).zoomedPath).toBe(MAIN);
+    expect(workspaceObjectiveView(zoomed).layout).toBe("side(leaf, leaf)");
+    expect(workspaceObjectiveView(apply(zoomed, "window.zoom")).zoomedPath).toBeNull();
   });
 
   it("reads the text of every open buffer, not only the active one", () => {
@@ -162,5 +173,24 @@ describe("workspaceObjectiveView projects the state an objective is judged again
       { path: "src/lib/format.ts", text: FORMAT_TEXT },
     ]);
     expect(view.activePath).toBe("src/lib/format.ts");
+  });
+});
+
+describe("the paths each window shows, in pre-order", () => {
+  it("prints one path per leaf, so two panes on the same file print it twice", () => {
+    const split = apply(createWorkspace(INIT), "window.split-side-by-side");
+    expect(workspaceObjectiveView(split).windowPaths).toEqual([MAIN, MAIN]);
+  });
+
+  it("names each file once a pane opens its own, and follows a swap", () => {
+    const split = apply(createWorkspace(INIT), "window.split-side-by-side");
+    const opened = applyWorkspaceAction(split, "file.open", { path: "src/lib/format.ts" });
+    if (!opened.applied) throw new Error("file.open was refused");
+    expect(workspaceObjectiveView(opened.state).windowPaths).toEqual([MAIN, "src/lib/format.ts"]);
+    const swapped = apply(opened.state, "window.swap");
+    expect(workspaceObjectiveView(swapped).windowPaths).toEqual(["src/lib/format.ts", MAIN]);
+    expect(workspaceObjectiveView(swapped).layout).toBe("side(leaf, leaf)");
+    // The files exchange places, so the focused pane now shows what its neighbour showed.
+    expect(workspaceObjectiveView(swapped).activePath).toBe(MAIN);
   });
 });

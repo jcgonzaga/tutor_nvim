@@ -43,7 +43,9 @@ export {
   focusLeafIndex,
   layoutText,
   splitRatios,
+  windowPaths,
   workspaceObjectiveView,
+  zoomedPath,
   type WorkspaceObjectiveBuffer,
   type WorkspaceObjectiveView,
 } from "./serialize";

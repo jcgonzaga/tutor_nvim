@@ -47,6 +47,10 @@ const quoted = (value: string): string => JSON.stringify(value);
 const quotedList = (values: readonly string[]): string => JSON.stringify(values);
 
 /** The same paths in any order: `open_buffers` is a set, the order they were opened is not a goal. */
+/** The same values in the same order: pre-order is the fact a swap changes. */
+const sameList = (expected: readonly string[], found: readonly string[]): boolean =>
+  expected.length === found.length && expected.every((value, index) => value === found[index]);
+
 const samePaths = (expected: readonly string[], found: readonly string[]): boolean =>
   expected.length === found.length && expected.every((path) => found.includes(path));
 
@@ -183,6 +187,31 @@ export function evaluateWorkspaceObjective(
         met: false,
         failures: [
           `grep_matches: expected ${rowsText(objective.matches)}, found ${rowsText(state.matches)}`,
+        ],
+      };
+    }
+    case "windows": {
+      // One entry per leaf, in pre-order: a split is two, and a swap is the same two pipes the other
+      // way round, so this compares as a list and never as a set.
+      const found = state.windowPaths;
+      if (sameList(objective.paths, found)) return { met: true, failures: [] };
+      return {
+        met: false,
+        failures: [`windows: expected ${quotedList(objective.paths)}, found ${quotedList(found)}`],
+      };
+    }
+    case "zoom": {
+      // A zoom is a note beside the tree, so the story has to name the window it leaves zoomed: the
+      // layout is the same whether a learner zoomed and restored or never touched it, and only this
+      // goal tells the two apart.
+      const found = state.zoomedPath;
+      if (found === objective.path) return { met: true, failures: [] };
+      return {
+        met: false,
+        failures: [
+          `zoom: expected ${objective.path === null ? "none" : quoted(objective.path)}, found ${
+            found === null ? "none" : quoted(found)
+          }`,
         ],
       };
     }

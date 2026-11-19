@@ -24,6 +24,8 @@ function state(): WorkspaceObjectiveView {
     layout: "side(leaf, stacked(leaf, leaf))",
     focus: 2,
     splitRatios: [0.5, 0.3],
+    zoomedPath: null,
+    windowPaths: ["src/main.ts", "src/other.ts"],
     matches: [
       { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
       { path: "src/server.ts", line: 3, text: "export const server = { port: config.port };" },
@@ -182,6 +184,51 @@ describe("evaluateWorkspaceObjective reports what it expected and what it found"
       evaluateWorkspaceObjective({ type: "focus", leaf: 1 }, { ...state(), focus: undefined })
         .failures,
     ).toEqual(["focus: expected leaf 1, found no focused leaf"]);
+  });
+
+  it("compares the paths the windows show, in order, and lists both sides on failure", () => {
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "windows", paths: ["src/main.ts", "src/other.ts"] },
+        state(),
+      ),
+    ).toEqual({ met: true, failures: [] });
+    // The same two files the other way round is a different workspace: that is what a swap changes.
+    expect(
+      evaluateWorkspaceObjective(
+        { type: "windows", paths: ["src/other.ts", "src/main.ts"] },
+        state(),
+      ),
+    ).toEqual({
+      met: false,
+      failures: [
+        'windows: expected ["src/other.ts","src/main.ts"], found ["src/main.ts","src/other.ts"]',
+      ],
+    });
+  });
+
+  it("asserts which window is zoomed, and that none is", () => {
+    const zoomed = { ...state(), zoomedPath: "src/other.ts" };
+    expect(evaluateWorkspaceObjective({ type: "zoom", path: "src/other.ts" }, zoomed)).toEqual({
+      met: true,
+      failures: [],
+    });
+    expect(evaluateWorkspaceObjective({ type: "zoom", path: null }, zoomed)).toEqual({
+      met: false,
+      failures: ['zoom: expected none, found "src/other.ts"'],
+    });
+    expect(evaluateWorkspaceObjective({ type: "zoom", path: "src/main.ts" }, zoomed)).toEqual({
+      met: false,
+      failures: ['zoom: expected "src/main.ts", found "src/other.ts"'],
+    });
+    expect(evaluateWorkspaceObjective({ type: "zoom", path: null }, state())).toEqual({
+      met: true,
+      failures: [],
+    });
+    expect(evaluateWorkspaceObjective({ type: "zoom", path: "src/main.ts" }, state())).toEqual({
+      met: false,
+      failures: ['zoom: expected "src/main.ts", found none'],
+    });
   });
 
   it("compares a split ratio with a tolerance of 0.01", () => {

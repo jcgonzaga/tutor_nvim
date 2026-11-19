@@ -349,6 +349,21 @@ describe("workspace exercise schema", () => {
     ).not.toEqual([]);
   });
 
+  it("records a zoom objective, with the window it names or none", () => {
+    expect(
+      parseWorkspaceExercise({ ...validInput(), objective: { type: "zoom", path: "src/main.ts" } })
+        .objective,
+    ).toEqual({ type: "zoom", path: "src/main.ts" });
+    // `null` is how a story says nothing is zoomed, which is a state a restored zoom reaches.
+    expect(
+      parseWorkspaceExercise({ ...validInput(), objective: { type: "zoom", path: null } }).objective,
+    ).toEqual({ type: "zoom", path: null });
+
+    // A zoom names a path or the absence of one: an omitted path is not an objective.
+    expect(issuesOf({ ...validInput(), objective: { type: "zoom" } })).not.toEqual([]);
+    expect(issuesOf({ ...validInput(), objective: { type: "zoom", path: "" } })).not.toEqual([]);
+  });
+
   it("requires exactly one solution classified optimal", () => {
     expect(
       issuesOf({
@@ -519,5 +534,20 @@ difficulty: 1
     expect(() => parseExerciseYaml(`${yaml.replace("kind: workspace", "kind: terminal")}`)).toThrow(
       /kind: must be "vim", "shell" or "workspace"/,
     );
+  });
+});
+
+describe("the windows objective", () => {
+  it("records the paths the leaves show, in the order they were written", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      objective: { type: "windows", paths: ["src/a.ts", "src/b.ts"] },
+    });
+    // Order is the point: a swap leaves the same two files in the other order.
+    expect(exercise.objective).toEqual({ type: "windows", paths: ["src/a.ts", "src/b.ts"] });
+  });
+
+  it("rejects a windows objective that names no window", () => {
+    expect(issuesOf({ ...validInput(), objective: { type: "windows", paths: [] } })).not.toEqual([]);
   });
 });

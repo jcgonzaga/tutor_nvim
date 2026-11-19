@@ -1,7 +1,7 @@
 import { bufferToText } from "@tutor-nvim/vim-engine";
 
 import type { FocusStep, WindowNode, WorkspaceGrepMatch, WorkspaceState } from "./types";
-import { activeTab, leafBufferIds } from "./windows";
+import { activeTab, leafBufferIds, nodeAt } from "./windows";
 
 /*
  * Printing the window tree (T3). An objective asserts the shape of the workspace, and the layout is
@@ -81,6 +81,18 @@ export interface WorkspaceObjectiveView {
   readonly focus: number | undefined;
   /** Pre-order ratios of the active tab. */
   readonly splitRatios: readonly number[];
+  /**
+   * The path the zoomed window shows, `null` when nothing is zoomed. Zoom is a note on the state
+   * and never a shape of the tree, so a story that zooms and one that does nothing print the same
+   * layout: this is the field that tells them apart.
+   */
+  readonly zoomedPath: string | null;
+  /**
+   * The path each leaf shows, in pre-order: one entry per window, so two panes on the same file
+   * print it twice. `open_buffers` is the set of what is loaded and cannot say which pane shows
+   * what; this is the projection a split, a swap or a close is visible in.
+   */
+  readonly windowPaths: readonly string[];
   /** The rows `grep.project` recorded, in project order, as `grep_matches` asserts them. */
   readonly matches: readonly WorkspaceGrepMatch[];
 }
@@ -97,10 +109,44 @@ export function workspaceObjectiveView(state: WorkspaceState): WorkspaceObjectiv
     layout: tab === undefined ? "" : layoutText(tab.root),
     focus: focusLeafIndex(state),
     splitRatios: tab === undefined ? [] : splitRatios(tab.root),
+    zoomedPath: zoomedPath(state),
+    windowPaths: windowPaths(state),
     matches: state.matches.map((match) => ({
       path: match.path,
       line: match.line,
       text: match.text,
     })),
   };
+}
+
+/**
+ * The path each leaf of the active tab shows, in pre-order (T6).
+ *
+ * The tree, not the buffer list: a split shows the same buffer in both panes and a swap re-points
+ * two leaves without opening anything, so the buffers say what is loaded and this says what is on
+ * screen, pane by pane.
+ */
+export function windowPaths(state: WorkspaceState): readonly string[] {
+  const tab = activeTab(state);
+  if (tab === undefined) return [];
+  return leafBufferIds(tab.root).map(
+    (bufferId) => state.buffers.find((buffer) => buffer.id === bufferId)?.path ?? "",
+  );
+}
+
+/**
+ * The path of the window a `window.zoom` selected, or `null` when nothing is zoomed (T6).
+ *
+ * The zoom is a note beside the tree (`WorkspaceZoom`), so this resolves it to the buffer the pane
+ * shows: a story says "the file you zoomed", never a path inside the split. A zoom whose tab or leaf
+ * no longer exists reads as `null`, the same way `pruneZoom` drops it from the state.
+ */
+export function zoomedPath(state: WorkspaceState): string | null {
+  const zoom = state.zoom;
+  if (zoom === null) return null;
+  const tab = state.tabs.find((candidate) => candidate.id === zoom.tabId);
+  if (tab === undefined) return null;
+  const node = nodeAt(tab.root, zoom.leafPath);
+  if (node === undefined || node.kind !== "leaf") return null;
+  return state.buffers.find((buffer) => buffer.id === node.bufferId)?.path ?? null;
 }

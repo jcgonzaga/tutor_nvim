@@ -58,6 +58,8 @@ export type RawWorkspaceObjective =
   | { type: "layout"; text: string }
   | { type: "focus"; leaf: number }
   | { type: "split_ratio"; index: number; ratio: number }
+  | { type: "windows"; paths: string[] }
+  | { type: "zoom"; path: string | null }
   | { type: "grep_matches"; matches: WorkspaceGrepMatch[] }
   | { type: "all"; goals: RawWorkspaceObjective[] };
 
@@ -78,7 +80,6 @@ const grepMatchSchema = z.strictObject({
   line: z.number().int().min(1),
   text: z.string(),
 });
-
 const workspaceObjectiveSchema: z.ZodType<RawWorkspaceObjective> = z.lazy(() =>
   z.discriminatedUnion("type", [
     z.strictObject({ type: z.literal("active_file"), path: diskPathSchema }),
@@ -95,6 +96,10 @@ const workspaceObjectiveSchema: z.ZodType<RawWorkspaceObjective> = z.lazy(() =>
       index: z.number().int().min(0),
       ratio: z.number().min(0).max(1),
     }),
+    /** The paths the leaves show, in pre-order: one entry per window (T6). */
+    z.strictObject({ type: z.literal("windows"), paths: z.array(diskPathSchema).min(1) }),
+    /** The path the zoomed window shows, or `null` when nothing is zoomed (T6). */
+    z.strictObject({ type: z.literal("zoom"), path: diskPathSchema.nullable() }),
     /** The rows `grep.project` recorded, in project order: path first, then line (T5c). */
     z.strictObject({
       type: z.literal("grep_matches"),
@@ -117,6 +122,8 @@ export type WorkspaceObjective =
   | { readonly type: "layout"; readonly text: string }
   | { readonly type: "focus"; readonly leaf: number }
   | { readonly type: "split_ratio"; readonly index: number; readonly ratio: number }
+  | { readonly type: "windows"; readonly paths: readonly string[] }
+  | { readonly type: "zoom"; readonly path: string | null }
   | { readonly type: "grep_matches"; readonly matches: readonly WorkspaceGrepMatch[] }
   | { readonly type: "all"; readonly goals: readonly WorkspaceObjective[] };
 
