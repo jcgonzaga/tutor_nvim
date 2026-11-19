@@ -398,3 +398,15 @@ not as an interactive fuzzy scorer:
   rank anything.
 - No scoring, no timers, no "best match": with fixed files, sorted order plus the query is deterministic
   and a replay is the same state. What is not modelled stays refused with a reason.
+
+**L11 — delivery strategy (recorded at the slice boundary)**
+
+- This work landed on `main` in reviewable-by-unit commits, but the whole is far past a single review
+  slice: 24 commits and ~14k authored lines since the branch point, across two features. The delivery
+  strategy is therefore **chained slices, not one pull request**, and the boundaries are already marked:
+  `review/keymap-schema`, `review/keymap-catalogs`, `review/layers-and-resolver`, `review/layer-rail` for
+  the keymap feature, and for this one `T1+T2` (engine), `T3` (objectives), `T4+T4b+T5b` (replay and
+  content) and `T5c` (picker, next).
+- A future reviewer should read the feature log first: every non-obvious decision (save/close semantics,
+  the split's buffer rule, the text action, the picker as a query) is recorded with its reason, and the
+  decisions the owner made are marked as such.
