@@ -39,13 +39,15 @@ export interface RefusedWorkspaceAction {
 }
 
 /**
- * What one action hands the engine: a path for the actions that name a file and a text for the one
- * that types (the schema rejects either anywhere else), so an action without them is the action bare.
+ * What one action hands the engine: a path for the actions that name a file, a text for the one that
+ * types and a query for the ones that search the project (the schema rejects each anywhere else),
+ * so an action without them is the action bare.
  */
 function optionsOf(action: WorkspaceSolutionAction): WorkspaceActionOptions {
   return {
     ...(action.path === undefined ? {} : { path: action.path }),
     ...(action.text === undefined ? {} : { text: action.text }),
+    ...(action.query === undefined ? {} : { query: action.query }),
   };
 }
 

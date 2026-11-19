@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ExerciseValidationError,
   KEYMAP_ACTIONS,
+  KEYMAP_QUERY_ACTIONS,
   KEYMAP_TEXT_ACTIONS,
   parseKeymapLayer,
   validateKeymapLayers,
@@ -282,5 +283,14 @@ describe("the action that types text (workspace stories 1 and 6)", () => {
     expect(KEYMAP_ACTIONS).toContain("edit.insert");
     expect(KEYMAP_TEXT_ACTIONS).toEqual(["edit.insert"]);
     for (const action of KEYMAP_TEXT_ACTIONS) expect(KEYMAP_ACTIONS).toContain(action);
+  });
+});
+
+describe("the actions that take a query (workspace story 2 and story 3)", () => {
+  it("names the project pickers in the vocabulary, as the only actions a solution gives a query", () => {
+    expect(KEYMAP_QUERY_ACTIONS).toEqual(["file.find", "grep.project"]);
+    for (const action of KEYMAP_QUERY_ACTIONS) expect(KEYMAP_ACTIONS).toContain(action);
+    // The buffer list picks from what is already open, so it takes a path, never a query.
+    expect(KEYMAP_QUERY_ACTIONS).not.toContain("buffer.list");
   });
 });

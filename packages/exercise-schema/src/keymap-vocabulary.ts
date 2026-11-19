@@ -121,3 +121,11 @@ export const KEYMAP_TARGETED_ACTIONS = ["edit.delete", "edit.change", "edit.yank
  * INSERT mode. A solution gives a `text` to these actions and to no other.
  */
 export const KEYMAP_TEXT_ACTIONS = ["edit.insert"] as const;
+
+/**
+ * The actions that search the project with a query: the file finder and the project grep. A binding
+ * names keys, never the fragment a story searches for, so the solution carries the query the way it
+ * carries a path or a text (T5c). No scoring, no ranking and no timer: the query is a fragment the
+ * fixed project answers, and the workspace engine applies it deterministically.
+ */
+export const KEYMAP_QUERY_ACTIONS = ["file.find", "grep.project"] as const;

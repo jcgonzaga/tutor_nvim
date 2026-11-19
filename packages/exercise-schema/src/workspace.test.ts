@@ -175,6 +175,8 @@ describe("workspace exercise schema", () => {
           actions: [
             { action: "file.open", path: "src/other.ts" },
             { action: "file.new", path: "src/notes.md" },
+            // The buffer list picks an open buffer by its path (L11), so it names one too.
+            { action: "buffer.list", path: "src/other.ts" },
             { action: "window.split-side-by-side" },
           ],
           classification: "optimal",
@@ -184,6 +186,7 @@ describe("workspace exercise schema", () => {
     expect(exercise.solutions[0]?.actions).toEqual([
       { action: "file.open", path: "src/other.ts" },
       { action: "file.new", path: "src/notes.md" },
+      { action: "buffer.list", path: "src/other.ts" },
       { action: "window.split-side-by-side" },
     ]);
 
@@ -198,7 +201,7 @@ describe("workspace exercise schema", () => {
         ],
       }).join("\n"),
     ).toMatch(
-      /"window\.split-side-by-side" takes no path: only file\.open, file\.new name a path inside the simulated project/,
+      /"window\.split-side-by-side" takes no path: only file\.open, file\.new, buffer\.list name a path inside the simulated project/,
     );
 
     expect(
@@ -265,6 +268,85 @@ describe("workspace exercise schema", () => {
         solutions: [{ actions: [{ action: "edit.insert", text: "" }], classification: "optimal" }],
       }).join("\n"),
     ).toMatch(/solutions\.0\.actions\.0\.text: must be the text to type, so it cannot be empty/);
+  });
+
+  it("reads a query only with the project pickers, which cannot be declared without one", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      solutions: [
+        {
+          actions: [
+            { action: "file.find", query: "util" },
+            { action: "grep.project", query: "port" },
+            { action: "file.open", path: "src/other.ts" },
+          ],
+          classification: "optimal",
+        },
+      ],
+    });
+    expect(exercise.solutions[0]?.actions).toEqual([
+      { action: "file.find", query: "util" },
+      { action: "grep.project", query: "port" },
+      { action: "file.open", path: "src/other.ts" },
+    ]);
+
+    // Required: a picker that narrows by nothing is not a step a learner can take.
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "file.find" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/"file\.find" needs a query: it names the text the picker searches for/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          {
+            actions: [{ action: "file.open", path: "src/other.ts", query: "util" }],
+            classification: "optimal",
+          },
+        ],
+      }).join("\n"),
+    ).toMatch(/"file\.open" takes no query: only file\.find, grep\.project search the project/);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "file.find", query: "" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/must be the query to search for, so it cannot be empty/);
+  });
+
+  it("records a grep_matches objective with its rows, in the order they were written", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      objective: {
+        type: "grep_matches",
+        matches: [
+          { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
+          { path: "src/server.ts", line: 3, text: "export const server = { port: 3000 };" },
+        ],
+      },
+    });
+    expect(exercise.objective).toEqual({
+      type: "grep_matches",
+      matches: [
+        { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
+        { path: "src/server.ts", line: 3, text: "export const server = { port: 3000 };" },
+      ],
+    });
+
+    // A search with no row, and a line number no file has, are not objectives.
+    expect(
+      issuesOf({ ...validInput(), objective: { type: "grep_matches", matches: [] } }),
+    ).not.toEqual([]);
+    expect(
+      issuesOf({
+        ...validInput(),
+        objective: { type: "grep_matches", matches: [{ path: "src/a.ts", line: 0, text: "x" }] },
+      }),
+    ).not.toEqual([]);
   });
 
   it("requires exactly one solution classified optimal", () => {

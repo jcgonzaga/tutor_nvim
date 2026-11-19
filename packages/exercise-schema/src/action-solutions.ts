@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   KEYMAP_ACTIONS,
+  KEYMAP_QUERY_ACTIONS,
   KEYMAP_TARGETS,
   KEYMAP_TARGETED_ACTIONS,
   KEYMAP_TEXT_ACTIONS,
@@ -9,10 +10,11 @@ import {
 import { SOLUTION_CLASSIFICATIONS } from "./primitives";
 
 /**
- * The actions that name the file they act on: opening a file, or starting one the disk lacks (T4b).
- * Every other action acts on what is already focused, so a path there would be a second truth.
+ * The actions that name the file they act on: opening a file, starting one the disk lacks (T4b), or
+ * picking an open buffer out of the list (T5c). Every other action acts on what is already focused,
+ * so a path there would be a second truth.
  */
-const PATHED_ACTIONS = ["file.open", "file.new"] as const;
+const PATHED_ACTIONS = ["file.open", "file.new", "buffer.list"] as const;
 
 /**
  * A path inside the simulated project. Relative and non-empty because the workspace matches paths
@@ -33,6 +35,12 @@ const projectPathSchema = z
  */
 const typedTextSchema = z.string().min(1, "must be the text to type, so it cannot be empty");
 
+/**
+ * The query a picker-shaped action searches for: non-empty, because a finder that narrows by nothing
+ * is not a step a learner can take, and the engine refuses it (T5c).
+ */
+const querySchema = z.string().min(1, "must be the query to search for, so it cannot be empty");
+
 /** The name of an action and, for an operator, what it acts on: the fields every solution shares. */
 const actionFields = {
   action: z.enum(KEYMAP_ACTIONS),
@@ -48,6 +56,30 @@ function checkTarget(ref: { action: string; target?: string }, ctx: z.Refinement
     code: "custom",
     path: ["target"],
     message: `"${ref.action}" takes no target: only ${KEYMAP_TARGETED_ACTIONS.join(", ")} do`,
+  });
+}
+
+/**
+ * A `query` is read only where the vocabulary searches the project with one, and it is required
+ * there: the action exists to say what is searched for, so a solution that gives no query is as
+ * wrong as one that gives it to a verb that searches nothing (T5c).
+ */
+function checkQuery(ref: { action: string; query?: string }, ctx: z.RefinementCtx): void {
+  if ((KEYMAP_QUERY_ACTIONS as readonly string[]).includes(ref.action)) {
+    if (ref.query === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["query"],
+        message: `"${ref.action}" needs a query: it names the text the picker searches for`,
+      });
+    }
+    return;
+  }
+  if (ref.query === undefined) return;
+  ctx.addIssue({
+    code: "custom",
+    path: ["query"],
+    message: `"${ref.action}" takes no query: only ${KEYMAP_QUERY_ACTIONS.join(", ")} search the project`,
   });
 }
 
@@ -94,23 +126,26 @@ export const actionRefSchema = z
 export type ActionRef = z.output<typeof actionRefSchema>;
 
 /**
- * One action of a workspace solution: the shared fields plus the file a file action opens and the
- * text an insert types (T4b, L9).
+ * One action of a workspace solution: the shared fields plus the file a file action opens, the text
+ * an insert types and the query a project picker searches for (T4b, L9, T5c).
  *
- * A workspace story is about files and buffers, so `file.open` and `file.new` must say which file and
- * `edit.insert` must say what is typed; keeping the fields on a schema of its own is what makes
- * `path` and `text` an error everywhere else, instead of fields the vim and shell kinds silently
- * accept without ever using them.
+ * A workspace story is about files and buffers, so `file.open` and `file.new` must say which file,
+ * `edit.insert` must say what is typed and `file.find`/`grep.project` must say what is searched for;
+ * keeping the fields on a schema of its own is what makes `path`, `text` and `query` an error
+ * everywhere else, instead of fields the vim and shell kinds silently accept without ever using
+ * them.
  */
 export const workspaceActionRefSchema = z
   .strictObject({
     ...actionFields,
     path: projectPathSchema.optional(),
     text: typedTextSchema.optional(),
+    query: querySchema.optional(),
   })
   .superRefine((solution, ctx) => {
     checkTarget(solution, ctx);
     checkText(solution, ctx);
+    checkQuery(solution, ctx);
     if (solution.path === undefined) return;
     if ((PATHED_ACTIONS as readonly string[]).includes(solution.action)) return;
     ctx.addIssue({

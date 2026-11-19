@@ -32,8 +32,9 @@ import { ExerciseValidationError, formatIssues, parseYamlDocument } from "./vali
 
 /**
  * The actions of one solution: a name, or `{ action, target }` where the verb takes a text object,
- * `path` where the action names a file (`file.open`, `file.new`, T4b) and `text` where it types one
- * (`edit.insert`, L9).
+ * `path` where the action names a file (`file.open`, `file.new`, `buffer.list`, T4b/T5c), `text`
+ * where it types one (`edit.insert`, L9) and `query` where it searches the project (`file.find`,
+ * `grep.project`, T5c).
  */
 const solutionActionSchema = z.union([z.enum(KEYMAP_ACTIONS), workspaceActionRefSchema]);
 
@@ -57,7 +58,26 @@ export type RawWorkspaceObjective =
   | { type: "layout"; text: string }
   | { type: "focus"; leaf: number }
   | { type: "split_ratio"; index: number; ratio: number }
+  | { type: "grep_matches"; matches: WorkspaceGrepMatch[] }
   | { type: "all"; goals: RawWorkspaceObjective[] };
+
+/**
+ * One row a project search found: the file, its line (from 1) and the line's text. Content writes the
+ * rows `grep.project` records, in the order the engine records them, so the objective is a fact
+ * about the project rather than a pattern the evaluator has to search for again.
+ */
+export interface WorkspaceGrepMatch {
+  readonly path: string;
+  readonly line: number;
+  readonly text: string;
+}
+
+const grepMatchSchema = z.strictObject({
+  path: diskPathSchema,
+  /** Lines count from 1, the way `grep -n` prints them. */
+  line: z.number().int().min(1),
+  text: z.string(),
+});
 
 const workspaceObjectiveSchema: z.ZodType<RawWorkspaceObjective> = z.lazy(() =>
   z.discriminatedUnion("type", [
@@ -74,6 +94,11 @@ const workspaceObjectiveSchema: z.ZodType<RawWorkspaceObjective> = z.lazy(() =>
       type: z.literal("split_ratio"),
       index: z.number().int().min(0),
       ratio: z.number().min(0).max(1),
+    }),
+    /** The rows `grep.project` recorded, in project order: path first, then line (T5c). */
+    z.strictObject({
+      type: z.literal("grep_matches"),
+      matches: z.array(grepMatchSchema).min(1),
     }),
     z.strictObject({ type: z.literal("all"), goals: z.array(workspaceObjectiveSchema).min(2) }),
   ]),
@@ -92,6 +117,7 @@ export type WorkspaceObjective =
   | { readonly type: "layout"; readonly text: string }
   | { readonly type: "focus"; readonly leaf: number }
   | { readonly type: "split_ratio"; readonly index: number; readonly ratio: number }
+  | { readonly type: "grep_matches"; readonly matches: readonly WorkspaceGrepMatch[] }
   | { readonly type: "all"; readonly goals: readonly WorkspaceObjective[] };
 
 function normalizeObjective(raw: RawWorkspaceObjective): WorkspaceObjective {
@@ -103,6 +129,17 @@ function normalizeObjective(raw: RawWorkspaceObjective): WorkspaceObjective {
     case "open_buffers":
       // A set: the order content lists the open buffers in is not the point.
       return { type: "open_buffers", paths: [...new Set(raw.paths)].sort() };
+    case "grep_matches":
+      // The order *is* the point here: project order is what the engine records, and a reordering
+      // would hide a search that answered rows the story never asked for.
+      return {
+        type: "grep_matches",
+        matches: raw.matches.map((match) => ({
+          path: match.path,
+          line: match.line,
+          text: match.text,
+        })),
+      };
     case "all":
       return { type: "all", goals: raw.goals.map(normalizeObjective) };
     default:
@@ -169,6 +206,7 @@ export const workspaceExerciseSchema = z
               ...(entry.target === undefined ? {} : { target: entry.target }),
               ...(entry.path === undefined ? {} : { path: entry.path }),
               ...(entry.text === undefined ? {} : { text: entry.text }),
+              ...(entry.query === undefined ? {} : { query: entry.query }),
             },
       ),
     })),
@@ -176,9 +214,10 @@ export const workspaceExerciseSchema = z
 
 /**
  * One action of a workspace solution: the target only where the vocabulary takes one, the path only
- * where the action names a file (`file.open`, `file.new`) and the text only where it types one
- * (`edit.insert`), so the replay can hand them to the engine instead of guessing which file or which
- * words the story meant.
+ * where the action names a file (`file.open`, `file.new`, `buffer.list`), the text only where it
+ * types one (`edit.insert`) and the query only where it searches the project (`file.find`,
+ * `grep.project`), so the replay can hand them to the engine instead of guessing which file, which
+ * words or which fragment the story meant.
  */
 export interface WorkspaceSolutionAction {
   readonly action: KeymapAction;
@@ -186,6 +225,8 @@ export interface WorkspaceSolutionAction {
   readonly path?: string;
   /** What `edit.insert` types, handed to the engine the way `path` is. */
   readonly text?: string;
+  /** What `file.find` and `grep.project` search for, handed to the engine the way `path` is. */
+  readonly query?: string;
 }
 
 /**

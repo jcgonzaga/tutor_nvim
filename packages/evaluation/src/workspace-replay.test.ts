@@ -65,6 +65,12 @@ const pathed = (
   path: string,
 ): WorkspaceSolution["actions"][number] => ({ action: name, path });
 
+/** The project pickers name the query they narrow by (T5c). */
+const queried = (
+  name: WorkspaceSolution["actions"][number]["action"],
+  query: string,
+): WorkspaceSolution["actions"][number] => ({ action: name, query });
+
 /** A story about files: opening `src/other.ts` is the objective, whichever tool does it (T4b). */
 function fileExercise(): WorkspaceExercise {
   return parseWorkspaceExercise({
@@ -174,19 +180,17 @@ describe("simulateWorkspaceSolution replays actions through the engine", () => {
     expect(errors.join("\n")).toMatch(/Unknown workspace action: app\.launch-terminal/);
   });
 
-  it("reports an action that needs a picker with the picker's own message", () => {
+  it("reports a picker action that names no query with the query's own message", () => {
     const ex = exercise();
-    // A picker is not modelled either (S6), so `file.find` is refused for a different reason and
-    // the learner is told which thing is missing rather than an unknown action.
+    // A picker is a query over the fixed project (T5c), so a `file.find` without a query is refused
+    // for what it is missing rather than as an unknown action.
     const broken = { ...ex, solutions: [{ ...ex.solutions[0]!, actions: [action("file.find")] }] };
 
     const errors = checkExercise(broken);
     expect(errors.join("\n")).toMatch(/workspace\.test\.split-001/);
     expect(errors.join("\n")).toMatch(/solution 1/);
     expect(errors.join("\n")).toMatch(/file\.find/);
-    expect(errors.join("\n")).toMatch(
-      /file\.find: no picker is modelled in the simulated workspace/,
-    );
+    expect(errors.join("\n")).toMatch(/file\.find: no query given/);
   });
 
   it("reports an unmet objective as a content bug naming the exercise, the solution and the goal", () => {
@@ -380,5 +384,89 @@ describe("a solution may type text (edit.insert, L9)", () => {
     const errors = checkExercise(broken);
     expect(errors.join("\n")).toMatch(/workspace\.test\.edit-save-001: solution 1/);
     expect(errors.join("\n")).toMatch(/edit\.insert: the text to type is empty/);
+  });
+});
+
+/**
+ * A story that greps the project and opens the file of a match (story 3, T5c): `grep.project`
+ * records the rows in the state instead of opening a picker, and the objective asserts both the
+ * rows and the file the learner then opens. No scoring and no timer, so the replay is the state.
+ */
+function grepExercise(): WorkspaceExercise {
+  return parseWorkspaceExercise({
+    schemaVersion: 1,
+    kind: "workspace",
+    id: "workspace-test-005",
+    slug: "workspace.test.grep-project-001",
+    title: "Grep the project and open the file of a match",
+    skillIds: ["neovim.search.grep-project"],
+    mode: "learn",
+    difficulty: 2,
+    initialState: {
+      files: {
+        "src/server.ts": "export const server = { port: config.port };",
+        "src/config.ts": "export const config = { port: 3000 };",
+      },
+      path: "src/server.ts",
+      cwd: "/project",
+    },
+    objective: {
+      type: "all",
+      goals: [
+        { type: "active_file", path: "src/config.ts" },
+        {
+          type: "grep_matches",
+          matches: [
+            { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
+          ],
+        },
+      ],
+    },
+    solutions: [
+      {
+        actions: [queried("grep.project", "3000"), pathed("file.open", "src/config.ts")],
+        classification: "optimal",
+      },
+    ],
+  });
+}
+
+describe("a solution may search the project (grep.project, T5c)", () => {
+  it("records the rows the objective asserts and then opens the file of a match", () => {
+    const ex = grepExercise();
+    const optimal = ex.solutions[0];
+    if (optimal === undefined) throw new Error("the fixture declares an optimal solution");
+
+    const replay = simulateWorkspaceSolution(ex, optimal);
+
+    expect(replay.refused).toBeNull();
+    expect(replay.actions).toEqual([
+      queried("grep.project", "3000"),
+      pathed("file.open", "src/config.ts"),
+    ]);
+    expect(replay.state.matches).toEqual([
+      { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
+    ]);
+    expect(activeBuffer(replay.state).path).toBe("src/config.ts");
+    expect(goalMet(ex, replay)).toBe(true);
+    expect(checkExercise(ex)).toEqual([]);
+  });
+
+  it("reports a query that matches nothing as a content bug naming the query", () => {
+    const ex = grepExercise();
+    const broken = {
+      ...ex,
+      solutions: [
+        {
+          ...ex.solutions[0]!,
+          actions: [queried("grep.project", "sql"), pathed("file.open", "src/config.ts")],
+        },
+      ],
+    };
+
+    const errors = checkExercise(broken);
+    expect(errors.join("\n")).toMatch(/workspace\.test\.grep-project-001/);
+    expect(errors.join("\n")).toMatch(/solution 1/);
+    expect(errors.join("\n")).toMatch(/grep\.project: no line matches "sql"/);
   });
 });

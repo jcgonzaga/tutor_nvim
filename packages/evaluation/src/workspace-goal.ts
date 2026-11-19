@@ -2,6 +2,7 @@ import type { WorkspaceExercise, WorkspaceObjective } from "@tutor-nvim/exercise
 import { splitLines } from "@tutor-nvim/vim-engine";
 import {
   workspaceObjectiveView,
+  type WorkspaceGrepMatch,
   type WorkspaceObjectiveView,
   type WorkspaceState,
 } from "@tutor-nvim/workspace-engine";
@@ -16,9 +17,10 @@ import { sameLines } from "./lines";
  *
  * `state` is the workspace state as the engine prints it (`WorkspaceObjectiveView`, the projection
  * `workspaceObjectiveView` returns): files, every open buffer's text, the active path, the layout
- * string, the focus index and the split ratios. The type comes from the engine that owns the tree, so
- * there is one declaration of "what shape is this" and one implementation of how it prints (T4;
- * T3 kept a structural copy because it added no dependency).
+ * string, the focus index, the split ratios and the rows the last project search recorded. The type
+ * comes from the engine that owns the tree, so there is one declaration of "what shape is this" and
+ * one implementation of how it prints (T4; T3 kept a structural copy because it added no
+ * dependency).
  */
 
 export interface WorkspaceObjectiveEvaluation {
@@ -47,6 +49,26 @@ const quotedList = (values: readonly string[]): string => JSON.stringify(values)
 /** The same paths in any order: `open_buffers` is a set, the order they were opened is not a goal. */
 const samePaths = (expected: readonly string[], found: readonly string[]): boolean =>
   expected.length === found.length && expected.every((path) => found.includes(path));
+
+/** The same rows in the same order: a project search answers in path order, so order is a goal. */
+const sameRows = (
+  expected: readonly WorkspaceGrepMatch[],
+  found: readonly WorkspaceGrepMatch[],
+): boolean =>
+  expected.length === found.length &&
+  expected.every((row, index) => {
+    const other = found[index];
+    return (
+      other !== undefined &&
+      row.path === other.path &&
+      row.line === other.line &&
+      row.text === other.text
+    );
+  });
+
+/** The rows as a failure prints them, so the reader sees exactly which row was searched for. */
+const rowsText = (rows: readonly WorkspaceGrepMatch[]): string =>
+  JSON.stringify(rows.map((row) => ({ path: row.path, line: row.line, text: row.text })));
 
 export function evaluateWorkspaceObjective(
   objective: WorkspaceObjective,
@@ -149,6 +171,18 @@ export function evaluateWorkspaceObjective(
         met: false,
         failures: [
           `split_ratio: expected split ${objective.index} at ${objective.ratio}, found ${found}`,
+        ],
+      };
+    }
+    case "grep_matches": {
+      // The rows are compared as the search recorded them, in project order: a reordering or a row
+      // the story did not ask for is a different search, and both sides are printed so the failure
+      // names the row that differs instead of a count.
+      if (sameRows(objective.matches, state.matches)) return { met: true, failures: [] };
+      return {
+        met: false,
+        failures: [
+          `grep_matches: expected ${rowsText(objective.matches)}, found ${rowsText(state.matches)}`,
         ],
       };
     }

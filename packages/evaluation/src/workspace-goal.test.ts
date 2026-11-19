@@ -24,6 +24,10 @@ function state(): WorkspaceObjectiveView {
     layout: "side(leaf, stacked(leaf, leaf))",
     focus: 2,
     splitRatios: [0.5, 0.3],
+    matches: [
+      { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
+      { path: "src/server.ts", line: 3, text: "export const server = { port: config.port };" },
+    ],
   };
 }
 
@@ -63,6 +67,45 @@ describe("evaluateWorkspaceObjective reports what it expected and what it found"
       met: true,
       failures: [],
     });
+    expect(
+      evaluateWorkspaceObjective(
+        {
+          type: "grep_matches",
+          matches: [
+            { path: "src/config.ts", line: 1, text: "export const config = { port: 3000 };" },
+            {
+              path: "src/server.ts",
+              line: 3,
+              text: "export const server = { port: config.port };",
+            },
+          ],
+        },
+        s,
+      ),
+    ).toEqual({ met: true, failures: [] });
+  });
+
+  it("compares the grep rows it recorded, in order, and lists both sides on failure", () => {
+    const expected = [{ path: "src/nope.ts", line: 2, text: "sql" }];
+    expect(
+      evaluateWorkspaceObjective({ type: "grep_matches", matches: expected }, state()).failures,
+    ).toEqual([
+      `grep_matches: expected ${JSON.stringify(expected)}, found ${JSON.stringify(state().matches)}`,
+    ]);
+
+    // The same two rows in the other order are not the same search: project order is the answer.
+    const reversed = [...state().matches].reverse();
+    expect(
+      evaluateWorkspaceObjective({ type: "grep_matches", matches: reversed }, state()).met,
+    ).toBe(false);
+
+    // A row that reads differently is reported with both sides, not with a count.
+    const changed = [{ ...state().matches[0]!, text: "export const config = { port: 8080 };" }];
+    expect(
+      evaluateWorkspaceObjective({ type: "grep_matches", matches: changed }, state()).failures,
+    ).toEqual([
+      `grep_matches: expected ${JSON.stringify(changed)}, found ${JSON.stringify(state().matches)}`,
+    ]);
   });
 
   it("names the expected and the found active file", () => {
