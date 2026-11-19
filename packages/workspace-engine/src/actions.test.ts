@@ -11,6 +11,8 @@ import {
   leafBufferIds,
   runWorkspaceKeys,
   WORKSPACE_ACTIONS,
+  WORKSPACE_FILE_ACTIONS,
+  WORKSPACE_PICKER_ACTIONS,
   type WindowNode,
   type WorkspaceActionOptions,
   type WorkspaceState,
@@ -641,6 +643,316 @@ describe("workspace.switch — selecting a tab", () => {
   });
 });
 
+/*
+ * T4b: files and buffers are actions too (S1, S5). A learner who opens `src/lib/format.ts` with
+ * `:e`, with Goto-file in LazyVim or with a tmux picker is doing one thing, so the engine applies
+ * the `file.*` and `buffer.*` actions the vocabulary already has — and the T1 command line keeps
+ * working beside them, through the same state function. The tests below are the oracle for both.
+ */
+
+describe("file.open — a file, or the buffer already showing it", () => {
+  it("opens a file that is on the simulated disk and focuses it", () => {
+    const { state, applied } = act(initial(), "file.open", { path: FORMAT });
+    expect(applied).toBe(true);
+    expect(snapshot(state)).toEqual(
+      stateOf({
+        buffers: [bufferState(MAIN, MAIN_TEXT), bufferState(FORMAT, FORMAT_TEXT)],
+        activeBufferId: bufferId(FORMAT),
+        tabs: [tabOf(leaf(FORMAT))],
+      }),
+    );
+  });
+
+  it("focuses a buffer that is already open instead of registering it twice", () => {
+    const before = openedFormat();
+    const { state, applied } = act(before, "file.open", { path: MAIN });
+    expect(applied).toBe(true);
+    expect(snapshot(state)).toEqual(
+      stateOf({
+        buffers: [bufferState(MAIN, MAIN_TEXT), bufferState(FORMAT, FORMAT_TEXT)],
+        activeBufferId: bufferId(MAIN),
+        tabs: [tabOf(leaf(MAIN))],
+        lastCommand: { command: "e src/lib/format.ts", accepted: true, output: [] },
+      }),
+    );
+  });
+
+  it("refuses a path that is not on the simulated disk and leaves the state identical", () => {
+    const before = initial();
+    const { state, applied, reason } = act(before, "file.open", { path: "missing.ts" });
+    expect(applied).toBe(false);
+    expect(reason).toBe("E484: Can't open file missing.ts");
+    expect(state).toBe(before);
+  });
+
+  it("refuses without a path: the simulation opens no file dialog", () => {
+    const before = initial();
+    const { state, applied, reason } = act(before, "file.open");
+    expect(applied).toBe(false);
+    expect(reason).toBe("file.open: no path given");
+    expect(state).toBe(before);
+  });
+});
+
+describe("file.new — an empty buffer the disk does not have yet", () => {
+  it("opens an empty buffer for a path that is not on disk, writing nothing yet", () => {
+    const { state, applied } = act(initial(), "file.new", { path: "notes.md" });
+    expect(applied).toBe(true);
+    expect(snapshot(state)).toEqual(
+      stateOf({
+        buffers: [bufferState(MAIN, MAIN_TEXT), bufferState("notes.md", "")],
+        activeBufferId: bufferId("notes.md"),
+        tabs: [tabOf(leaf("notes.md"))],
+      }),
+    );
+  });
+
+  it("refuses a path that already exists and leaves the state identical", () => {
+    const before = initial();
+    const { state, applied, reason } = act(before, "file.new", { path: MAIN });
+    expect(applied).toBe(false);
+    expect(reason).toBe("file.new: src/main.ts already exists");
+    expect(state).toBe(before);
+  });
+
+  it("refuses without a path", () => {
+    const before = initial();
+    const { state, applied, reason } = act(before, "file.new");
+    expect(applied).toBe(false);
+    expect(reason).toBe("file.new: no path given");
+    expect(state).toBe(before);
+  });
+
+  it("refuses a path whose buffer is already open: a buffer is registered once", () => {
+    const created = apply(initial(), "file.new", { path: "notes.md" });
+    const { state, applied, reason } = act(created, "file.new", { path: "notes.md" });
+    expect(applied).toBe(false);
+    expect(reason).toBe("file.new: notes.md is already open");
+    expect(state).toBe(created);
+  });
+});
+
+describe("file.save — the buffer written into the simulated disk", () => {
+  it("writes the edited text and clears modified", () => {
+    const edited = runWorkspaceKeys(initial(), keysOf("x"));
+    const saved = 'onst mode = "development";';
+    const { state, applied } = act(edited, "file.save");
+    expect(applied).toBe(true);
+    expect(snapshot(state)).toEqual(
+      stateOf({
+        files: { ...FILES, [MAIN]: saved },
+        buffers: [bufferState(MAIN, saved)],
+        activeBufferId: bufferId(MAIN),
+        tabs: [tabOf(leaf(MAIN))],
+      }),
+    );
+  });
+
+  it("refuses a buffer with no changes and leaves the state identical", () => {
+    const before = initial();
+    const { state, applied, reason } = act(before, "file.save");
+    expect(applied).toBe(false);
+    expect(reason).toBe("file.save: the active buffer has no changes");
+    expect(state).toBe(before);
+  });
+});
+
+describe("file.close-buffer — one buffer closed, the file still on disk", () => {
+  const threeOpen = (): WorkspaceState =>
+    command(command(initial(), "e src/lib/format.ts"), "e README.md");
+
+  it("closes the active buffer and hands its window the next buffer in open order", () => {
+    const { state, applied } = act(threeOpen(), "file.close-buffer");
+    expect(applied).toBe(true);
+    expect(state.buffers.map((buffer) => buffer.path)).toEqual([MAIN, FORMAT]);
+    expect(snapshot(state)).toEqual(
+      stateOf({
+        buffers: [bufferState(MAIN, MAIN_TEXT), bufferState(FORMAT, FORMAT_TEXT)],
+        activeBufferId: bufferId(FORMAT),
+        tabs: [tabOf(leaf(FORMAT))],
+        lastCommand: { command: "e README.md", accepted: true, output: [] },
+      }),
+    );
+  });
+
+  it("falls back to the previous buffer when the closed one was the last", () => {
+    const active = command(threeOpen(), "bp");
+    expect(active.activeBufferId).toBe(bufferId(FORMAT));
+    const { state, applied } = act(active, "file.close-buffer");
+    expect(applied).toBe(true);
+    expect(state.buffers.map((buffer) => buffer.path)).toEqual([MAIN, README]);
+    expect(state.activeBufferId).toBe(bufferId(README));
+    expect(snapshot(state).tabs[0]).toEqual(tabOf(leaf(README)));
+  });
+
+  it("replaces every window that showed the closed buffer", () => {
+    // Both panes show the format file; closing it leaves two windows on the file that stays open.
+    const bothPanes = apply(openedFormat(), "window.split-side-by-side");
+    const { state, applied } = act(bothPanes, "file.close-buffer");
+    expect(applied).toBe(true);
+    expect(state.buffers.map((buffer) => buffer.path)).toEqual([MAIN]);
+    expect(snapshot(state).tabs[0]?.root).toEqual(
+      splitNode("side-by-side", 0.5, leaf(MAIN), leaf(MAIN)),
+    );
+    expect(state.activeBufferId).toBe(bufferId(MAIN));
+  });
+
+  it("refuses to close the last buffer and leaves the state identical", () => {
+    const before = initial();
+    const { state, applied, reason } = act(before, "file.close-buffer");
+    expect(applied).toBe(false);
+    expect(reason).toBe("file.close-buffer: the last buffer cannot be closed");
+    expect(state).toBe(before);
+  });
+});
+
+describe("buffer.next, buffer.previous — cycling in open order", () => {
+  const threeOpen = (): WorkspaceState =>
+    command(command(initial(), "e src/lib/format.ts"), "e README.md");
+
+  it("goes to the next buffer and wraps around from the last to the first", () => {
+    const { state, applied } = act(threeOpen(), "buffer.next");
+    expect(applied).toBe(true);
+    expect(snapshot(state)).toEqual(
+      stateOf({
+        buffers: [
+          bufferState(MAIN, MAIN_TEXT),
+          bufferState(FORMAT, FORMAT_TEXT),
+          bufferState(README, README_TEXT),
+        ],
+        activeBufferId: bufferId(MAIN),
+        tabs: [tabOf(leaf(MAIN))],
+        lastCommand: { command: "e README.md", accepted: true, output: [] },
+      }),
+    );
+  });
+
+  it("goes to the previous buffer", () => {
+    const { state, applied } = act(threeOpen(), "buffer.previous");
+    expect(applied).toBe(true);
+    expect(state.activeBufferId).toBe(bufferId(FORMAT));
+    expect(snapshot(state).tabs[0]).toEqual(tabOf(leaf(FORMAT)));
+  });
+
+  it("refuses both with a single buffer open, naming the action", () => {
+    const before = initial();
+    for (const action of ["buffer.next", "buffer.previous"] as const) {
+      const { state, applied, reason } = act(before, action);
+      expect(applied).toBe(false);
+      expect(reason).toBe(`${action}: only one buffer is open`);
+      expect(state).toBe(before);
+    }
+  });
+
+  it("keeps :bn and :bp accepted on a single buffer, wrapping onto the same buffer", () => {
+    const before = initial();
+    for (const line of ["bn", "bp"] as const) {
+      const typed = command(before, line);
+      expect(typed.lastCommand).toEqual({ command: line, accepted: true, output: [] });
+      expect(paritySnapshot(typed)).toEqual(paritySnapshot(before));
+    }
+  });
+});
+
+describe("picker-shaped actions stay unapplied, never faked (S6)", () => {
+  it.each(["file.find", "grep.project", "buffer.list"])(
+    "refuses %s with a reason that names the picker it would need",
+    (action) => {
+      const before = initial();
+      const { state, applied, reason } = act(before, action);
+      expect(applied).toBe(false);
+      expect(reason).toBe(`${action}: no picker is modelled in the simulated workspace`);
+      expect(state).toBe(before);
+    },
+  );
+});
+
+/**
+ * The command line and the actions must not disagree (T4b). Every pair below starts from the same
+ * state and asserts the same end state; the only field an action may leave alone is
+ * `lastCommand`, which records the line a learner typed and that no action typed, so it is blanked
+ * before the comparison and asserted on its own in each test.
+ */
+const paritySnapshot = (state: WorkspaceState): Snapshot => ({ ...snapshot(state), lastCommand: null });
+
+describe("parity — same state function, one command line and one action", () => {
+  it(":e <path> and file.open reach the same state", () => {
+    const before = initial();
+    const typed = command(before, `e ${FORMAT}`);
+    const acted = act(before, "file.open", { path: FORMAT });
+    expect(acted.applied).toBe(true);
+    expect(paritySnapshot(acted.state)).toEqual(paritySnapshot(typed));
+    // The action never writes the command-line record; the command line always does.
+    expect(acted.state.lastCommand).toBe(before.lastCommand);
+    expect(typed.lastCommand).toEqual({
+      command: `e ${FORMAT}`,
+      accepted: true,
+      output: [],
+    });
+  });
+
+  it(":w and file.save reach the same state", () => {
+    const edited = runWorkspaceKeys(initial(), keysOf("x"));
+    const typed = command(edited, "w");
+    const acted = act(edited, "file.save");
+    expect(acted.applied).toBe(true);
+    expect(paritySnapshot(acted.state)).toEqual(paritySnapshot(typed));
+    expect(typed.files[MAIN]).toBe('onst mode = "development";');
+  });
+
+  it(":bn and buffer.next reach the same state", () => {
+    const before = command(command(initial(), `e ${FORMAT}`), `e ${README}`);
+    const typed = command(before, "bn");
+    const acted = act(before, "buffer.next");
+    expect(acted.applied).toBe(true);
+    expect(paritySnapshot(acted.state)).toEqual(paritySnapshot(typed));
+    expect(acted.state.activeBufferId).toBe(bufferId(MAIN));
+  });
+
+  it(":bp and buffer.previous reach the same state", () => {
+    const before = command(command(initial(), `e ${FORMAT}`), "bn");
+    expect(before.activeBufferId).toBe(bufferId(MAIN));
+    const typed = command(before, "bp");
+    const acted = act(before, "buffer.previous");
+    expect(acted.applied).toBe(true);
+    expect(paritySnapshot(acted.state)).toEqual(paritySnapshot(typed));
+    expect(acted.state.activeBufferId).toBe(bufferId(FORMAT));
+  });
+});
+
+describe("file and buffer invariants", () => {
+  const FILE_SCRIPT: readonly Step[] = [
+    { kind: "action", action: "window.split-side-by-side" },
+    { kind: "action", action: "file.open", options: { path: FORMAT } },
+    { kind: "action", action: "buffer.next" },
+    { kind: "action", action: "file.open", options: { path: README } },
+    { kind: "action", action: "file.close-buffer" },
+    { kind: "action", action: "file.new", options: { path: "notes.md" } },
+    { kind: "action", action: "file.save" },
+    { kind: "action", action: "buffer.previous" },
+    { kind: "action", action: "file.close-buffer" },
+    { kind: "action", action: "file.close-buffer" },
+    { kind: "action", action: "file.close-buffer" },
+  ];
+
+  it("holds the invariants after every file and buffer step", () => {
+    let state = initial();
+    for (const step of FILE_SCRIPT) {
+      state = runStep(state, step);
+      expectInvariants(state);
+    }
+    // The last close closed the second of two buffers; the third had nothing left to close.
+    expect(state.buffers).toHaveLength(1);
+    expect(state.activeBufferId).toBe(bufferId(MAIN));
+  });
+
+  it("gives the same whole state for the same file and buffer script twice", () => {
+    const first = FILE_SCRIPT.reduce(runStep, initial());
+    const second = FILE_SCRIPT.reduce(runStep, initial());
+    expect(snapshot(first)).toEqual(snapshot(second));
+  });
+});
+
 describe("totality", () => {
   it("lists exactly the window, tab and workspace actions of the keymap vocabulary", () => {
     expect([...WORKSPACE_ACTIONS]).toEqual([
@@ -663,6 +975,21 @@ describe("totality", () => {
       "tab.previous",
       "workspace.switch",
     ]);
+  });
+
+  it("lists exactly the file and buffer actions of the keymap vocabulary it applies", () => {
+    expect([...WORKSPACE_FILE_ACTIONS]).toEqual([
+      "file.open",
+      "file.new",
+      "file.save",
+      "file.close-buffer",
+      "buffer.next",
+      "buffer.previous",
+    ]);
+  });
+
+  it("lists the picker-shaped actions it refuses instead of faking them", () => {
+    expect([...WORKSPACE_PICKER_ACTIONS]).toEqual(["file.find", "grep.project", "buffer.list"]);
   });
 
   it("refuses an action outside the vocabulary without throwing", () => {

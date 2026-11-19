@@ -5,7 +5,7 @@ import {
   type WorkspaceExercise,
   type WorkspaceSolution,
 } from "@tutor-nvim/exercise-schema";
-import { layoutText, activeTab } from "@tutor-nvim/workspace-engine";
+import { activeBuffer, activeTab, layoutText } from "@tutor-nvim/workspace-engine";
 
 import {
   advanceAttempt,
@@ -58,6 +58,50 @@ const adHoc = (...names: WorkspaceSolution["actions"][number]["action"][]): Work
   actions: names.map(action),
   classification: "valid",
 });
+
+/** `file.open` and `file.new` name the file they act on; the other actions act on the focus. */
+const pathed = (
+  name: WorkspaceSolution["actions"][number]["action"],
+  path: string,
+): WorkspaceSolution["actions"][number] => ({ action: name, path });
+
+/** A story about files: opening `src/other.ts` is the objective, whichever tool does it (T4b). */
+function fileExercise(): WorkspaceExercise {
+  return parseWorkspaceExercise({
+    schemaVersion: 1,
+    kind: "workspace",
+    id: "workspace-test-002",
+    slug: "workspace.test.open-file-001",
+    title: "Open another file",
+    skillIds: ["workspace.file.open"],
+    mode: "learn",
+    difficulty: 1,
+    initialState: {
+      files: { "src/main.ts": "one", "src/other.ts": "two" },
+      path: "src/main.ts",
+      cwd: "/project",
+    },
+    objective: { type: "active_file", path: "src/other.ts" },
+    solutions: [{ actions: [pathed("file.open", "src/other.ts")], classification: "optimal" }],
+  });
+}
+
+/** A story about creating a file: the objective is the buffer, the disk follows on save. */
+function newFileExercise(): WorkspaceExercise {
+  return parseWorkspaceExercise({
+    schemaVersion: 1,
+    kind: "workspace",
+    id: "workspace-test-003",
+    slug: "workspace.test.new-file-001",
+    title: "Create a file",
+    skillIds: ["workspace.file.new"],
+    mode: "learn",
+    difficulty: 1,
+    initialState: { files: { "src/main.ts": "one" }, path: "src/main.ts", cwd: "/project" },
+    objective: { type: "active_file", path: "src/notes.md" },
+    solutions: [{ actions: [pathed("file.new", "src/notes.md")], classification: "optimal" }],
+  });
+}
 
 describe("simulateWorkspaceSolution replays actions through the engine", () => {
   it("reaches the end state of the objective with the optimal solution", () => {
@@ -114,17 +158,35 @@ describe("simulateWorkspaceSolution replays actions through the engine", () => {
     expect(tab === undefined ? "" : layoutText(tab.root)).toBe("leaf");
   });
 
-  it("reports a solution the engine cannot run as a content bug naming the exercise and the action", () => {
+  it("reports an action no layer can apply as a content bug naming the exercise and the action", () => {
     const ex = exercise();
-    // `file.open` is an action the keymap vocabulary has, but the workspace engine applies window,
-    // tab and workspace actions only: a story written this way could never be solved.
-    const broken = { ...ex, solutions: [{ ...ex.solutions[0]!, actions: [action("file.open")] }] };
+    // `app.launch-terminal` is in the vocabulary, but the simulation launches no application (S6):
+    // a story written this way could never be solved, and the gate says which action is missing.
+    const broken = {
+      ...ex,
+      solutions: [{ ...ex.solutions[0]!, actions: [action("app.launch-terminal")] }],
+    };
 
     const errors = checkExercise(broken);
     expect(errors.join("\n")).toMatch(/workspace\.test\.split-001/);
     expect(errors.join("\n")).toMatch(/solution 1/);
-    expect(errors.join("\n")).toMatch(/file\.open/);
-    expect(errors.join("\n")).toMatch(/Unknown workspace action: file\.open/);
+    expect(errors.join("\n")).toMatch(/app\.launch-terminal/);
+    expect(errors.join("\n")).toMatch(/Unknown workspace action: app\.launch-terminal/);
+  });
+
+  it("reports an action that needs a picker with the picker's own message", () => {
+    const ex = exercise();
+    // A picker is not modelled either (S6), so `file.find` is refused for a different reason and
+    // the learner is told which thing is missing rather than an unknown action.
+    const broken = { ...ex, solutions: [{ ...ex.solutions[0]!, actions: [action("file.find")] }] };
+
+    const errors = checkExercise(broken);
+    expect(errors.join("\n")).toMatch(/workspace\.test\.split-001/);
+    expect(errors.join("\n")).toMatch(/solution 1/);
+    expect(errors.join("\n")).toMatch(/file\.find/);
+    expect(errors.join("\n")).toMatch(
+      /file\.find: no picker is modelled in the simulated workspace/,
+    );
   });
 
   it("reports an unmet objective as a content bug naming the exercise, the solution and the goal", () => {
@@ -198,5 +260,59 @@ describe("simulateWorkspaceSolution replays actions through the engine", () => {
     expect(
       goalMet(ex, simulateWorkspaceSolution(ex, { actions: [], classification: "optimal" })),
     ).toBe(false);
+  });
+});
+
+/*
+ * T4b: `file.open` and `file.new` name the file they act on, so the replay hands the solution's path
+ * to the engine. A story can therefore reach the state `:e src/other.ts` reaches, without writing
+ * one blessed keystroke string into content (S5).
+ */
+describe("simulateWorkspaceSolution passes the path a file action names", () => {
+  it("opens the named file and reaches the objective about the active file", () => {
+    const ex = fileExercise();
+    const solution = ex.solutions[0];
+    if (solution === undefined) throw new Error("the fixture declares a solution");
+
+    const replay = simulateWorkspaceSolution(ex, solution);
+
+    expect(replay.refused).toBeNull();
+    expect(replay.actions).toEqual([pathed("file.open", "src/other.ts")]);
+    expect(activeBuffer(replay.state).path).toBe("src/other.ts");
+    expect(replay.state.files).toEqual({
+      "src/main.ts": "one",
+      "src/other.ts": "two",
+    });
+    expect(goalMet(ex, replay)).toBe(true);
+    expect(checkExercise(ex)).toEqual([]);
+  });
+
+  it("opens an empty buffer for a path the disk does not have, writing nothing yet", () => {
+    const ex = newFileExercise();
+    const solution = ex.solutions[0];
+    if (solution === undefined) throw new Error("the fixture declares a solution");
+
+    const replay = simulateWorkspaceSolution(ex, solution);
+
+    expect(replay.refused).toBeNull();
+    expect(replay.actions).toEqual([pathed("file.new", "src/notes.md")]);
+    expect(activeBuffer(replay.state).path).toBe("src/notes.md");
+    // The buffer is what the objective asserts; the file appears on save, not here.
+    expect(replay.state.files["src/notes.md"]).toBeUndefined();
+    expect(goalMet(ex, replay)).toBe(true);
+    expect(checkExercise(ex)).toEqual([]);
+  });
+
+  it("stops at a file action that names no path instead of opening the active file again", () => {
+    const ex = fileExercise();
+
+    const replay = simulateWorkspaceSolution(ex, adHoc("file.open"));
+
+    expect(replay.refused).toEqual({
+      action: action("file.open"),
+      index: 0,
+      reason: "file.open: no path given",
+    });
+    expect(goalMet(ex, replay)).toBe(false);
   });
 });

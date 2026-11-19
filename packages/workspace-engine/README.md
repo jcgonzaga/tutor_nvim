@@ -9,12 +9,18 @@ Two entry points, and the split between them is the design:
 | Entry point                                     | What it owns                                                                |
 | ----------------------------------------------- | --------------------------------------------------------------------------- |
 | `dispatchWorkspace(state, key)`                 | text and the `:` command line; editing keys go to `vim-engine` (`dispatch`) |
-| `applyWorkspaceAction(state, action, options?)` | windows, tabs and the workspace; **never** keys                             |
+| `applyWorkspaceAction(state, action, options?)` | files, buffers, windows, tabs and the workspace; **never** keys             |
 
 Window operations are actions, not keys. The layer catalogs (`content/keymaps/*.yaml`) map a tool's
 keys to an action name and `@tutor-nvim/keymap` resolves them, so tmux's `C-b %` and Herdr's `C-b v`
 reach the same `window.split-side-by-side` and therefore the same state. This package does not know
 what a prefix or a leader is, and does not depend on the keymap package.
+
+Files and buffers are actions for the same reason (T4b): opening `src/other.ts` is one thing whether
+the learner uses Goto-file, a file picker or `:e`, so `file.*` and `buffer.*` call the same state
+functions the `:` command line calls (`src/files.ts`), and the parity tests assert that
+`:e`/`file.open`, `:w`/`file.save`, `:bn`/`buffer.next` and `:bp`/`buffer.previous` reach the same
+state from the same start.
 
 ## State
 
@@ -48,6 +54,7 @@ type WindowNode =
 
 ## Actions
 
+`file.open`, `file.new`, `file.save`, `file.close-buffer`, `buffer.next`, `buffer.previous`,
 `window.split-side-by-side`, `window.split-stacked`, `window.close`, `window.focus-left/right/up/down`,
 `window.resize-wider/narrower/taller/shorter`, `window.zoom`, `window.swap`, `window.new`, `tab.new`,
 `tab.next`, `tab.previous`, `workspace.switch`.
@@ -57,6 +64,23 @@ cannot apply returns the state it was given — the same object — with a reaso
 
 Rules the tests pin:
 
+- **`file.open`** takes `options.path`: it focuses the buffer already showing that file, opens one when
+the file is on the simulated disk, and refuses anything else with `:e`'s own `E484`. Without a path it
+is refused, because the simulation opens no dialog.
+- **`file.new`** opens an empty buffer for a path the disk does not have yet; saving writes the file.
+A path that exists is refused, and so is a path whose buffer is already open (a buffer is registered
+once).
+- **`file.save`** writes the active buffer and clears `modified`; it is refused when there is nothing
+to save. `:w` on an unchanged buffer is accepted and changes nothing, so the two agree on the end
+state and differ only in whether the action had an effect.
+- **`file.close-buffer`** closes the active buffer and leaves the file on disk. The panes stay: every
+window that showed that buffer shows the next one in open order (or the previous one when it was the
+last), and closing the only buffer is refused.
+- **`buffer.next` / `buffer.previous`** cycle in open order and wrap around; with a single buffer they
+are refused, while `:bn`/`:bp` wrap onto the same buffer and are accepted.
+- **Picker-shaped actions** (`file.find`, `grep.project`, `buffer.list`) are unapplied with a reason
+that names them: the simulation models no picker (`S6`), and what is not modelled is absent, never
+faked.
 - **Split** shows the buffer the focused window already showed in both panes and focuses the new
   one. That is what tmux and nvim do (a split of one window duplicates the view); the buffer is
   still _registered_ once, and `:e` in either pane separates them.
@@ -76,9 +100,10 @@ Rules the tests pin:
 
 ## Tests
 
-`src/actions.test.ts` holds the oracle tests (whole-state assertions per action), the invariant
-suite that runs after every step of a scenario script (the focus path reaches a leaf,
-`activeBufferId` is that leaf's buffer, every ratio inside `[0.1, 0.9]` with both children present,
-no buffer registered twice, every leaf references an open buffer), and determinism.
+`src/actions.test.ts` holds the oracle tests (whole-state assertions per action), the parity tests
+between the command line and the actions, the invariant suite that runs after every step of two
+scenario scripts (the focus path reaches a leaf, `activeBufferId` is that leaf's buffer, every ratio
+inside `[0.1, 0.9]` with both children present, no buffer registered twice, every leaf references an
+open buffer), and determinism.
 `src/workspace.test.ts` is the T1 oracle suite and `src/workspace.regression.test.ts` the T1
 purity/parity probes; both must keep passing untouched.

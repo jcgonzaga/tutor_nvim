@@ -68,6 +68,18 @@ export function activeTab(state: WorkspaceState): WorkspaceTab | undefined {
   return state.tabs.find((tab) => tab.id === state.activeTabId);
 }
 
+/**
+ * The same tree with every window that showed `from` showing `to` instead. Closing a buffer is not
+ * closing a window (the file goes away, the panes stay), so each leaf has to be re-pointed, and a
+ * split that showed the buffer twice re-points both leaves.
+ */
+export function replaceBuffer(node: WindowNode, from: string, to: string): WindowNode {
+  if (node.kind === "leaf") return node.bufferId === from ? leafNode(to) : node;
+  const first = replaceBuffer(node.first, from, to);
+  const second = replaceBuffer(node.second, from, to);
+  return first === node.first && second === node.second ? node : { ...node, first, second };
+}
+
 /** Every buffer a tree shows, in tree order. The same id may appear twice: a split does that. */
 export function leafBufferIds(node: WindowNode): readonly string[] {
   return node.kind === "leaf"

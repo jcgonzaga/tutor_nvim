@@ -167,6 +167,62 @@ describe("workspace exercise schema", () => {
     expect(issues.join("\n")).toMatch(/solutions\.0\.actions\.0/);
   });
 
+  it("reads a path only where the vocabulary names a file inside the simulated project", () => {
+    const exercise = parseWorkspaceExercise({
+      ...validInput(),
+      solutions: [
+        {
+          actions: [
+            { action: "file.open", path: "src/other.ts" },
+            { action: "file.new", path: "src/notes.md" },
+            { action: "window.split-side-by-side" },
+          ],
+          classification: "optimal",
+        },
+      ],
+    });
+    expect(exercise.solutions[0]?.actions).toEqual([
+      { action: "file.open", path: "src/other.ts" },
+      { action: "file.new", path: "src/notes.md" },
+      { action: "window.split-side-by-side" },
+    ]);
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          {
+            actions: [{ action: "window.split-side-by-side", path: "src/other.ts" }],
+            classification: "optimal",
+          },
+        ],
+      }).join("\n"),
+    ).toMatch(
+      /"window\.split-side-by-side" takes no path: only file\.open, file\.new name a path inside the simulated project/,
+    );
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [
+          {
+            actions: [{ action: "file.open", path: "/project/src/other.ts" }],
+            classification: "optimal",
+          },
+        ],
+      }).join("\n"),
+    ).toMatch(
+      /solutions\.0\.actions\.0\.path: must name a file inside the simulated project: it is relative, so it cannot start with "\/"/,
+    );
+
+    expect(
+      issuesOf({
+        ...validInput(),
+        solutions: [{ actions: [{ action: "file.new", path: "" }], classification: "optimal" }],
+      }).join("\n"),
+    ).toMatch(/must name a file inside the simulated project, so it cannot be empty/);
+  });
+
   it("requires exactly one solution classified optimal", () => {
     expect(
       issuesOf({

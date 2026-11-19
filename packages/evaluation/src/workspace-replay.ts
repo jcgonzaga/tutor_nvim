@@ -16,8 +16,9 @@ import type { WorkspaceAttempt } from "./attempt";
  *
  * A workspace solution is a list of keymap actions, never one tool's keys, so the replay needs no
  * layer: it starts from the exercise's initial state and applies the actions through the engine's
- * own `applyWorkspaceAction`, which is the same code a learner's keys reach. The end state is then
- * judged by the objective, and the cost in actions by the classification.
+ * own `applyWorkspaceAction`, which is the same code a learner's keys reach. A file action carries
+ * the path it names (T4b), so `file.open src/other.ts` reaches the state `:e src/other.ts` reaches.
+ * The end state is then judged by the objective, and the cost in actions by the classification.
  *
  * An action the engine refuses is a *content* bug, not a learner error: the story asks for something
  * the workspace cannot do. The replay therefore stops at the first refusal and reports it with the
@@ -65,7 +66,13 @@ export function simulateWorkspaceSolution(
   let refused: RefusedWorkspaceAction | null = null;
 
   for (const [index, action] of solution.actions.entries()) {
-    const result = applyWorkspaceAction(state, action.action);
+    // Only `file.open` and `file.new` carry a path (the schema rejects it anywhere else), so the
+    // options are exactly the file the action names, and an action without one is the action bare.
+    const result = applyWorkspaceAction(
+      state,
+      action.action,
+      action.path === undefined ? {} : { path: action.path },
+    );
     if (!result.applied) {
       refused = {
         action,

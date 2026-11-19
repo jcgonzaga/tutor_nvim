@@ -1,3 +1,11 @@
+import {
+  cycleBuffer,
+  closeBuffer,
+  newFile,
+  openFile,
+  saveActiveFile,
+  type FileStepResult,
+} from "./files";
 import type {
   FocusStep,
   WindowLayout,
@@ -21,11 +29,16 @@ import {
 import { openBuffer } from "./workspace";
 
 /*
- * Window, tab and workspace operations (S2, S4).
+ * The actions of the workspace (S1, S2, S4, T4b).
  *
  * They are actions, never keys: the layer catalogs map a tool's keys to one of these names and
- * `packages/keymap` resolves them, so tmux's `C-b %` and Herdr's `C-b v` reach the same split and
- * this engine never learns what a prefix is. That is the point of the T2 design, not a compromise.
+ * `packages/keymap` resolves them, so tmux's `C-b %` and Herdr's `C-b v` reach the same split, and
+ * Goto-file, `n` in a file picker and `:e` reach the same `file.open`. This engine never learns what
+ * a prefix is.
+ *
+ * Files and buffers are here for the same reason windows are (T4b): opening `src/other.ts` is one
+ * thing however the learner does it, so `file.*` and `buffer.*` call the same state functions the
+ * `:` command line calls, and the parity tests assert the two reach the same state.
  *
  * Every operation is total: one that cannot apply returns the state it was given, unchanged, with
  * `applied: false` and a reason. Nothing throws and nothing is a silent no-op.
@@ -54,6 +67,27 @@ export const WORKSPACE_ACTIONS = [
 ] as const;
 export type WorkspaceActionName = (typeof WORKSPACE_ACTIONS)[number];
 
+/** The file and buffer actions of the keymap vocabulary this engine applies (T4b, stories 1-7). */
+export const WORKSPACE_FILE_ACTIONS = [
+  "file.open",
+  "file.new",
+  "file.save",
+  "file.close-buffer",
+  "buffer.next",
+  "buffer.previous",
+] as const;
+export type WorkspaceFileActionName = (typeof WORKSPACE_FILE_ACTIONS)[number];
+
+/**
+ * Actions that need an interactive picker. The simulation models no picker (S6), so they are
+ * refused with a reason that names them: what is not modelled is absent, never faked, and a story
+ * that needs one waits for a picker instead of passing on an invented answer.
+ */
+export const WORKSPACE_PICKER_ACTIONS = ["file.find", "grep.project", "buffer.list"] as const;
+export type WorkspacePickerActionName = (typeof WORKSPACE_PICKER_ACTIONS)[number];
+
+const PICKER_ACTIONS: ReadonlySet<string> = new Set(WORKSPACE_PICKER_ACTIONS);
+
 /** A resize is a step of the ratio, never a number of pixels, so it stays deterministic. */
 const RATIO_STEP = 0.05;
 const RATIO_MIN = 0.1;
@@ -67,6 +101,9 @@ const refused = (state: WorkspaceState, reason: string): WorkspaceActionResult =
   applied: false,
   reason,
 });
+/** A shared file or buffer step in the action's own terms: applied, or refused with its reason. */
+const fromStep = (step: FileStepResult): WorkspaceActionResult =>
+  step.reason === undefined ? applied(step.state) : refused(step.state, step.reason);
 
 /** The direction a focus action moves in, matched against a split's layout. */
 interface Direction {
@@ -116,9 +153,66 @@ export function applyWorkspaceAction(
       return cycleTab(state, -1);
     case "workspace.switch":
       return switchTab(state, options);
+    case "file.open":
+      return openFileAction(state, options);
+    case "file.new":
+      return newFileAction(state, options);
+    case "file.save":
+      return saveFileAction(state);
+    case "file.close-buffer":
+      return fromStep(closeBuffer(state));
+    case "buffer.next":
+      return cycleBufferAction(state, action, 1);
+    case "buffer.previous":
+      return cycleBufferAction(state, action, -1);
     default:
+      if (PICKER_ACTIONS.has(action)) {
+        return refused(state, `${action}: no picker is modelled in the simulated workspace`);
+      }
       return refused(state, `Unknown workspace action: ${action}`);
   }
+}
+
+/** `file.open` takes its path from the options: the simulation types no path and opens no dialog. */
+function openFileAction(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const path = options.path;
+  if (path === undefined || path === "") return refused(state, "file.open: no path given");
+  return fromStep(openFile(state, path));
+}
+
+/** `file.new` creates a file the disk does not have yet; saving it is what writes it. */
+function newFileAction(
+  state: WorkspaceState,
+  options: WorkspaceActionOptions,
+): WorkspaceActionResult {
+  const path = options.path;
+  if (path === undefined || path === "") return refused(state, "file.new: no path given");
+  return fromStep(newFile(state, path));
+}
+
+/**
+ * `file.save` is applied only when there is something to save; `:w` on an unchanged buffer is a
+ * write that changes nothing and is accepted, so the two agree on the state and differ only in
+ * whether the action had an effect.
+ */
+function saveFileAction(state: WorkspaceState): WorkspaceActionResult {
+  const active = state.buffers.find((buffer) => buffer.id === state.activeBufferId);
+  if (active === undefined) return refused(state, "E32: No file name");
+  if (!active.modified) return refused(state, "file.save: the active buffer has no changes");
+  return fromStep(saveActiveFile(state));
+}
+
+/** Cycling needs somewhere to go: with one buffer open there is no other buffer to apply it to. */
+function cycleBufferAction(
+  state: WorkspaceState,
+  action: string,
+  offset: 1 | -1,
+): WorkspaceActionResult {
+  if (state.buffers.length < 2) return refused(state, `${action}: only one buffer is open`);
+  return fromStep(cycleBuffer(state, offset));
 }
 
 /**

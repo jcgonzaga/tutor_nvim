@@ -125,11 +125,14 @@ export interface WorkspaceDispatchResult {
   readonly accepted: boolean;
 }
 
-/** What a window action may need: the tab to select and the path to open in a new pane. */
+/** What a window or file action may need: the tab to select and the path it acts on. */
 export interface WorkspaceActionOptions {
   /** `workspace.switch`: the tab to select. Without it the action cycles to the next tab. */
   readonly tabId?: string;
-  /** `window.new`: the file to show in the new pane; the simulation launches no applications. */
+  /**
+   * The file the action names: `window.new` shows it in the new pane, `file.open` opens it and
+   * `file.new` starts a buffer for it. No dialog is modelled, so the caller supplies it (S6).
+   */
   readonly path?: string;
 }
 

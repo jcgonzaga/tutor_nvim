@@ -1,7 +1,7 @@
 import { splitLines } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
 
-import { actionRefSchema, type ActionSolution } from "./action-solutions";
+import { workspaceActionRefSchema, type ActionSolution } from "./action-solutions";
 import { KEYMAP_ACTIONS } from "./keymap-vocabulary";
 import type { KeymapAction, KeymapTarget } from "./keymap-vocabulary";
 import {
@@ -30,8 +30,11 @@ import { ExerciseValidationError, formatIssues, parseYamlDocument } from "./vali
  * (T4), and the CI gate runs it (AGENTS.md 10).
  */
 
-/** The actions of one solution: a name, or `{ action, target }` where the verb takes a text object. */
-const solutionActionSchema = z.union([z.enum(KEYMAP_ACTIONS), actionRefSchema]);
+/**
+ * The actions of one solution: a name, or `{ action, target }` where the verb takes a text object,
+ * and `path` where the action names a file (`file.open`, `file.new`, T4b).
+ */
+const solutionActionSchema = z.union([z.enum(KEYMAP_ACTIONS), workspaceActionRefSchema]);
 
 /** A path on the simulated disk, used verbatim: the workspace resolves nothing (T1). */
 const diskPathSchema = z.string().min(1);
@@ -163,15 +166,21 @@ export const workspaceExerciseSchema = z
           : {
               action: entry.action,
               ...(entry.target === undefined ? {} : { target: entry.target }),
+              ...(entry.path === undefined ? {} : { path: entry.path }),
             },
       ),
     })),
   }));
 
-/** One action of a workspace solution, with the target only where the vocabulary takes one. */
+/**
+ * One action of a workspace solution: the target only where the vocabulary takes one, and the path
+ * only where the action names a file (`file.open`, `file.new`), so the replay can hand it to the
+ * engine instead of guessing which file the story meant.
+ */
 export interface WorkspaceSolutionAction {
   readonly action: KeymapAction;
   readonly target?: KeymapTarget;
+  readonly path?: string;
 }
 
 /**

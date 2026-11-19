@@ -25,7 +25,15 @@ export {
   openBufferPaths,
 } from "./workspace";
 export { dispatchWorkspace, runWorkspaceKeys } from "./keys";
-export { WORKSPACE_ACTIONS, applyWorkspaceAction, type WorkspaceActionName } from "./actions";
+export {
+  WORKSPACE_ACTIONS,
+  WORKSPACE_FILE_ACTIONS,
+  WORKSPACE_PICKER_ACTIONS,
+  applyWorkspaceAction,
+  type WorkspaceActionName,
+  type WorkspaceFileActionName,
+  type WorkspacePickerActionName,
+} from "./actions";
 export { activeTab, focusLeaf, leafBufferIds } from "./windows";
 export {
   focusLeafIndex,

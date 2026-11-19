@@ -1,7 +1,5 @@
-import { bufferToText } from "@tutor-nvim/vim-engine";
+import { cycleBuffer, openFile, saveActiveFile, type FileStepResult } from "./files";
 import type { WorkspaceDispatchResult, WorkspaceState } from "./types";
-import { openBuffer, withEditor } from "./workspace";
-import { withActiveBuffer } from "./windows";
 
 /*
  * The command line of T1: `:e <path>`, `:w`, `:bn`, `:bp` and `:ls`.
@@ -16,6 +14,10 @@ import { withActiveBuffer } from "./windows";
  *
  * A command that changes which buffer is active changes it the way focus does (T2): the focused
  * window shows it, because focus and the active buffer are one fact, not two.
+ *
+ * The state change itself is never this module's: `:e`, `:w`, `:bn` and `:bp` call the same
+ * functions the `file.*` and `buffer.*` actions call (T4b), so a typed command and an action cannot
+ * reach two different workspaces. What is here is the parsing and the record of the line typed.
  */
 
 const notAnEditorCommand = (line: string): string => `E492: Not an editor command: ${line}`;
@@ -36,8 +38,9 @@ export function runCommandLine(state: WorkspaceState, line: string): WorkspaceDi
     state: { ...state, lastCommand: { command: trimmed, accepted: false, output: [], reason } },
     accepted: false,
   });
-  const active = state.buffers.find((buffer) => buffer.id === state.activeBufferId);
-  const noActiveBuffer = (): WorkspaceDispatchResult => rejected("E32: No file name");
+  /** A shared file or buffer step, in the command line's own terms: ran, or refused with its reason. */
+  const ran = (step: FileStepResult): WorkspaceDispatchResult =>
+    step.reason === undefined ? accepted(step.state) : rejected(step.reason);
 
   const [name = "", ...args] = trimmed.split(/\s+/);
   switch (name) {
@@ -45,37 +48,17 @@ export function runCommandLine(state: WorkspaceState, line: string): WorkspaceDi
       const [path, ...extra] = args;
       if (path === undefined) return rejected("E32: No file name");
       if (extra.length > 0) return rejected(notAnEditorCommand(trimmed));
-      const existing = state.buffers.find((buffer) => buffer.path === path);
-      if (existing !== undefined) return accepted(withActiveBuffer(state, existing.id));
-      // `:e` on a file that is not on the simulated disk is refused rather than faked.
-      if (state.files[path] === undefined) return rejected(`E484: Can't open file ${path}`);
-      const buffer = openBuffer(state.files, path);
-      return accepted(
-        withActiveBuffer({ ...state, buffers: [...state.buffers, buffer] }, buffer.id),
-      );
+      return ran(openFile(state, path));
     }
     case "w": {
       if (args.length > 0) return rejected(notAnEditorCommand(trimmed));
-      if (active === undefined) return noActiveBuffer();
-      const files = { ...state.files, [active.path]: bufferToText(active.editor.buffer) };
-      const written = withEditor(files, active, active.editor);
-      return accepted({
-        ...state,
-        files,
-        buffers: state.buffers.map((buffer) => (buffer.id === active.id ? written : buffer)),
-      });
+      return ran(saveActiveFile(state));
     }
     case "bn":
     case "bp": {
       if (args.length > 0) return rejected(notAnEditorCommand(trimmed));
-      if (active === undefined) return noActiveBuffer();
-      const count = state.buffers.length;
-      const current = state.buffers.findIndex((buffer) => buffer.id === active.id);
-      const offset = name === "bn" ? 1 : -1;
       // Wrap around: `:bn` on the last buffer goes to the first one, `:bp` the other way.
-      const target = state.buffers[(((current + offset) % count) + count) % count];
-      if (target === undefined) return noActiveBuffer();
-      return accepted(withActiveBuffer(state, target.id));
+      return ran(cycleBuffer(state, name === "bn" ? 1 : -1));
     }
     case "ls": {
       if (args.length > 0) return rejected(notAnEditorCommand(trimmed));

@@ -328,3 +328,21 @@ the vocabulary already has, and the command line keeps working beside them.
   message says which action is missing.
 - The command line and the actions must not disagree: `:e <path>` and `file.open` reach the same state
   function, and one oracle test asserts they do. That is the whole reason both exist.
+
+**L8 — evidence (T4b): files and buffers are actions, and a solution can name its file**
+
+- `applyWorkspaceAction` applies `file.open`, `file.new`, `file.save`, `file.close-buffer`,
+  `buffer.next` and `buffer.previous`; the command line and the actions share one state function
+  (`files.ts`), so `:e <path>` and `file.open` cannot reach two different workspaces. Picker-shaped
+  actions (`file.find`, `grep.project`, `buffer.list`) stay unapplied with a reason: S6 says what is not
+  modelled is absent, never faked.
+- A workspace solution action may now carry `path`, allowed only for `file.open` and `file.new`, with a
+  non-empty relative path. The vim and shell kinds keep their own action schema byte-for-byte, so `path`
+  cannot leak into them (differential over the 168 real exercises: 0 differences).
+- The test T4b invalidated was re-pointed, not deleted: `app.launch-terminal` now pins the unknown
+  action refusal and `file.find` its own picker refusal.
+- Decided where the table was silent: `file.new` refuses a path whose buffer is already open; closing a
+  buffer falls back to the next one in open order, or the previous one when it was last; closing a
+  modified buffer is allowed.
+- Known wording gap: the content gate prints a solution action without its path, so two solutions that
+  differ only by file read the same in a message. Recorded for the slice that next touches the gate.
