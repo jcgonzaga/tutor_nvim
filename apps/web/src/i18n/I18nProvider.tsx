@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 import { SOURCE_LOCALE, type Locale } from "@tutor-nvim/exercise-schema";
 import { contentFor, contentReady, type Content } from "../exercises";
 import { usePrefs } from "../prefs/PrefsProvider";
@@ -81,10 +74,7 @@ export function I18nProvider({ children }: { readonly children: ReactNode }) {
     };
   }, [locale]);
 
-  const value = useMemo<I18nValue>(
-    () => ({ locale, t, content }),
-    [locale, t, content],
-  );
+  const value = useMemo<I18nValue>(() => ({ locale, t, content }), [locale, t, content]);
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);

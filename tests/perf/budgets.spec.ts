@@ -114,7 +114,10 @@ test.describe("T-902 performance budgets (production build)", () => {
 
     // Neither language pack is in the entry chunk: one asset each, not preloaded.
     for (const chunk of LANGUAGE_CHUNKS) {
-      expect(later.filter((file) => chunk.test(file)), String(chunk)).toHaveLength(1);
+      expect(
+        later.filter((file) => chunk.test(file)),
+        String(chunk),
+      ).toHaveLength(1);
     }
     expect(firstLoad.some((file) => isLanguageChunk(file))).toBe(false);
 

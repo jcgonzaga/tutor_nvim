@@ -658,7 +658,7 @@ TerminalWindow`), so focus, split, zoom, resize, swap and close needed no specia
 
 - T9 could not be done as written, and the reason matters: the wire contract carried no `actions` field at
   all (`packages/shared/src/api.ts`), so the browser could not deliver what the server was supposed to
-  replay. Adding it exposed a worse problem, measured rather than guessed: a story solved by *typing*
+  replay. Adding it exposed a worse problem, measured rather than guessed: a story solved by _typing_
   (`:e src/util.ts`, `i`, text, `Esc`, `:w`) produced `actions: []`, `keystrokes: 0`, `accuracy: 0`,
   `performance: 21.25`, and the action-only API refused it. Narrowing the case to actions-only would have
   shipped a server that throws away a legitimate solve.
@@ -684,7 +684,7 @@ TerminalWindow`), so focus, split, zoom, resize, swap and close needed no specia
   The budget is untouched at 300 KB and still measures what the first load downloads: **264.9 KB**, with
   50.3 KB fetched later. A Spanish learner still spends ~312 KB, because Spanish is a download and gzip
   shares less across chunks; the perf suite prints both numbers.
-- The budget's *metric* changed and that is a judgment call, written here rather than buried: it used to sum
+- The budget's _metric_ changed and that is a judgment call, written here rather than buried: it used to sum
   every `.js` in `dist/assets`, which counts chunks a learner never fetches and would have made lazy loading
   pointless. It now reads what `index.html` loads, and adds assertions that both packs are separate and not
   preloaded, so the entry cannot quietly regain them.

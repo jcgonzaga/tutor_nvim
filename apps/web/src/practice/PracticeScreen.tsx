@@ -1,11 +1,4 @@
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useRef,
-  type KeyboardEvent,
-  type ReactNode,
-} from "react";
+import { lazy, Suspense, useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { pendingKeys } from "@tutor-nvim/vim-engine";
 import { promptOf } from "@tutor-nvim/shell-engine";
 import type { Exercise, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
