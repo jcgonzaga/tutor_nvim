@@ -5,6 +5,7 @@ export {
   giveUpAttempt,
   recordInput,
   recordWorkspaceAction,
+  recordWorkspaceKey,
   startAttempt,
   type Attempt,
   type InputEvent,
@@ -14,6 +15,7 @@ export {
   type WorkspaceActionRecording,
   type WorkspaceAttempt,
   type WorkspaceKeyRecording,
+  type WorkspaceStep,
 } from "./attempt";
 export {
   evaluateGoal,

@@ -9,7 +9,7 @@ import {
   type WorkspaceState,
 } from "@tutor-nvim/workspace-engine";
 
-import type { WorkspaceAttempt } from "./attempt";
+import type { WorkspaceAttempt, WorkspaceStep } from "./attempt";
 import { engineOptions } from "./workspace-action";
 
 /*
@@ -90,8 +90,10 @@ export function simulateWorkspaceSolution(
     startedAt,
     initialState,
     state,
-    // No key was typed: the attempt is spent in actions, and `actions` is what the strategy grades.
+    // The solution is actions, so every step it took is an action: a declared solution types nothing
+    // (T9). `steps` and `actions` therefore hold the same list, in the same order.
     events: [],
+    steps: applied.map((action): WorkspaceStep => ({ kind: "action", action })),
     actions: applied,
     // The whole script's duration, refused action included: the replay itself ended here.
     completedAt: startedAt + solution.actions.length * stepMs,

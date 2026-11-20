@@ -5,8 +5,9 @@ import {
   type VimMode,
   type VimState,
 } from "@tutor-nvim/vim-engine";
-import type { Exercise, VimExercise } from "@tutor-nvim/exercise-schema";
+import type { Exercise, VimExercise, WorkspaceSolutionAction } from "@tutor-nvim/exercise-schema";
 import { startAttempt, type Attempt } from "./attempt";
+import { simulateWorkspaceSolution, type WorkspaceReplay } from "./workspace-replay";
 
 /** A run as it is stored: logical keys (`ci"`, `<Esc>`) and the time of each since the start. */
 export interface Run {
@@ -77,23 +78,55 @@ export function runOf(attempt: Attempt): Run {
 }
 
 /**
- * The shortest declared optimal solution as a run (no timing: nobody typed it).
+ * The master's run of an exercise: its shortest declared optimal solution.
  *
- * A workspace exercise has none: its solutions are actions, not keys, and showing another tool's
- * keys as "the master run" would be a sequence nobody could press (S5).
+ * The two simulators are spent in keys, so the run is their keys. A workspace story is spent in
+ * actions (S5), so it has no keys at all: `keys` is empty because nothing was typed, and `actions`
+ * is what the declared optimal solution applied when it was replayed through the workspace engine —
+ * the same `applyWorkspaceAction` a learner's own attempt runs, never a copy of the declaration
+ * (T9). `workspace` is the state that replay reached, so a ghost is drawn from the code the
+ * learner's run goes through rather than from a fixture.
  */
-export function masterRun(exercise: Exercise): { keys: readonly string[] } | null {
-  if (exercise.kind === "workspace") return null;
-  const optimal = exercise.solutions
-    .filter((solution) => solution.classification === "optimal")
-    .sort((a, b) => a.keys.length - b.keys.length)[0];
-  return optimal ? { keys: optimal.keys } : null;
+export interface MasterRun {
+  /** The logical keys of the solution; `[]` for a workspace story, which is spent in actions. */
+  readonly keys: readonly string[];
+  /** The actions the solution applied, in order; `[]` for a key-based exercise. */
+  readonly actions: readonly WorkspaceSolutionAction[];
+  /** The workspace the replayed actions reached; `null` for a key-based exercise. */
+  readonly workspace: WorkspaceReplay | null;
 }
+
+export function masterRun(exercise: Exercise): MasterRun | null {
+  const optimal = exercise.solutions.filter((solution) => solution.classification === "optimal");
+  if (exercise.kind === "workspace") {
+    const solution = optimal.find((candidate) => "actions" in candidate);
+    if (!solution || !("actions" in solution)) return null;
+    const replay = simulateWorkspaceSolution(exercise, solution);
+    return { keys: [], actions: replay.actions, workspace: replay };
+  }
+  const shortest = optimal
+    .filter((solution) => "keys" in solution)
+    .sort((a, b) => a.keys.length - b.keys.length)[0];
+  return shortest ? { keys: shortest.keys, actions: [], workspace: null } : null;
+}
+
+/**
+ * A workspace action as a run shows it: the verb and what it acted on, because a story is told with
+ * the file it opens and the text it types, not with the verb alone (`file.open src/other.ts`).
+ */
+const actionOf = (action: WorkspaceSolutionAction): string =>
+  [action.action, action.target, action.path, action.text, action.query, action.command, action.tab]
+    .filter((part): part is string => part !== undefined)
+    .join(" ");
 
 export interface RunSummary {
   readonly label: "YOU" | "MASTER" | "YOUR BEST";
-  /** The keys as one string: `hhhhwwci"`. */
+  /**
+   * The run as one string: the keys (`hhhhwwci"`) for the simulators, the actions
+   * (`file.open src/other.ts`) for a workspace story, which has no keys to show.
+   */
   readonly keys: string;
+  /** What the run spent, in its own unit: keystrokes, or the actions of a workspace story (S5). */
   readonly keystrokes: number;
   readonly durationMs: number | null;
 }
@@ -106,6 +139,9 @@ export interface RunSummary {
  * YOU        hhhhwwci"
  * MASTER     2wci"
  * ```
+ *
+ * A workspace story prints its actions in place of keys, since it has none: the row is the declared
+ * optimal solution, replayed, and its cost is counted in the actions it spent (S5, T9).
  */
 export function ghostComparison(
   exercise: Exercise,
@@ -124,8 +160,9 @@ export function ghostComparison(
   if (master) {
     rows.push({
       label: "MASTER",
-      keys: master.keys.join(""),
-      keystrokes: master.keys.length,
+      // Keys when the run has them; the actions otherwise, because a story is not a key sequence.
+      keys: master.keys.join("") || master.actions.map(actionOf).join(" · "),
+      keystrokes: master.keys.length + master.actions.length,
       durationMs: null,
     });
   }

@@ -97,9 +97,13 @@ const declaredSolutionRule: StrategyRule = ({ exercise, attempt }) => {
 const antiPatternRule: StrategyRule = ({ antiPatterns }) =>
   antiPatterns.length > 0 ? "anti-pattern" : null;
 
-/** What the attempt spent: keystrokes, or actions in the workspace (where no key was typed). */
+/**
+ * What the attempt spent: keystrokes, or the steps of a workspace story (each an action or a key).
+ * A story typed out is made of keys and a story driven by layers of actions, and either way the unit
+ * is "one thing the learner did", so the efficiency band means the same for both (S5, T9).
+ */
 const attemptCost = (attempt: Attempt): number =>
-  attempt.kind === "workspace" ? attempt.actions.length : attempt.events.length;
+  attempt.kind === "workspace" ? attempt.steps.length : attempt.events.length;
 
 const efficiencyRule: StrategyRule = ({ attempt, optimalKeystrokes, config }) =>
   efficiencyClassification(optimalKeystrokes, attemptCost(attempt), config.efficiencyBands);

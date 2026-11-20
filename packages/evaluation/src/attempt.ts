@@ -79,15 +79,36 @@ export interface ShellAttempt extends AttemptBase {
   readonly state: ShellState;
 }
 
+/**
+ * One step of a workspace attempt, in the order it was taken (T9).
+ *
+ * A story is not a keypress stream: it is a sequence of *steps*, and every step reaches the engine in
+ * one of two shapes. An **action** is a key the learner's layers resolved (`window.split-side-by-side`,
+ * `file.open src/util.ts`). A **key** is everything the learner typed that no layer claimed — text in a
+ * buffer, a `:e src/util.ts` at the command line, a command at a terminal prompt — which
+ * `dispatchWorkspace` takes directly.
+ *
+ * Recording both is what makes the record faithful: most stories are solved by typing, so an attempt
+ * that stored only actions would upload a solve with none of its steps and no server could replay it.
+ */
+export type WorkspaceStep =
+  | { readonly kind: "action"; readonly action: WorkspaceSolutionAction }
+  | { readonly kind: "key"; readonly key: TimedKeyInput };
+
 export interface WorkspaceAttempt extends AttemptBase {
   readonly kind: "workspace";
   readonly initialState: WorkspaceState;
   readonly state: WorkspaceState;
   /**
-   * The actions applied so far, in order. A workspace attempt is spent in actions, not in keys
-   * (S5): the same end state reached with more of them is a worse strategy, so this list is the
-   * cost the classification divides by. `events` stays empty because no keystroke was typed here;
-   * attributing keys to actions needs the learner's layer, which the replay does not have (T8).
+   * Every step taken, in order: what the attempt did, and what a submission uploads. A step is an
+   * action a layer resolved or a key the engine took, so a story solved by typing has a full record
+   * even though it spent no actions at all (T9).
+   */
+  readonly steps: readonly WorkspaceStep[];
+  /**
+   * The actions among the steps, in order. A workspace attempt is graded by what it cost (S5): the
+   * same end state reached in more steps is a worse strategy, so the steps are what the
+   * classification divides by, and this list is the declared-solution comparison.
    */
   readonly actions: readonly WorkspaceSolutionAction[];
 }
@@ -115,6 +136,7 @@ export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
       initialState,
       state: initialState,
       events: [],
+      steps: [],
       actions: [],
       completedAt: null,
       hints: [],
@@ -163,14 +185,15 @@ export function startAttempt(exercise: Exercise, startedAt: number): Attempt {
 /**
  * Telemetry only: runs the engine and appends the event. Knows nothing about goals.
  *
- * A workspace attempt has no key path here on purpose: a key only becomes an action once the
- * learner's layer resolves it (T8, `recordWorkspaceAction`), so recording the key directly would
- * store input that changed no state. It says so instead of pretending otherwise.
+ * A workspace attempt has no key path here on purpose: its keys go through `recordWorkspaceKey`,
+ * which dispatches the workspace engine (typing in a buffer, a `:` command, a terminal prompt) and
+ * records the key as a step of that attempt. Calling this one would dispatch the wrong engine, so it
+ * says which function to use instead.
  */
 export function recordInput<A extends Attempt>(attempt: A, input: TimedKeyInput): A {
   if (attempt.kind === "workspace") {
     throw new Error(
-      "a workspace attempt is made of actions, not keys: resolve the key through the learner's layer first",
+      "a workspace attempt takes its keys through recordWorkspaceKey: recordInput dispatches the vim and shell engines, which the workspace replaces",
     );
   }
   if (attempt.kind === "shell") {
@@ -215,9 +238,9 @@ const WORKSPACE_ATTEMPT_ENDED = "the attempt has already ended";
  *
  * The action is applied through `applyWorkspaceAction`, the same code the content gate and the
  * replay use, so an attempt cannot reach a workspace the engine could not, and a refused action
- * changes nothing. It is appended in the shape content declares (`WorkspaceSolutionAction`, options
- * included), because that list is the attempt's cost for the strategy rules *and* what a replay and
- * a ghost run have to work from: replaying it reaches the same state (S5).
+ * changes nothing. It is appended as a step, and in the shape content declares
+ * (`WorkspaceSolutionAction`, options included), because those are what a replay and a ghost run
+ * have to work from: replaying the steps reaches the same state (S5, T9).
  *
  * Telemetry only: it knows nothing about the goal, exactly like `recordInput`.
  */
@@ -239,6 +262,7 @@ export function recordWorkspaceAction(
     attempt: {
       ...attempt,
       state: result.state,
+      steps: [...attempt.steps, { kind: "action", action: recorded }],
       actions: [...attempt.actions, recorded],
     },
     applied: true,
@@ -285,10 +309,42 @@ export interface WorkspaceKeyRecording {
 }
 
 /**
+ * Records a key the layers left unclaimed, without judging the goal: the body `advanceWorkspaceKey`
+ * builds on, and what a replay uses to re-run the keys of an attempt.
+ *
+ * The state is whatever `dispatchWorkspace` made of it, so a key that reached a buffer, a `:` command
+ * or a terminal prompt is never re-implemented here. An accepted key is appended as a step, in order
+ * with the actions, because a story solved by typing is made of nothing else. A refused key leaves
+ * the attempt exactly as it was, with the engine's reason: nothing moved, so nothing was recorded.
+ */
+export function recordWorkspaceKey(
+  attempt: WorkspaceAttempt,
+  input: TimedKeyInput,
+): WorkspaceKeyRecording {
+  const result = dispatchWorkspace(attempt.state, input);
+  if (!result.accepted) {
+    return {
+      attempt,
+      accepted: false,
+      ...(result.reason === undefined ? {} : { reason: result.reason }),
+    };
+  }
+  return {
+    attempt: {
+      ...attempt,
+      state: result.state,
+      steps: [...attempt.steps, { kind: "key", key: input }],
+    },
+    accepted: true,
+  };
+}
+
+/**
  * Records a key the layers left unclaimed, and marks the attempt complete when it reaches the goal.
  *
- * The state is whatever `dispatchWorkspace` made of it, so a key that reached a buffer or a prompt is
- * never re-implemented here. A refused key leaves the attempt as it was, with the engine's reason.
+ * The workspace counterpart of `advanceAttempt`: a finished attempt is frozen, so the keys after the
+ * one that solved the story are not counted against the learner, and `completedAt` is what makes
+ * `evaluateAttempt` judge it.
  */
 export function advanceWorkspaceKey(
   exercise: Exercise,
@@ -298,17 +354,10 @@ export function advanceWorkspaceKey(
   if (attempt.completedAt !== null) {
     return { attempt, accepted: false, reason: WORKSPACE_ATTEMPT_ENDED };
   }
-  const result = dispatchWorkspace(attempt.state, input);
-  const moved: WorkspaceAttempt =
-    result.state === attempt.state ? attempt : { ...attempt, state: result.state };
-  const next = goalMet(exercise, moved) ? { ...moved, completedAt: input.timestamp } : moved;
-  return result.accepted
-    ? { attempt: next, accepted: true }
-    : {
-        attempt: next,
-        accepted: false,
-        ...(result.reason === undefined ? {} : { reason: result.reason }),
-      };
+  const recorded = recordWorkspaceKey(attempt, input);
+  return goalMet(exercise, recorded.attempt)
+    ? { ...recorded, attempt: { ...recorded.attempt, completedAt: input.timestamp } }
+    : recorded;
 }
 
 function baseEvent(

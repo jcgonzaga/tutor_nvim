@@ -247,15 +247,16 @@ describe("simulateWorkspaceSolution replays actions through the engine", () => {
     expect(JSON.stringify(ex)).toBe(before);
   });
 
-  it("refuses key input rather than recording keys that changed no state", () => {
-    // A workspace attempt is spent in actions: a key only becomes one once the learner's layer
-    // resolves it, so the key path says so instead of pretending the key did something (T8, T9).
+  it("refuses key input through the vim path, since the workspace has its own", () => {
+    // A key of a story goes through `recordWorkspaceKey`, which dispatches the workspace engine, so
+    // `recordInput` says which function to use instead of dispatching the wrong engine (T8, T9).
     const ex = exercise();
     const attempt = startAttempt(ex, 0);
     expect(attempt.kind).toBe("workspace");
     expect(attempt.actions).toEqual([]);
+    expect(attempt.steps).toEqual([]);
     expect(() => advanceAttempt(ex, attempt, { key: "x", timestamp: 10 })).toThrow(
-      /made of actions, not keys/,
+      /recordWorkspaceKey/,
     );
   });
 

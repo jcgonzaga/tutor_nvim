@@ -335,12 +335,46 @@ describe("advanceWorkspaceKey", () => {
 });
 
 describe("the workspace attempt keeps the vim and shell behaviour", () => {
-  it("still refuses key input, so no key is recorded that changed no state", () => {
+  it("still refuses the vim key path, and says which function a workspace key takes", () => {
     const exercise = exerciseWith();
     const attempt = startAttempt(exercise, 0);
 
-    expect(() => recordInput(attempt, { key: "x", timestamp: 5 })).toThrow(
-      /made of actions, not keys/,
-    );
+    expect(() => recordInput(attempt, { key: "x", timestamp: 5 })).toThrow(/recordWorkspaceKey/);
+  });
+});
+
+describe("the steps of a workspace attempt (T9)", () => {
+  it("records the keys of a `:` command as steps, in order, with no action among them", () => {
+    const exercise = filesExercise();
+    const keys = [...typed(":e src/other.ts"), { key: "Enter", timestamp: 900 }];
+    let attempt = workspaceAttemptOf(exercise);
+    for (const key of keys) attempt = advanceWorkspaceKey(exercise, attempt, key).attempt;
+
+    // Nothing a layer claimed, so the story is solved entirely out of keys the engine took itself.
+    expect(attempt.actions).toEqual([]);
+    expect(attempt.events).toEqual([]);
+    expect(attempt.steps.map((step) => step.kind)).toEqual(keys.map(() => "key"));
+    expect(attempt.steps[0]).toEqual({ kind: "key", key: keys[0] });
+    expect(goalMet(exercise, attempt)).toBe(true);
+  });
+
+  it("keeps actions and keys in one ordered list, so a replay knows which came first", () => {
+    const exercise = exerciseWith();
+    const split = recordWorkspaceAction(workspaceAttemptOf(exercise), "window.split-side-by-side");
+    const typedIn = advanceWorkspaceKey(exercise, split.attempt, { key: "i", timestamp: 20 });
+
+    expect(typedIn.accepted).toBe(true);
+    expect(typedIn.attempt.steps.map((step) => step.kind)).toEqual(["action", "key"]);
+    expect(typedIn.attempt.actions).toEqual([{ action: "window.split-side-by-side" }]);
+  });
+
+  it("records no step for a key the engine refused: nothing moved", () => {
+    const exercise = terminalExercise();
+    const launch = recordWorkspaceAction(workspaceAttemptOf(exercise), "app.launch-terminal");
+    const before = launch.attempt.steps.length;
+    const refused = advanceWorkspaceKey(exercise, launch.attempt, { key: "Enter", timestamp: 30 });
+
+    expect(refused.accepted).toBe(false);
+    expect(refused.attempt.steps).toHaveLength(before);
   });
 });

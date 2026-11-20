@@ -34,6 +34,8 @@ import {
 /** Largest attempt the API accepts; an exercise is a few dozen keys, so this is generous. */
 export const MAX_ATTEMPT_EVENTS = 2000;
 export const MAX_ATTEMPTS_PER_BATCH = 100;
+/** Largest workspace attempt the API accepts; a story is a handful of steps, typing included. */
+export const MAX_ATTEMPT_STEPS = 2000;
 
 /**
  * One logical input of an attempt, enough to replay it (AGENTS 11). `timestamp` is the client's
@@ -49,6 +51,61 @@ export const attemptEventSchema = z.object({
   timestamp: z.number().finite(),
 });
 export type AttemptEventInput = z.output<typeof attemptEventSchema>;
+
+/**
+ * One action of a workspace attempt, as it travels over the wire (T9).
+ *
+ * A story is spent in steps, and an action is one of the two kinds: the name a layer resolved plus
+ * the one thing it acted on — the file it opens, the text it types, the query it searches for, the
+ * command it runs, the tab it moves a window into — so the server can apply it through the engine.
+ * The shape is declared here because this module is the wire format: every field is a bounded
+ * string, and that is all it promises.
+ *
+ * It is deliberately not the last word: `apps/api` re-validates every action against
+ * `workspaceActionRefSchema` from `@tutor-nvim/exercise-schema` before replaying it, so an action
+ * whose fields do not belong to its verb is rejected there with the vocabulary's own message. The
+ * transport must not depend on `@tutor-nvim/exercise-schema` for one field (it would put content
+ * validation inside the wire format), and the API is the strict gate.
+ */
+export const attemptActionSchema = z.object({
+  action: z.string().min(1).max(64),
+  /** What an operator acts on (`iw`); only the editing verbs take one. */
+  target: z.string().min(1).max(64).optional(),
+  /** The file a `file.open`/`file.new`/`buffer.list` names. */
+  path: z.string().min(1).max(1024).optional(),
+  /** The text an `edit.insert` types. */
+  text: z.string().min(1).max(8192).optional(),
+  /** The query a project picker searches for. */
+  query: z.string().min(1).max(512).optional(),
+  /** The command a `shell.run` runs in the focused terminal. */
+  command: z.string().min(1).max(512).optional(),
+  /** The tab a `workspace.move` moves the focused window into. */
+  tab: z.string().min(1).max(64).optional(),
+});
+export type AttemptAction = z.output<typeof attemptActionSchema>;
+
+/**
+ * One step of a workspace attempt, as it travels over the wire (T9): an action a layer resolved, or a
+ * key the engine took (typing in a buffer, `:e src/util.ts`, a command at a terminal prompt).
+ *
+ * The two kinds share one ordered list because the order is the attempt: a story is "open the file,
+ * type this, save", and replaying the actions apart from the keys would reach a state nobody saw.
+ * The key shape is the existing event shape, because that is what the engine's dispatch takes.
+ */
+export const attemptStepSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("action"), action: attemptActionSchema }),
+  z.object({
+    kind: z.literal("key"),
+    key: z.string().min(1).max(32),
+    code: z.string().max(32).nullish(),
+    ctrl: z.boolean().default(false),
+    alt: z.boolean().default(false),
+    shift: z.boolean().default(false),
+    meta: z.boolean().default(false),
+    timestamp: z.number().finite(),
+  }),
+]);
+export type AttemptStep = z.output<typeof attemptStepSchema>;
 
 /**
  * A finished attempt as the client reports it. The client sends what the learner *did*, never what
@@ -73,6 +130,13 @@ export const attemptSubmissionSchema = z.object({
   localDay: isoDay.nullish(),
   sessionId: uuid.nullish(),
   events: z.array(attemptEventSchema).max(MAX_ATTEMPT_EVENTS),
+  /**
+   * The steps of a workspace attempt, in the order they were taken (T9): an action a layer
+   * resolved, or a key the engine took. A key-based attempt leaves this empty and sends `events`; a
+   * workspace story leaves `events` empty, because its keys are recorded here, in order with its
+   * actions — an empty keypress stream would be the honest record of a story that was not one.
+   */
+  steps: z.array(attemptStepSchema).max(MAX_ATTEMPT_STEPS).default([]),
   hints: z
     .array(z.object({ level: z.number().int().min(1).max(10), timestamp: z.number().finite() }))
     .max(20)

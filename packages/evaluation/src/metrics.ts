@@ -74,7 +74,7 @@ export interface AttemptMetrics {
   readonly totalDurationMs: number;
   /**
    * What the attempt cost, in its own unit: every logical input including rejected ones, or the
-   * actions spent in the workspace, which is spent in actions rather than keys (S5).
+   * steps spent in the workspace, where a step is an action or a key (S5, T9).
    */
   readonly keystrokes: number;
   /** Keystrokes beyond the shortest optimal solution. */
@@ -111,9 +111,10 @@ export function computeMetrics(
   config: MetricsConfig = DEFAULT_METRICS_CONFIG,
 ): AttemptMetrics {
   const { events } = attempt;
-  // Keystrokes for the simulators, actions for the workspace: every ratio below divides by what
-  // this attempt was actually spent in, and `optimalCost` is the baseline in the same unit.
-  const keystrokes = attempt.kind === "workspace" ? attempt.actions.length : events.length;
+  // Keystrokes for the simulators, steps for the workspace: every ratio below divides by what this
+  // attempt was actually spent in, and `optimalCost` is the baseline in the same unit. A story is a
+  // sequence of steps — an action a layer resolved or a key the engine took — so both count (T9).
+  const keystrokes = attempt.kind === "workspace" ? attempt.steps.length : events.length;
   const first = events[0];
   const last = events[events.length - 1];
   const end = attempt.completedAt ?? last?.timestamp ?? attempt.startedAt;

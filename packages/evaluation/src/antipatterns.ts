@@ -225,7 +225,7 @@ export function detectAntiPatterns(
     };
     return exercise.antiPatterns.flatMap((id) => DETECTORS[id](context) ?? []);
   }
-  // A workspace attempt is spent in actions, not keys, and workspace content declares no
-  // anti-patterns yet (T4): adding one is a new id in the schema, never a quiet detector here.
+  // A workspace attempt is stopped by no detector and its content declares no anti-patterns yet (T4):
+  // adding one is a new id in the schema, never a quiet detector here.
   return [];
 }

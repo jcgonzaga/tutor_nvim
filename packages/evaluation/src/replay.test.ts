@@ -1,9 +1,38 @@
 import { describe, expect, it } from "vitest";
+import { parseWorkspaceExercise } from "@tutor-nvim/exercise-schema";
 import { evaluateAttempt } from "./evaluate";
-import { evaluateGoal } from "./goal";
+import { evaluateGoal, goalMet } from "./goal";
 import { buildReplay, ghostComparison, masterRun, runOf } from "./replay";
 import { simulateSolution } from "./simulate";
 import { exerciseWith, play } from "./test-util";
+
+/** A story: the workspace kinds solutions are actions, so its master run is a replay (T9). */
+const story = parseWorkspaceExercise({
+  schemaVersion: 1,
+  kind: "workspace",
+  id: "workspace-test-001",
+  slug: "neovim.test.buffer-close-001",
+  title: "Close a buffer",
+  skillIds: ["neovim.buffers.close"],
+  mode: "recall",
+  difficulty: 2,
+  environment: { type: "simulator", profile: "workspace-basic-v1" },
+  initialState: {
+    files: { "src/main.ts": "one\n", "src/util.ts": "two\n" },
+    path: "src/main.ts",
+    cwd: "/project",
+  },
+  objective: {
+    type: "all",
+    goals: [
+      { type: "active_file", path: "src/util.ts" },
+      { type: "buffer_text", path: "src/util.ts", text: "two\n" },
+    ],
+  },
+  solutions: [
+    { actions: [{ action: "file.open", path: "src/util.ts" }], classification: "optimal" },
+  ],
+});
 
 const exercise = exerciseWith({
   solutions: [
@@ -132,5 +161,23 @@ describe("ghost comparison (T-805)", () => {
       ],
     });
     expect(masterRun(several)?.keys.join("")).toBe('ci"production<Esc>');
+  });
+});
+
+describe("the master run of a workspace story (T9)", () => {
+  it("is the declared optimal solution replayed through the engine, never a fixture", () => {
+    const master = masterRun(story);
+    expect(master?.keys).toEqual([]);
+    expect(master?.actions).toEqual([{ action: "file.open", path: "src/util.ts" }]);
+    expect(master?.workspace?.refused).toBeNull();
+    expect(master?.workspace && goalMet(story, master.workspace)).toBe(true);
+    expect(master?.workspace?.state.activeBufferId).toBe("buf:src/util.ts");
+  });
+
+  it("shows the actions as the MASTER row, because a story has no keys to compare", () => {
+    const rows = ghostComparison(story, { keys: ["<C-w>", "l"], durationMs: 2000 });
+    expect(rows.filter((row) => row.label === "MASTER")).toEqual([
+      { label: "MASTER", keys: "file.open src/util.ts", keystrokes: 1, durationMs: null },
+    ]);
   });
 });

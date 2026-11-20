@@ -129,6 +129,8 @@ export {
   actionRefSchema,
   actionSolutionSchema,
   actionSolutionsSchema,
+  workspaceActionRefSchema,
   type ActionRef,
   type ActionSolution,
+  type WorkspaceActionRef,
 } from "./action-solutions";

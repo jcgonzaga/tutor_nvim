@@ -1,11 +1,15 @@
 import type { Attempt } from "@tutor-nvim/evaluation";
-import type { Exercise } from "@tutor-nvim/exercise-schema";
+import type { Exercise, WorkspaceSolutionAction } from "@tutor-nvim/exercise-schema";
 import type { ActiveSession, Profile } from "@tutor-nvim/pedagogy";
-import type { AttemptSubmission, SessionSubmission } from "@tutor-nvim/shared";
+import type { AttemptAction, AttemptSubmission, SessionSubmission } from "@tutor-nvim/shared";
 
 /**
  * What the server needs to replay an attempt: the logical inputs and the hints, never a score. The
  * server evaluates it again with the same engine, so the result cannot be inflated from the client.
+ *
+ * A workspace story has no keypress stream to send: it is a sequence of steps, each an action a
+ * layer resolved or a key the engine took, so the attempt uploads `steps` and `events` stays empty
+ * because its keys are recorded there, in order with its actions (T9).
  */
 export function toAttemptSubmission(
   exercise: Pick<Exercise, "id">,
@@ -38,7 +42,43 @@ export function toAttemptSubmission(
       meta: event.meta,
       timestamp: event.timestamp,
     })),
+    // A workspace story is a sequence of steps (T9): each one is an action a layer resolved or a key
+    // the engine took, in the order they happened, because that order is the attempt. Most stories are
+    // solved by typing, so a record of actions alone would upload a solve the server could not replay.
+    steps:
+      attempt.kind === "workspace"
+        ? attempt.steps.map((step) =>
+            step.kind === "action"
+              ? { kind: "action" as const, action: wireAction(step.action) }
+              : {
+                  kind: "key" as const,
+                  key: step.key.key,
+                  code: step.key.code ?? null,
+                  ctrl: step.key.ctrl === true,
+                  alt: step.key.alt === true,
+                  shift: step.key.shift === true,
+                  meta: step.key.meta === true,
+                  timestamp: step.key.timestamp,
+                },
+          )
+        : [],
     hints: attempt.hints.map((hint) => ({ level: hint.level, timestamp: hint.timestamp })),
+  };
+}
+
+/**
+ * One action in the wire shape: the same fields, copied, because the attempt's are readonly and its
+ * values are content-shaped. The API validates it again against the vocabulary before replaying it.
+ */
+function wireAction(action: WorkspaceSolutionAction): AttemptAction {
+  return {
+    action: action.action,
+    ...(action.target === undefined ? {} : { target: action.target }),
+    ...(action.path === undefined ? {} : { path: action.path }),
+    ...(action.text === undefined ? {} : { text: action.text }),
+    ...(action.query === undefined ? {} : { query: action.query }),
+    ...(action.command === undefined ? {} : { command: action.command }),
+    ...(action.tab === undefined ? {} : { tab: action.tab }),
   };
 }
 
