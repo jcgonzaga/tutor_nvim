@@ -48,27 +48,28 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 
 ## Tasks
 
-| ID | Spec | Route | Commit |
-| --- | --- | --- | --- |
-| T1 | S4 | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests | `25dad94` |
-| T2 | S2, S4 | window tree, splits, resize, zoom, swap, tabs and workspaces as actions | `79bfd86` |
-| T3 | S1, S2 | `kind: workspace` + objectives (`active_file`, `open_buffers`, `buffer_text`, `file_text`, `layout`, `focus`, `split_ratio`, `all`) + `evaluateWorkspaceObjective` | `a24807e` |
-| T4 | S5 | evaluation: action solutions, strategy classification, CI replay | `7d6628b` |
-| T4b | S4, S5 | files and buffers as actions, each naming its path, and a solution that names it | `176e4a2` |
-| T5 | S3 | content: stories 1-8 (files and buffers) — stories 1-7 landed, story 8 waits on a shell action | `611db28` |
-| T5b | S3, S4 | `edit.insert`: typing is an action, so stories 1 and 6 become whole | `270c3eb` |
-| T5c | S3, S4 | the picker as a deterministic query: `file.find`, `grep.project`, `buffer.list`, the `grep_matches` goal, stories 2, 3 and 5 | `7163d25`, `371267f`, `c6c8f5a` |
-| T6 | S3, S1 | windows and panes: the `windows` and `zoom` goals, the resize/swap catalog rows, six skills and stories 9-14 | `b168c44`, `57bcce9`, `d7e14da` |
-| T7 | S3, S2 | terminals, sessions, workspaces and resize mode in the engine, then six skills and stories 15-20 | `0f4d75c`, `e22e698`, `11cec6c`, `9843137` |
-| T8 | S7, S1 | the practice view: an attempt that can advance, keys to actions, panes, terminal view, i18n | `61705a8`, `5d538b0` |
-| T8 | S7 | web: workspace view, layout rendering, focus ring, keyboard only | pending |
-| T9 | S4-S6 | API: replay of workspace attempts with the same engine | pending |
+| ID  | Spec   | Route                                                                                                                                                              | Commit                                     |
+| --- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| T1  | S4     | `packages/workspace-engine`: files, buffers, active buffer, `:` command line, oracle tests                                                                         | `25dad94`                                  |
+| T2  | S2, S4 | window tree, splits, resize, zoom, swap, tabs and workspaces as actions                                                                                            | `79bfd86`                                  |
+| T3  | S1, S2 | `kind: workspace` + objectives (`active_file`, `open_buffers`, `buffer_text`, `file_text`, `layout`, `focus`, `split_ratio`, `all`) + `evaluateWorkspaceObjective` | `a24807e`                                  |
+| T4  | S5     | evaluation: action solutions, strategy classification, CI replay                                                                                                   | `7d6628b`                                  |
+| T4b | S4, S5 | files and buffers as actions, each naming its path, and a solution that names it                                                                                   | `176e4a2`                                  |
+| T5  | S3     | content: stories 1-8 (files and buffers) — stories 1-7 landed, story 8 waits on a shell action                                                                     | `611db28`                                  |
+| T5b | S3, S4 | `edit.insert`: typing is an action, so stories 1 and 6 become whole                                                                                                | `270c3eb`                                  |
+| T5c | S3, S4 | the picker as a deterministic query: `file.find`, `grep.project`, `buffer.list`, the `grep_matches` goal, stories 2, 3 and 5                                       | `7163d25`, `371267f`, `c6c8f5a`            |
+| T6  | S3, S1 | windows and panes: the `windows` and `zoom` goals, the resize/swap catalog rows, six skills and stories 9-14                                                       | `b168c44`, `57bcce9`, `d7e14da`            |
+| T7  | S3, S2 | terminals, sessions, workspaces and resize mode in the engine, then six skills and stories 15-20                                                                   | `0f4d75c`, `e22e698`, `11cec6c`, `9843137` |
+| T8  | S7, S1 | the practice view: an attempt that can advance, keys to actions, panes, terminal view, i18n                                                                        | `61705a8`, `5d538b0`                       |
+| T8  | S7     | web: workspace view, layout rendering, focus ring, keyboard only                                                                                                   | pending                                    |
+| T9  | S4-S6  | API: replay of workspace attempts with the same engine                                                                                                             | pending                                    |
 
 ## Log
 
 **L1 — original request (verbatim)**
 
 > Revisa el proyecto y quiero hacer modificaciones:
+>
 > - Hay que añadir la opcion de volver a hacer el ejercicio cuando el usuario no lo puede hacer.
 > - Vamos a añadir los atajos de teclado de Herdr, Omarchy, se tiene que poder elegir si el sistema ejecuta comandos y keybindings de Linux, nvim, Lazyvim, Herdr, Tmux, Omarchy, uno, varios o todos.
 > - Hay que añadir mas historias de usuario, tipo, elegir un archivo, editarlo, volver a seleccionar otro archivo, pasar de un archivo a otro, es decir, procesos usuales de usuario, igual que con Omarchy, abrir mas ventanas, cerrarlas, redimensionarlas, etc. obten estos procesos usuales de usuario dev y añadelos
@@ -95,22 +96,22 @@ Decided here, not by the implementer. T2 (windows) and T3 (objectives) build on 
 **The package never edits text itself.** `packages/vim-engine` already owns buffer text, cursor,
 modes and undo. A workspace holds one `VimState` per open buffer and delegates every editing key to
 `dispatch`; duplicating that logic in a second package would give two answers to "what does `ci"` do"
-and the exercise could only be wrong. What the workspace owns is everything *around* the buffer: the
+and the exercise could only be wrong. What the workspace owns is everything _around_ the buffer: the
 files on disk, which buffers are open, which one is active, and (from T2) where they are shown.
 
 ```ts
 interface WorkspaceState {
-  readonly files: Readonly<Record<string, string>>;   // path -> text, the simulated disk
-  readonly cwd: string;                               // where a shell command would run
-  readonly buffers: readonly WorkspaceBuffer[];       // open buffers, in the order they were opened
-  readonly activeBufferId: string;                    // never empty: opening one creates it
-  readonly pending: PendingWorkspaceCommand | null;   // a half-typed `:e ` or `<C-w>`
+  readonly files: Readonly<Record<string, string>>; // path -> text, the simulated disk
+  readonly cwd: string; // where a shell command would run
+  readonly buffers: readonly WorkspaceBuffer[]; // open buffers, in the order they were opened
+  readonly activeBufferId: string; // never empty: opening one creates it
+  readonly pending: PendingWorkspaceCommand | null; // a half-typed `:e ` or `<C-w>`
 }
 interface WorkspaceBuffer {
-  readonly id: string;          // stable, derived from the path: "buf:src/main.ts"
-  readonly path: string;        // path on the simulated disk
-  readonly editor: VimState;    // the text, cursor, mode and undo of that buffer
-  readonly modified: boolean;   // true when the buffer differs from the file
+  readonly id: string; // stable, derived from the path: "buf:src/main.ts"
+  readonly path: string; // path on the simulated disk
+  readonly editor: VimState; // the text, cursor, mode and undo of that buffer
+  readonly modified: boolean; // true when the buffer differs from the file
 }
 ```
 
@@ -125,7 +126,7 @@ interface WorkspaceBuffer {
 - **No clock, no I/O, no id generation from randomness**: buffer ids come from paths, so a replay is
   the same state. Saving writes into `files`; nothing touches a real filesystem.
 - Editing keys go to the active buffer's `editor` through `vim-engine`'s `dispatch`. NORMAL-mode
-  keys the workspace owns (`:`) are intercepted *before* the editor sees them; everything else
+  keys the workspace owns (`:`) are intercepted _before_ the editor sees them; everything else
   reaches it unchanged, so an exercise can never be wrong because two key paths disagree.
 - Oracle tests: for each supported command, replay a recorded key sequence and assert the whole
   resulting state (files, buffers, active id, buffer text, cursor, modified flags), not one field.
@@ -169,11 +170,21 @@ from T1 keeps owning text and the `:` command line; window keys go through the r
 ```ts
 type WindowNode =
   | { kind: "leaf"; bufferId: string }
-  | { kind: "split"; layout: "side-by-side" | "stacked"; ratio: number; first: WindowNode; second: WindowNode };
-interface WorkspaceTab { readonly id: string; readonly root: WindowNode; readonly focus: readonly ("first" | "second")[] }
+  | {
+      kind: "split";
+      layout: "side-by-side" | "stacked";
+      ratio: number;
+      first: WindowNode;
+      second: WindowNode;
+    };
+interface WorkspaceTab {
+  readonly id: string;
+  readonly root: WindowNode;
+  readonly focus: readonly ("first" | "second")[];
+}
 ```
 
-- `ratio` is a number in `[0.1, 0.9]`: the engine models *what changed*, never pixels, so a resize is a
+- `ratio` is a number in `[0.1, 0.9]`: the engine models _what changed_, never pixels, so a resize is a
   ratio step of 0.05 and stays deterministic.
 - `focus` is the path from the root to the focused leaf. `activeBufferId` follows it: focusing another
   window focuses its buffer. Closing the focused leaf hands focus to its sibling's last leaf.
@@ -196,7 +207,7 @@ interface WorkspaceTab { readonly id: string; readonly root: WindowNode; readonl
   (focus reaches a leaf, `activeBufferId` equals that leaf's buffer, ratios in [0.1, 0.9], both
   children present, no buffer registered twice, every leaf on an open buffer) and determinism.
 - **Owner decision, because the T2 design was silent and it could not be inferred:** a split shows the
-  focused buffer in *both* panes, which is what tmux and nvim do and what stories 9-10 need. The
+  focused buffer in _both_ panes, which is what tmux and nvim do and what stories 9-10 need. The
   invariant is therefore "no buffer id twice in `state.buffers`", not "never shown twice". Changing it
   later is a behaviour change, not a test tweak.
 - Also decided here: buffers stay open after `window.close`; `window.new` needs `options.path` on disk
@@ -225,7 +236,7 @@ objective:
     - { type: focus, leaf: 1 }
     - { type: buffer_text, path: "src/main.ts", text: "…" }
 solutions:
-  - actions: [file.find, file.open, window.split-side-by-side]   # actions, never keys (S5)
+  - actions: [file.find, file.open, window.split-side-by-side] # actions, never keys (S5)
     classification: optimal
 ```
 
@@ -318,13 +329,13 @@ a learner who opens `src/other.ts` with Goto-file in LazyVim, with `:e`, or with
 file picker is doing **one** thing. So the engine learns to apply the `file.*` and `buffer.*` actions
 the vocabulary already has, and the command line keeps working beside them.
 
-| Action | Applied when | Otherwise |
-| --- | --- | --- |
-| `file.open` | `options.path` is on disk or already open; focuses it, opening a buffer when needed | `applied: false` naming the path |
-| `file.new` | `options.path` is not on disk; opens an empty buffer | `applied: false` when the path exists |
-| `file.save` | the active buffer is modified; writes it and clears `modified` | `applied: false` with the reason |
-| `file.close-buffer` | another buffer stays open; the focused leaf falls back to it | refuses to close the last buffer |
-| `buffer.next` / `buffer.previous` | another buffer exists; cycles in open order | `applied: false` when only one is open |
+| Action                            | Applied when                                                                        | Otherwise                              |
+| --------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------- |
+| `file.open`                       | `options.path` is on disk or already open; focuses it, opening a buffer when needed | `applied: false` naming the path       |
+| `file.new`                        | `options.path` is not on disk; opens an empty buffer                                | `applied: false` when the path exists  |
+| `file.save`                       | the active buffer is modified; writes it and clears `modified`                      | `applied: false` with the reason       |
+| `file.close-buffer`               | another buffer stays open; the focused leaf falls back to it                        | refuses to close the last buffer       |
+| `buffer.next` / `buffer.previous` | another buffer exists; cycles in open order                                         | `applied: false` when only one is open |
 
 - `file.find`, `grep.project`, `buffer.list`, `file.close-buffer`'s picker siblings and every other
   action that needs an interactive picker stay **unapplied with a reason**: S6 says what is not
@@ -397,7 +408,7 @@ not as an interactive fuzzy scorer:
   reads: find by fragment, edit, save — a sequence a person actually performs.
 - `grep.project` takes a `query` and records the matching (path, line, text) rows in the state, in a
   stable order. An objective can assert the matches and the file the learner then opens; the picker's
-  *rendering* is T8's job, not the engine's.
+  _rendering_ is T8's job, not the engine's.
 - `buffer.list` takes a `path` and focuses that open buffer: the buffer picker without pretending to
   rank anything.
 - No scoring, no timers, no "best match": with fixed files, sorted order plus the query is deterministic
@@ -418,7 +429,7 @@ not as an interactive fuzzy scorer:
 **L12 — evidence (T5c): the picker is a query, and stories 2, 3 and 5 are whole**
 
 - The engine answers a query from the project, not from a scorer: `file.find` opens the first file in
-  *path* order whose path holds the fragment (case-insensitively), `grep.project` records the matching
+  _path_ order whose path holds the fragment (case-insensitively), `grep.project` records the matching
   `(path, line, text)` rows in that same order into `state.matches`, and `buffer.list` focuses the open
   buffer a path names. `picker.test.ts` pins the four properties that make a replay meaningful: path
   order over disk order, case-insensitivity, determinism (same query twice, same state), and one
@@ -428,7 +439,7 @@ not as an interactive fuzzy scorer:
 - The schema follows the same rule as `path` and `text`: `query` is required for
   `KEYMAP_QUERY_ACTIONS` (`file.find`, `grep.project`) and rejected everywhere else, so the field
   cannot be carried by a verb that searches nothing. `buffer.list` joins `PATHED_ACTIONS`; it picks an
-  *open* buffer, so a file that exists but was never opened is refused rather than opened by stealth.
+  _open_ buffer, so a file that exists but was never opened is refused rather than opened by stealth.
 - The objective `grep_matches` compares rows in order and prints both sides on failure. Order is part of
   the goal because the search's answer is what the learner reads: a reordering is a different list.
 - Stories 2 (find a file by a fragment), 3 (grep the project, open the file of a match) and 5 (pick a
@@ -442,7 +453,7 @@ not as an interactive fuzzy scorer:
   reach their objective); `pnpm test` at 60 failed / 1990 passed, and every failure is accounted for
   below. Baseline measured on a detached worktree of `4a251e9` for the curriculum suite: 16 failures
   there against 15 now, so this slice closes one and opens none.
-  - `packages/shell-engine/src/oracle.test.ts` (42): the simulated shell against *this host's* bash and
+  - `packages/shell-engine/src/oracle.test.ts` (42): the simulated shell against _this host's_ bash and
     coreutils, failing on umask-derived modes (664/775 vs 644/755) and `ls` formatting. Nothing in the
     diff touches `shell-engine`; the same 42 fail at `4a251e9`.
   - `tests/curriculum*.test.ts`, `tests/content.test.ts`, `tests/pedagogy-flow.test.ts`: content
@@ -478,7 +489,7 @@ not as an interactive fuzzy scorer:
 - Six skills — `neovim.windows.{split,focus,resize,close,zoom,swap}` — and six stories (9-14), with
   their ES overlays: split and open a second file, move back with the direction key, step the ratio
   to 0.65, close the pane without closing the file, zoom to edit and restore the layout, and trade
-  the two panes. Every story asserts the *end state* only, which is why story 13 edits and saves
+  the two panes. Every story asserts the _end state_ only, which is why story 13 edits and saves
   while zoomed: a zoom that is undone is invisible to a replay, so the story proves the detour with
   the text it left on disk.
 - Evidence: `pnpm content:ci` green (43 skills, 183 exercises, 232 solutions reach their objective
@@ -509,7 +520,7 @@ total operations, refusals that name what is missing).
 - The window tree gains a second leaf: `{ kind: "terminal", terminalId }`. A leaf still shows exactly
   one thing, so focus, swap, resize, zoom and close work on a terminal leaf with no special case.
 - A terminal is `{ id, title, cwd, entries }`, where an entry is `{ command, output: string[] }`. The
-  *exercise* declares the outputs (`initialState.terminal.commands: Record<string, string[]>`), because
+  _exercise_ declares the outputs (`initialState.terminal.commands: Record<string, string[]>`), because
   a simulated machine has no processes (S6): `shell.run` looks the command up, appends the entry and
   returns the state; a command with no declared output is refused, naming the command and the file that
   declares it, never invented text.
@@ -584,7 +595,7 @@ attempt at all. The view is built in this order:
 **L14 — evidence (T7): the twenty stories are told, and three of them say what they cannot prove**
 
 - Landed in four units. `0f4d75c` made a terminal a leaf (`WindowNode = LeafWindow | SplitWindow |
-  TerminalWindow`), so focus, split, zoom, resize, swap and close needed no special case: they walk
+TerminalWindow`), so focus, split, zoom, resize, swap and close needed no special case: they walk
   leaves. `e22e698` added the freeze (`detached`), `workspace.move` with its three refusals, the resize
   mode gate and the refusal to edit while a terminal is focused. `9843137` gave each terminal its own
   command line, run through the one body `shell.run` also calls. `11cec6c` wrote the six skills and the

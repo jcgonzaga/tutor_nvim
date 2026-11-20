@@ -3,7 +3,7 @@ kind: workspace
 id: workspace-window-recover-focus-001
 slug: neovim.windows.recover-focus.001
 title: "Close the terminal window and get the keys back"
-instruction: 'Put src/main.ts and src/lib/format.ts side by side, open a terminal beside the format file, and then close that terminal window again: both files must still be on screen and the keys must be back in src/lib/format.ts.'
+instruction: "Put src/main.ts and src/lib/format.ts side by side, open a terminal beside the format file, and then close that terminal window again: both files must still be on screen and the keys must be back in src/lib/format.ts."
 skillIds:
   - neovim.windows.recover-focus
 mode: recall
