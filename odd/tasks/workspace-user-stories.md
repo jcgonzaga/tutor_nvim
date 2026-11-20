@@ -692,3 +692,16 @@ TerminalWindow`), so focus, split, zoom, resize, swap and close needed no specia
   — five exercises per skill is content work, not a code defect; the shell-engine oracle against this host's
   bash (42); and the perf suite's keypress p95 sits at 41–49 ms against a 50 ms budget on this machine, which
   is an edge worth watching rather than a pass.
+
+**L17 — where it stands after the first green pipeline**
+
+- CI on `0e807a2`: `content`, `postgres`, `e2e` and `performance` are **green** — the API now replays story
+  attempts against a real Postgres, the browser suite plays a workspace story, and the shipped bundle holds
+  its budget (the three perf asserts that fail on this laptop pass on a clean runner, so they are host
+  noise, not a regression; the local numbers are worth watching, not trusting).
+- `quality` is the one job left, and it is entirely the content-coverage debt carried from before this
+  feature: `tests/curriculum*.test.ts` and `tests/pedagogy-flow.test.ts` want at least five exercises per
+  skill with a second context (18 skills do not have them yet), and `packages/shell-engine`'s oracle
+  compares against the runner's own bash and coreutils, which drifted (6 failures there, 42 here). Both are
+  content programs or harness decisions, not defects in the workspace work.
+- The feature itself is complete: T1-T9 landed, twenty stories playable, both languages shipped as packs.
