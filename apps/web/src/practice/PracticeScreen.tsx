@@ -1,4 +1,11 @@
-import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { pendingKeys } from "@tutor-nvim/vim-engine";
 import { promptOf } from "@tutor-nvim/shell-engine";
 import type { Exercise, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
@@ -11,7 +18,15 @@ import { ModePill } from "../ui/ModePill";
 import { PracticeFrame } from "./PracticeFrame";
 import { PracticeHints } from "./PracticeHints";
 import { PracticeResult } from "./PracticeResult";
-import { WorkspacePractice } from "./WorkspacePractice";
+/**
+ * The workspace view is its own chunk: it is the largest of the three and only a workspace exercise
+ * needs it, so the vim and shell screens do not parse it, nor the workspace engine behind it, before
+ * the first frame of a practice session (AGENTS.md 2.10). The total shipped size still includes it —
+ * the budget in `tests/perf` sums every asset — so this buys first paint, not a smaller download.
+ */
+const WorkspacePracticeChunk = lazy(() =>
+  import("./WorkspacePractice").then((module) => ({ default: module.WorkspacePractice })),
+);
 import { usePracticeScreen, type FinishedPractice } from "./usePracticeScreen";
 
 /** An attempt that ended, solved or given up. Declared by the hook both views share (T8). */
@@ -56,7 +71,11 @@ interface PracticeSessionProps extends Omit<PracticeScreenProps, "exercise"> {
 export function PracticeScreen(props: PracticeScreenProps) {
   if (props.exercise.kind === "workspace") {
     const { exercise, ...rest } = props;
-    return <WorkspacePractice exercise={exercise} {...rest} />;
+    return (
+      <Suspense fallback={null}>
+        <WorkspacePracticeChunk exercise={exercise} {...rest} />
+      </Suspense>
+    );
   }
   return <PracticeSession {...props} exercise={props.exercise} />;
 }

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ReactNode } from "react";
 import { parseWorkspaceExercise } from "@tutor-nvim/exercise-schema";
@@ -118,6 +118,15 @@ const terminalWorkspace = parseWorkspaceExercise({
 });
 
 const application = () => screen.getByRole("application");
+
+/**
+ * A workspace exercise is a chunk of its own (the practice screen lazy-loads the view so the vim and
+ * shell screens do not pay for it), so every workspace test starts by waiting for the panes.
+ */
+async function show(exercise: Parameters<typeof PracticeScreen>[0]["exercise"], layers: string[]) {
+  render(inEnglishWithLayers(<PracticeScreen exercise={exercise} />, layers));
+  await screen.findByTestId("workspace-panes");
+}
 const panes = () => screen.getAllByTestId("workspace-pane");
 const focusedPanes = () => panes().map((pane) => pane.getAttribute("data-focused") === "true");
 
@@ -130,8 +139,8 @@ function press(
 }
 
 describe("the practice screen and a workspace exercise", () => {
-  it("draws the panes the engine holds, instead of a notice about a view that does not exist", () => {
-    render(inEnglishWithLayers(<PracticeScreen exercise={workspace} />, ["nvim"]));
+  it("draws the panes the engine holds, instead of a notice about a view that does not exist", async () => {
+    await show(workspace, ["nvim"]);
 
     expect(screen.queryByTestId("workspace-notice")).toBeNull();
     expect(screen.getByTestId("workspace-panes")).toBeTruthy();
@@ -147,8 +156,8 @@ describe("the practice screen and a workspace exercise", () => {
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(workspace.instruction);
   });
 
-  it("moves the focus when a key an enabled layer claims reaches an action", () => {
-    render(inEnglishWithLayers(<PracticeScreen exercise={workspace} />, ["nvim"]));
+  it("moves the focus when a key an enabled layer claims reaches an action", async () => {
+    await show(workspace, ["nvim"]);
 
     // nvim's `C-w v` splits the window side by side: a key the layer claims, resolved to an action.
     press("w", { ctrlKey: true });
@@ -157,22 +166,22 @@ describe("the practice screen and a workspace exercise", () => {
     expect(panes().length).toBe(2);
     expect(focusedPanes()).toEqual([false, true]);
     // The split is what the objective asks for, so the attempt ended by itself.
-    expect(screen.getByTestId("result-outcome").textContent).toBe("SUCCESS");
+    await waitFor(() => expect(screen.getByTestId("result-outcome").textContent).toBe("SUCCESS"));
   });
 
-  it("types into the focused buffer when no layer claims the key", () => {
-    render(inEnglishWithLayers(<PracticeScreen exercise={workspace} />, ["nvim"]));
+  it("types into the focused buffer when no layer claims the key", async () => {
+    await show(workspace, ["nvim"]);
 
     // `i` is a layer binding the workspace does not apply, and `Z` is a key no layer claims: both
     // reach the buffer through the engine, so a learner can still edit text.
     press("i");
     press("Z", { shiftKey: true });
 
-    expect(screen.getByTestId("buffer").textContent).toContain("Zone");
+    await waitFor(() => expect(screen.getByTestId("buffer").textContent).toContain("Zone"));
   });
 
-  it("shows what was typed at the focused terminal's prompt", () => {
-    render(inEnglishWithLayers(<PracticeScreen exercise={terminalWorkspace} />, ["omarchy"]));
+  it("shows what was typed at the focused terminal's prompt", async () => {
+    await show(terminalWorkspace, ["omarchy"]);
 
     // Omarchy opens a terminal beside the window; the new pane has the keys (T7a1).
     press("Enter", { metaKey: true });
@@ -183,18 +192,22 @@ describe("the practice screen and a workspace exercise", () => {
     press("p");
     press("m");
 
-    expect(screen.getByTestId("workspace-terminal-prompt").textContent).toBe("npm");
+    await waitFor(() =>
+      expect(screen.getByTestId("workspace-terminal-prompt").textContent).toBe("npm"),
+    );
   });
 
-  it("runs the line the learner typed at the prompt, and shows what it printed", () => {
-    render(inEnglishWithLayers(<PracticeScreen exercise={terminalWorkspace} />, ["omarchy"]));
+  it("runs the line the learner typed at the prompt, and shows what it printed", async () => {
+    await show(terminalWorkspace, ["omarchy"]);
     press("Enter", { metaKey: true });
 
     for (const key of ["n", "p", "m", " ", "t", "e", "s", "t"]) press(key);
     fireEvent.keyDown(application(), { key: "Enter", code: "Enter" });
 
+    await waitFor(() =>
+      expect(screen.getByTestId("workspace-terminal-output").textContent).toBe("ok 3 tests"),
+    );
     expect(screen.getByTestId("workspace-terminal").textContent).toContain("npm test");
-    expect(screen.getByTestId("workspace-terminal-output").textContent).toBe("ok 3 tests");
     expect(screen.getByTestId("workspace-terminal-prompt").textContent).toBe("");
     expect(screen.getByTestId("result-outcome").textContent).toBe("SUCCESS");
   });
