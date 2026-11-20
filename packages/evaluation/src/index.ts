@@ -1,14 +1,19 @@
 export {
   advanceAttempt,
+  advanceWorkspaceAttempt,
+  advanceWorkspaceKey,
   giveUpAttempt,
   recordInput,
+  recordWorkspaceAction,
   startAttempt,
   type Attempt,
   type InputEvent,
   type ShellAttempt,
   type TimedKeyInput,
   type VimAttempt,
+  type WorkspaceActionRecording,
   type WorkspaceAttempt,
+  type WorkspaceKeyRecording,
 } from "./attempt";
 export {
   evaluateGoal,

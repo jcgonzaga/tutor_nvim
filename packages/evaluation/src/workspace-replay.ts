@@ -6,11 +6,11 @@ import type {
 import {
   applyWorkspaceAction,
   createWorkspace,
-  type WorkspaceActionOptions,
   type WorkspaceState,
 } from "@tutor-nvim/workspace-engine";
 
 import type { WorkspaceAttempt } from "./attempt";
+import { engineOptions } from "./workspace-action";
 
 /*
  * Replay of a workspace solution (S5, AGENTS.md 10, 12).
@@ -36,23 +36,6 @@ export interface RefusedWorkspaceAction {
   readonly index: number;
   /** Why the engine could not apply it, in the engine's words. */
   readonly reason: string;
-}
-
-/**
- * What one action hands the engine: a path for the actions that name a file, a text for the one that
- * types, a query for the ones that search the project, a command for the one that runs in a terminal
- * and a tab for the one that moves a window (the schema rejects each anywhere else), so an action
- * without them is the action bare.
- */
-function optionsOf(action: WorkspaceSolutionAction): WorkspaceActionOptions {
-  return {
-    ...(action.path === undefined ? {} : { path: action.path }),
-    ...(action.text === undefined ? {} : { text: action.text }),
-    ...(action.query === undefined ? {} : { query: action.query }),
-    ...(action.command === undefined ? {} : { command: action.command }),
-    // A move says which tab it moves the window into, the way a file action says which file (T7a2).
-    ...(action.tab === undefined ? {} : { tabId: action.tab }),
-  };
 }
 
 /**
@@ -89,7 +72,7 @@ export function simulateWorkspaceSolution(
   let refused: RefusedWorkspaceAction | null = null;
 
   for (const [index, action] of solution.actions.entries()) {
-    const result = applyWorkspaceAction(state, action.action, optionsOf(action));
+    const result = applyWorkspaceAction(state, action.action, engineOptions(action));
     if (!result.applied) {
       refused = {
         action,
