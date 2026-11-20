@@ -92,6 +92,8 @@ function attemptFor(exercise: Exercise, move: Move): Attempt {
 class Device {
   profile: Profile = completeOnboarding(createProfile("local", T0), skills, null, T0);
   outbox: Outbox = EMPTY_OUTBOX;
+  /** Every kind the plan served, so a test can pin that workspace stories really were played (T9). */
+  readonly playedKinds: Exercise["kind"][] = [];
   readonly cloud = createCloudApi({
     baseUrl: "http://api.test",
     token: async () => fakeToken("parity"),
@@ -123,6 +125,7 @@ class Device {
       if (!active || !item) break;
       const exercise = exerciseOf(item.exerciseId);
       const move = moves[index] ?? "best";
+      this.playedKinds.push(exercise.kind);
       const attempt = attemptFor(exercise, move);
       const evaluation = evaluateAttempt(exercise, attempt);
       at += 60_000;
@@ -210,6 +213,10 @@ describe("the server recomputes exactly what the device showed (ADR-0003 §9)", 
 
     const outcome = await device.sync();
     expect(outcome).toEqual({ status: "synced", rejected: 0 });
+
+    // The plan served workspace stories too, and the server replayed their actions itself: this
+    // parity would be meaningless if only key-based kinds had been uploaded (T9).
+    expect(device.playedKinds).toContain("workspace");
 
     // Applying the snapshot replaced the local numbers with the server's recomputation: identical.
     const synced = device.profile.gamification;

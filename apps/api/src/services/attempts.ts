@@ -3,12 +3,22 @@ import {
   advanceAttempt,
   describeFeedback,
   evaluateAttempt,
+  evaluateWorkspaceGoal,
   giveUpAttempt,
+  recordWorkspaceAction,
+  recordWorkspaceKey,
   startAttempt,
   type Attempt,
   type AttemptEvaluation,
+  type WorkspaceAttempt,
 } from "@tutor-nvim/evaluation";
-import type { ContentBundle, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
+import {
+  workspaceActionRefSchema,
+  type ContentBundle,
+  type Exercise,
+  type WorkspaceExercise,
+  type WorkspaceSolutionAction,
+} from "@tutor-nvim/exercise-schema";
 import {
   NO_BEST,
   computeAttemptReward,
@@ -17,7 +27,7 @@ import {
   type PersonalBest,
   type PersonalBestMetric,
 } from "@tutor-nvim/pedagogy";
-import type { AttemptResult, AttemptSubmission } from "@tutor-nvim/shared";
+import type { AttemptAction, AttemptResult, AttemptSubmission } from "@tutor-nvim/shared";
 import type { Db } from "../db/client";
 import {
   attemptEvents,
@@ -38,14 +48,14 @@ export const MAX_CLOCK_SKEW_MS = 5 * 60_000;
  * Rebuilds the attempt from what the learner did and evaluates it with the same engine and
  * evaluation the client uses. The client's own score is never read (AGENTS 26).
  *
- * Only the two kinds that are spent in keys: a workspace attempt is spent in actions, and replaying
- * its keys needs the workspace engine and the learner's layer (T9), so `recordSubmission` refuses
- * one with a message instead of guessing.
+ * Two kinds are spent in keys and replay `events`. A workspace story is spent in steps — an action a
+ * layer resolved or a key the engine took — so it replays `steps` instead, in order (T9).
  */
 export function replaySubmission(
-  exercise: VimExercise | ShellExercise,
+  exercise: Exercise,
   submission: AttemptSubmission,
 ): { attempt: Attempt; evaluation: AttemptEvaluation } {
+  if (exercise.kind === "workspace") return replayWorkspaceSubmission(exercise, submission);
   let attempt = startAttempt(exercise, submission.startedAt);
   for (const event of submission.events) {
     attempt = advanceAttempt(exercise, attempt, {
@@ -67,6 +77,89 @@ export function replaySubmission(
     );
   }
   return { attempt, evaluation: evaluateAttempt(exercise, attempt) };
+}
+
+/**
+ * Rebuilds a workspace attempt from the steps the browser recorded (T9).
+ *
+ * A step is one of two things, and both reach the same engine the practice screen drives: an action
+ * goes through `recordWorkspaceAction` (`applyWorkspaceAction` underneath), a key through
+ * `recordWorkspaceKey` (`dispatchWorkspace` underneath). Most stories are solved by typing, so the
+ * keys are half the record: replaying only the actions would refuse a learner who really solved it.
+ *
+ * The wire shape is only a bound, so every action is validated here with the vocabulary's own
+ * `workspaceActionRefSchema` before it reaches the engine: `file.open` with a `query`, a target on a
+ * verb that takes none, or an unknown action name is a 400 naming the position, never a replay the
+ * server improvised around. Actions are recorded in the shape content declares, which is what
+ * `classifyStrategy` compares to the declared optimal solution, so the server grades the story with
+ * the same rules the device showed. An action the engine refuses is a client bug, not a learner's
+ * mistake, and stops the replay with the engine's reason; a refused key changed nothing when the
+ * learner pressed it either, so the replay passes over it exactly as the device did.
+ */
+function replayWorkspaceSubmission(
+  exercise: WorkspaceExercise,
+  submission: AttemptSubmission,
+): { attempt: WorkspaceAttempt; evaluation: AttemptEvaluation } {
+  let attempt = startAttempt(exercise, submission.startedAt);
+  for (const [index, step] of submission.steps.entries()) {
+    if (step.kind === "action") {
+      const action = validateWorkspaceAction(step.action, index);
+      const recorded = recordWorkspaceAction(attempt, action);
+      if (!recorded.applied) {
+        throw new HttpError(
+          422,
+          "workspace_action_refused",
+          `Action ${index} (${action.action}) was refused: ${recorded.reason}`,
+        );
+      }
+      attempt = recorded.attempt;
+      continue;
+    }
+    attempt = recordWorkspaceKey(attempt, {
+      key: step.key,
+      ...(step.code ? { code: step.code } : {}),
+      ctrl: step.ctrl,
+      alt: step.alt,
+      shift: step.shift,
+      meta: step.meta,
+      timestamp: step.timestamp,
+    }).attempt;
+  }
+  attempt = { ...attempt, hints: submission.hints };
+  if (submission.completedAt !== null) {
+    // No stream of key timestamps to measure here: the steps carry their own timestamps but the
+    // attempt's duration is the one the client measured, the way event times serve the other kinds.
+    attempt = { ...attempt, completedAt: submission.completedAt };
+  } else if (submission.gaveUp) {
+    attempt = giveUpAttempt(attempt, submission.startedAt);
+  }
+  const evaluation = evaluateAttempt(exercise, attempt);
+  if (!evaluation.success && !submission.gaveUp) {
+    // The client says the story was solved; the replay says it was not. Nothing is stored, because a
+    // workspace attempt cannot be stored as a failed one the learner never declared (T9).
+    const { objective } = evaluateWorkspaceGoal(exercise, attempt.state);
+    throw new HttpError(
+      422,
+      "unsatisfied_objective",
+      `The actions do not reach the objective: ${objective.failures.join("; ")}`,
+    );
+  }
+  return { attempt, evaluation };
+}
+
+/**
+ * Turns one wire action into content's action, or refuses the submission.
+ *
+ * The two shapes are the same fields; what differs is that `workspaceActionRefSchema` knows which
+ * verb takes which field. Parsing it here means a malformed action is a 400 before any state exists.
+ */
+function validateWorkspaceAction(action: AttemptAction, index: number): WorkspaceSolutionAction {
+  const parsed = workspaceActionRefSchema.safeParse(action);
+  if (parsed.success) return parsed.data;
+  const issues = parsed.error.issues.map(
+    (issue) => `${issue.path.join(".") || "action"}: ${issue.message}`,
+  );
+  throw new HttpError(400, "invalid_request", `steps.${index}: ${issues.join("; ")}`);
 }
 
 type AttemptRow = typeof attempts.$inferSelect;
@@ -100,15 +193,6 @@ export async function recordSubmission(
   const exercise = bundle.exercises.find((candidate) => candidate.id === submission.exerciseId);
   if (!exercise) {
     throw new HttpError(422, "unknown_exercise", `Unknown exercise ${submission.exerciseId}`);
-  }
-  if (exercise.kind === "workspace") {
-    // Said, not faked: the server cannot judge an attempt it cannot replay, so it refuses it
-    // instead of storing a score it made up (AGENTS 26).
-    throw new HttpError(
-      422,
-      "unsupported_exercise_kind",
-      `Exercise ${exercise.id} is a workspace exercise: the API cannot replay workspace attempts yet`,
-    );
   }
 
   return db.transaction(async (tx) => {
@@ -208,6 +292,11 @@ export async function recordSubmission(
       improved: [...improved],
     });
 
+    // Telemetry: one row per logical key, enough to rebuild a ghost replay (AGENTS 11). A workspace
+    // attempt has none to store: its steps arrived in the submission, were replayed through the
+    // workspace engine, and are not a keypress stream — half of them are actions, and the keys among
+    // them only make sense in their order with the actions. The attempt row keeps the outcome and
+    // `metrics.keystrokes` counts the steps it spent, so nothing here pretends a recording exists (T9).
     if (attempt.events.length > 0) {
       await tx.insert(attemptEvents).values(
         attempt.events.map((event) => ({

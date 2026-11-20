@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { attemptEvents, attempts } from "./db/schema";
 import {
+  DB_BOOT_TIMEOUT_MS,
   T0,
   createTestApi,
   exerciseNamed,
@@ -10,13 +11,14 @@ import {
   simulateCommands,
   solved,
   submissionFromAttempt,
+  typedInWorkspace,
   type TestApi,
 } from "./test-util";
 
 let api: TestApi;
 beforeAll(async () => {
   api = await createTestApi();
-});
+}, DB_BOOT_TIMEOUT_MS);
 afterAll(async () => api.close());
 
 const NORMAL = "vim.mode-normal.basic-001";
@@ -487,5 +489,144 @@ describe("adopting progress from before uploads existed (ADR-0003)", () => {
     expect(
       (await api.request("POST", "/api/progress/import", { user: "wes", body: absurd })).status,
     ).toBe(400);
+  });
+});
+
+describe("workspace attempts (T9)", () => {
+  const WORKSPACE = "neovim.buffers.close.001";
+
+  it("replays the steps with the same engine and stores the strategy the learner saw", async () => {
+    const exercise = exerciseNamed(WORKSPACE);
+    const submission = solved(exercise, { finishedAt: T0 + 1000 });
+    expect(submission.steps).toHaveLength(3);
+
+    const result = await api.request("POST", `/api/attempts/${submission.id}/complete`, {
+      user: "walter",
+      body: submission,
+    });
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({
+      success: true,
+      strategy: "optimal",
+      exerciseId: exercise.id,
+    });
+
+    const { body } = await api.request("GET", "/api/progress", { user: "walter" });
+    expect(body.learner.skills["neovim.buffers.close"].attemptCount).toBe(1);
+    expect(body.history).toHaveLength(1);
+  });
+
+  it("stores no keypress stream for a workspace attempt: there was none", async () => {
+    const submission = solved(exerciseNamed(WORKSPACE), { finishedAt: T0 + 2000 });
+    await api.request("POST", "/api/attempts", {
+      user: "wanda",
+      body: { attempts: [submission] },
+    });
+
+    const events = await api.handle.db
+      .select()
+      .from(attemptEvents)
+      .where(eq(attemptEvents.attemptId, submission.id));
+    expect(events).toEqual([]);
+
+    const [stored] = await api.handle.db
+      .select()
+      .from(attempts)
+      .where(eq(attempts.id, submission.id));
+    expect(stored).toMatchObject({ success: true, strategy: "optimal" });
+    // What the attempt cost is in metrics, in the unit the story was spent in: actions.
+    expect((stored?.metrics as { keystrokes: number }).keystrokes).toBe(3);
+  });
+
+  it("rejects a workspace submission whose steps do not reach the objective", async () => {
+    const submission = solved(exerciseNamed(WORKSPACE), { finishedAt: T0 + 3000 });
+    const short = { ...submission, steps: submission.steps?.slice(1) };
+    const result = await api.request("POST", "/api/attempts", {
+      user: "wesley",
+      body: { attempts: [short] },
+    });
+
+    expect(result.status).toBe(422);
+    expect(result.body.error).toBe("unsatisfied_objective");
+    // The reason names what the replay found, so a client can show it.
+    expect(result.body.message).toContain("src/util.ts");
+
+    const rows = await api.handle.db.select().from(attempts).where(eq(attempts.id, submission.id));
+    expect(rows).toEqual([]);
+  });
+
+  it("rejects an action the wire accepts but the vocabulary does not", async () => {
+    const submission = solved(exerciseNamed(WORKSPACE), { finishedAt: T0 + 4000 });
+    const malformed = {
+      ...submission,
+      steps: [{ kind: "action", action: { action: "file.open", query: "src" } }],
+    };
+    const result = await api.request("POST", "/api/attempts", {
+      user: "wendell",
+      body: { attempts: [malformed] },
+    });
+
+    expect(result.status).toBe(400);
+    expect(result.body.error).toBe("invalid_request");
+    expect(result.body.message).toContain("steps.0");
+  });
+
+  it("accepts a story solved by typing alone: the command line, an insert and a save", async () => {
+    const named = exerciseNamed("neovim.files.open.by-name-001");
+    if (named.kind !== "workspace") throw new Error(`${named.slug} is not a story`);
+    const exercise = named;
+    const attempt = typedInWorkspace(
+      exercise,
+      ":e src/util.ts<CR>i// Shared helpers<CR><Esc>:w<CR>",
+    );
+    const submission = submissionFromAttempt(exercise, attempt, { finishedAt: T0 + 6000 });
+
+    // Every step of this solve is a key no layer claimed, so the record has no actions at all.
+    expect(attempt.kind).toBe("workspace");
+    expect(attempt.completedAt).not.toBeNull();
+    expect(submission.steps?.length).toBeGreaterThan(0);
+    expect(submission.steps?.every((step) => step.kind === "key")).toBe(true);
+    expect(submission.events).toEqual([]);
+
+    const result = await api.request("POST", `/api/attempts/${submission.id}/complete`, {
+      user: "walt",
+      body: submission,
+    });
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({ success: true, exerciseId: exercise.id });
+
+    const [stored] = await api.handle.db
+      .select()
+      .from(attempts)
+      .where(eq(attempts.id, submission.id));
+    // Typing is the cost here, so the stored metrics say how many steps it took, not zero.
+    expect(stored).toMatchObject({ success: true });
+    expect((stored?.metrics as { keystrokes: number }).keystrokes).toBe(
+      submission.steps?.length ?? 0,
+    );
+
+    // What a record of actions alone would have uploaded for this solve: nothing. The API refuses it,
+    // which is exactly the lost attempt the steps exist to prevent (T9).
+    const lost = { ...submission, id: newId(), steps: [] };
+    const refused = await api.request("POST", "/api/attempts", {
+      user: "walt-lost",
+      body: { attempts: [lost] },
+    });
+    expect(refused.status).toBe(422);
+    expect(refused.body.error).toBe("unsatisfied_objective");
+  });
+
+  it("accepts a workspace attempt the learner gave up, as a failed attempt", async () => {
+    const exercise = exerciseNamed(WORKSPACE);
+    const submission = gaveUp(exercise, { finishedAt: T0 + 5000 });
+    const result = await api.request("POST", `/api/attempts/${submission.id}/complete`, {
+      user: "wendy",
+      body: submission,
+    });
+
+    expect(result.status).toBe(200);
+    expect(result.body).toMatchObject({ success: false, strategy: "failed" });
+    const { body } = await api.request("GET", "/api/progress", { user: "wendy" });
+    expect(body.learner.skills["neovim.buffers.close"].mastery).toBe(0);
   });
 });

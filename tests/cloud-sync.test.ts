@@ -18,21 +18,32 @@ import {
   type Profile,
 } from "@tutor-nvim/pedagogy";
 import { fakeToken } from "../apps/api/src/auth/fake";
-import { bundle, createTestApi, exerciseNamed, T0, type TestApi } from "../apps/api/src/test-util";
+import {
+  bundle,
+  createTestApi,
+  exerciseNamed,
+  solved,
+  T0,
+  type TestApi,
+} from "../apps/api/src/test-util";
 import { createCloudApi, ApiError, NetworkError, type CloudApi } from "../apps/web/src/cloud/api";
 import {
   EMPTY_OUTBOX,
   enqueueAttempt,
   enqueueSession,
   isOutboxEmpty,
+  loadOutbox,
+  saveOutbox,
   type Outbox,
 } from "../apps/web/src/cloud/outbox";
+import { memoryStorage } from "../apps/web/src/storage/profileStore";
 import { toAttemptSubmission, toSessionSubmission } from "../apps/web/src/cloud/submission";
 import { runSync, type SyncOutcome } from "../apps/web/src/cloud/sync";
 
 const { skills } = bundle;
 const NORMAL = "vim.mode-normal.basic-001";
 const ATOMIC = "vim.navigation-atomic.basic-001";
+const WORKSPACE = "neovim.buffers.close.001";
 
 let api: TestApi;
 beforeEach(async () => {
@@ -395,5 +406,17 @@ describe("cloud sync (T-608)", () => {
     expect(body.sessions).toEqual([
       expect.objectContaining({ date: "2026-10-21", exercises: 1, successes: 1, abandoned: false }),
     ]);
+  });
+});
+
+describe("a workspace attempt survives the queue (T9)", () => {
+  it("keeps its steps through the outbox round trip instead of dropping them", () => {
+    const exercise = exerciseNamed(WORKSPACE);
+    const submission = solved(exercise, { finishedAt: T0 + 1000 });
+    // The queue is localStorage on a device: what the browser parsed must come back unchanged,
+    // including the ordered steps a workspace attempt is made of (T9).
+    const storage = memoryStorage();
+    saveOutbox(storage, enqueueAttempt(EMPTY_OUTBOX, submission));
+    expect(loadOutbox(storage).attempts[0]?.steps).toEqual(submission.steps);
   });
 });

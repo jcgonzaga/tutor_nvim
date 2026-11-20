@@ -195,7 +195,15 @@ export const attempts = pgTable(
   ],
 );
 
-/** Every logical input of an attempt: enough to rebuild a ghost replay (AGENTS 11). */
+/**
+ * Every logical input of an attempt: enough to rebuild a ghost replay (AGENTS 11).
+ *
+ * A workspace attempt has no rows here by design: a story is a sequence of steps — an action a layer
+ * resolved or a key the engine took — which arrives in the submission, is replayed by the server and
+ * is not stored as a keypress stream, because half of it is not keys and the half that is was never
+ * the whole story. The attempt row keeps the outcome, and `attempts.metrics.keystrokes` counts the
+ * steps it spent (T9).
+ */
 export const attemptEvents = pgTable(
   "attempt_events",
   {

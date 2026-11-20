@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { count, sql } from "drizzle-orm";
 import { loadContentBundle } from "../content";
 import type { DbHandle } from "./client";
-import { openTestDb } from "../test-util";
+import { DB_BOOT_TIMEOUT_MS, openTestDb } from "../test-util";
 import { exerciseSkills, exercises, skillPrerequisites, skills } from "./schema";
 import { syncContent } from "./syncContent";
 
@@ -11,7 +11,7 @@ let handle: DbHandle;
 
 beforeAll(async () => {
   handle = await openTestDb();
-});
+}, DB_BOOT_TIMEOUT_MS);
 afterAll(async () => handle.close());
 
 describe("database migrations and content mirror (T-601)", () => {

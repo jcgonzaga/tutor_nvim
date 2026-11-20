@@ -1,18 +1,26 @@
 import type { FastifyInstance } from "fastify";
 import {
   advanceAttempt,
+  advanceWorkspaceKey,
   simulateSolution,
   startAttempt,
   type Attempt,
+  type WorkspaceAttempt,
 } from "@tutor-nvim/evaluation";
 import {
   keysForCommand,
   type Exercise,
   type ShellExercise,
   type VimExercise,
+  type WorkspaceExercise,
+  type WorkspaceSolutionAction,
 } from "@tutor-nvim/exercise-schema";
-import { keyInputFromToken } from "@tutor-nvim/vim-engine";
-import type { AttemptSubmissionInput } from "@tutor-nvim/shared";
+import { keyInputFromToken, parseKeySequence } from "@tutor-nvim/vim-engine";
+import {
+  attemptSubmissionSchema,
+  type AttemptAction,
+  type AttemptSubmission,
+} from "@tutor-nvim/shared";
 import { buildApp, type AppDeps } from "./build-app";
 import { createFakeVerifier, fakeToken } from "./auth/fake";
 import { loadContentBundle } from "./content";
@@ -22,21 +30,28 @@ import { syncContent } from "./db/syncContent";
 
 export const bundle = loadContentBundle();
 
-/** The kinds the API replays: the Vim buffer and the shell. */
-export type ReplayableExercise = VimExercise | ShellExercise;
-
 /**
- * An exercise by slug. A workspace exercise is refused here on purpose: the API cannot replay a
- * workspace attempt yet (T9), so asking for one is an error instead of a silently wrong replay.
+ * The kinds the API replays: every kind, including the workspace, whose attempt is replayed from its
+ * actions rather than from keys (T9).
  */
+export type ReplayableExercise = VimExercise | ShellExercise | WorkspaceExercise;
+
+/** An exercise by slug, of any kind. */
 export const exerciseNamed = (slug: string): ReplayableExercise => {
   const found = bundle.exercises.find((exercise) => exercise.slug === slug);
   if (!found) throw new Error(`No exercise ${slug}`);
-  if (found.kind === "workspace") {
-    throw new Error(`${slug} is a workspace exercise: the API does not replay those yet`);
-  }
   return found;
 };
+
+/**
+ * How long a test file may wait for its database to boot.
+ *
+ * `openTestDb` starts an in-process pglite and runs the migrations, which takes ~15 s on this
+ * machine and milliseconds against a real server. Vitest's default hook timeout is 10 s, so a file
+ * that boots a database passes alone and fails as soon as several boot at once; the hook says how
+ * long it is allowed to take instead of the suite being red for being parallel.
+ */
+export const DB_BOOT_TIMEOUT_MS = 120_000;
 
 /**
  * A fresh, migrated database. In-process Postgres by default; set `TEST_DATABASE_URL` to a server
@@ -136,8 +151,10 @@ export function submissionFromAttempt(
     sessionId?: string;
     localDay?: string;
   },
-): AttemptSubmissionInput {
-  return {
+): AttemptSubmission {
+  // Parsed by the wire schema, so a helper cannot build a submission the API would reject: a test
+  // sees exactly what the browser's queue holds.
+  return attemptSubmissionSchema.parse({
     id: options.id ?? newId(),
     exerciseId: exercise.id,
     startedAt: attempt.startedAt,
@@ -155,26 +172,85 @@ export function submissionFromAttempt(
       meta: event.meta,
       timestamp: event.timestamp,
     })),
+    // A workspace attempt is a sequence of steps, each an action a layer resolved or a key the engine
+    // took: that is what the server replays, and why `events` is empty for it (T9).
+    steps:
+      attempt.kind === "workspace"
+        ? attempt.steps.map((step) =>
+            step.kind === "action"
+              ? { kind: "action" as const, action: wireAction(step.action) }
+              : {
+                  kind: "key" as const,
+                  key: step.key.key,
+                  code: step.key.code ?? null,
+                  ctrl: step.key.ctrl === true,
+                  alt: step.key.alt === true,
+                  shift: step.key.shift === true,
+                  meta: step.key.meta === true,
+                  timestamp: step.key.timestamp,
+                },
+          )
+        : [],
     hints: attempt.hints.map((hint) => ({ level: hint.level, timestamp: hint.timestamp })),
+  });
+}
+
+/**
+ * One action in the wire shape. The client converts the same fields in
+ * `apps/web/src/cloud/submission.ts`; a test helper is not allowed to import the app, so this copy
+ * is the price of keeping the API's own tests separate from the browser's code.
+ */
+function wireAction(action: WorkspaceSolutionAction): AttemptAction {
+  return {
+    action: action.action,
+    ...(action.target === undefined ? {} : { target: action.target }),
+    ...(action.path === undefined ? {} : { path: action.path }),
+    ...(action.text === undefined ? {} : { text: action.text }),
+    ...(action.query === undefined ? {} : { query: action.query }),
+    ...(action.command === undefined ? {} : { command: action.command }),
+    ...(action.tab === undefined ? {} : { tab: action.tab }),
   };
 }
 
-/** A learner who solves the exercise with its optimal solution. */
+/**
+ * A learner who solves a story by typing rather than by a layer's actions (T9): the command line,
+ * an insert and a save. Every step it produces is a key, so it is the attempt an API that only
+ * replayed actions would refuse.
+ */
+export function typedInWorkspace(
+  exercise: WorkspaceExercise,
+  sequence: string,
+  options: { startedAt?: number; stepMs?: number } = {},
+): Attempt {
+  const { startedAt = 0, stepMs = 150 } = options;
+  const attempt = startAttempt(exercise, startedAt);
+  if (attempt.kind !== "workspace") throw new Error(`${exercise.slug} is not a workspace exercise`);
+  return parseKeySequence(sequence).reduce<Attempt>(
+    (current, key, index) =>
+      advanceWorkspaceKey(exercise, current as WorkspaceAttempt, {
+        ...key,
+        timestamp: startedAt + (index + 1) * stepMs,
+      }).attempt,
+    attempt,
+  );
+}
+
+/** A learner who solves the exercise with its optimal solution: keys, or actions for a story. */
 export function solved(
-  exercise: ReplayableExercise,
+  exercise: Exercise,
   options: { id?: string; finishedAt: number; sessionId?: string; localDay?: string },
-): AttemptSubmissionInput {
+): AttemptSubmission {
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   if (!optimal) throw new Error(`${exercise.slug} has no optimal solution`);
   const attempt = simulateSolution(exercise, optimal, { stepMs: 150 });
   return submissionFromAttempt(exercise, attempt, options);
 }
 
-/** A learner who gives up without typing anything. */
+/** A learner who gives up without typing anything (or, in a story, without taking an action). */
 export function gaveUp(
-  exercise: ReplayableExercise,
+  exercise: Exercise,
   options: { id?: string; finishedAt: number; sessionId?: string; localDay?: string },
-): AttemptSubmissionInput {
+): AttemptSubmission {
   const attempt = { ...startAttempt(exercise, 0), completedAt: 5000 };
   return submissionFromAttempt(exercise, attempt, { ...options, gaveUp: true });
 }

@@ -1,11 +1,20 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildDailySession, sessionItems } from "@tutor-nvim/pedagogy";
-import { T0, bundle, createTestApi, exerciseNamed, newId, solved, type TestApi } from "./test-util";
+import {
+  DB_BOOT_TIMEOUT_MS,
+  T0,
+  bundle,
+  createTestApi,
+  exerciseNamed,
+  newId,
+  solved,
+  type TestApi,
+} from "./test-util";
 
 let api: TestApi;
 beforeAll(async () => {
   api = await createTestApi();
-});
+}, DB_BOOT_TIMEOUT_MS);
 afterAll(async () => api.close());
 
 const NORMAL = "vim.mode-normal.basic-001";

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildReplay,
   evaluateAttempt,
+  goalMet,
   masterRun,
   runOf,
   simulateSolution,
@@ -39,10 +40,15 @@ const exerciseOf = (id: string): Exercise => {
 const START = Date.UTC(2026, 0, 5, 9, 0, 0);
 const dayOf = (at: number) => new Date(at).toISOString().slice(0, 10);
 
-function solveOptimally<E extends Exercise>(exercise: E) {
+/** The declared optimal solution, in the shape of the kind the exercise is. */
+function optimalOf<E extends Exercise>(exercise: E): E["solutions"][number] {
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   if (!optimal) throw new Error(`${exercise.slug} has no optimal solution`);
-  return simulateSolution(exercise, optimal, { stepMs: 150 });
+  return optimal;
+}
+
+function solveOptimally<E extends Exercise>(exercise: E) {
+  return simulateSolution(exercise, optimalOf(exercise), { stepMs: 150 });
 }
 
 /** Plays one daily session twice over: with the game layer, and with the learning path alone. */
@@ -200,10 +206,22 @@ describe("every exercise can be shown to the learner as a ghost", () => {
     for (const exercise of exercises) {
       const master = masterRun(exercise);
       expect(master, exercise.slug).not.toBeNull();
-      if (!master || !isVimExercise(exercise)) continue;
+      if (!master) continue;
+      if (exercise.kind === "workspace") {
+        // A story has no keys: its master run is the declared optimal solution replayed through the
+        // workspace engine, so the ghost is what `applyWorkspaceAction` reached, never a fixture.
+        const solution = optimalOf(exercise);
+        const replay = simulateSolution(exercise, solution);
+        expect(master.keys, exercise.slug).toEqual([]);
+        expect(master.actions, exercise.slug).toEqual(solution.actions);
+        expect(master.workspace?.refused, exercise.slug).toBeNull();
+        expect(master.actions.length, exercise.slug).toBe(replay.actions.length);
+        expect(goalMet(exercise, master.workspace!), exercise.slug).toBe(true);
+        continue;
+      }
+      if (!isVimExercise(exercise)) continue;
       const frames = buildReplay(exercise, master);
-      const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
-      const live = simulateSolution(exercise, optimal ?? exercise.solutions[0]!);
+      const live = simulateSolution(exercise, optimalOf(exercise));
       const last = frames[frames.length - 1];
       expect(last?.lines, exercise.slug).toEqual(live.state.buffer.lines);
     }
