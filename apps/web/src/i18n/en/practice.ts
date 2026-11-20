@@ -13,13 +13,30 @@ export const practice = {
   keys: (n: number) => `${n} ${n === 1 ? "key" : "keys"}`,
   focusHint: "Click the editor, or press Tab until it is focused, to start typing.",
   /**
-   * A workspace exercise (files, windows, panes) cannot be practised in this screen yet: it renders
-   * the Vim buffer and the shell terminal only. Saying so beats an editor that rejects every key.
+   * The workspace view (T8): panes of files and terminals, drawn from the engine's window tree. The
+   * state that is not the text — the mode, the focus, the zoom and whether the session is frozen —
+   * is written in words beside the panes, because a ring alone would be a colour-only signal (19).
    */
-  workspaceNotice: {
-    title: "This exercise is about the workspace",
-    detail:
-      "It practises files, windows and panes. This screen can only show the Vim buffer and the terminal, so there is nothing to type here yet; the workspace view arrives next.",
+  workspace: {
+    label: "Workspace practice area",
+    scrollback: "Terminal scrollback",
+    /** Which pane this is, in pre-order, so a learner can count them the way the engine does. */
+    pane: (index: number, total: number) => `Pane ${index} of ${total}`,
+    focused: "focused",
+    zoomed: "zoomed",
+    modeLabel: "Input mode",
+    modes: { normal: "NORMAL", resize: "RESIZE" },
+    surfaceLabel: "Keys go to",
+    surfaces: { editor: "EDITOR", terminal: "TERMINAL" },
+    sessionLabel: "Session",
+    session: { attached: "attached", detached: "DETACHED" },
+    focusLabel: "Focus",
+    zoomLabel: "Zoom",
+    zoomNone: "no window zoomed",
+    zoomedPane: (pane: string) => `${pane} zoomed`,
+    actions: (n: number) => `${n} ${n === 1 ? "action" : "actions"}`,
+    pendingKeys: "pending keys",
+    commandLine: "command line",
   },
   /** The layer rail next to the practice area (keymap-layers.md T6). */
   layers: {

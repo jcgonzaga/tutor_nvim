@@ -1,12 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { pendingKeys } from "@tutor-nvim/vim-engine";
 import { promptOf } from "@tutor-nvim/shell-engine";
-import {
-  describeFeedback,
-  type Attempt,
-  type AttemptEvaluation,
-  type Feedback,
-} from "@tutor-nvim/evaluation";
 import type { Exercise, ShellExercise, VimExercise } from "@tutor-nvim/exercise-schema";
 import { useT } from "../i18n/I18nProvider";
 import { shouldPreventDefault, toKeyInput } from "../input/keyboard";
@@ -14,16 +8,14 @@ import { EditorView } from "./EditorView";
 import { LayerRail } from "./LayerRail";
 import { TerminalView } from "./TerminalView";
 import { ModePill } from "../ui/ModePill";
-import { quietButton } from "../ui/styles";
-import { ResultPanel } from "./ResultPanel";
-import { usePracticeAttempt } from "./usePracticeAttempt";
+import { PracticeFrame } from "./PracticeFrame";
+import { PracticeHints } from "./PracticeHints";
+import { PracticeResult } from "./PracticeResult";
+import { WorkspacePractice } from "./WorkspacePractice";
+import { usePracticeScreen, type FinishedPractice } from "./usePracticeScreen";
 
-/** An attempt that ended, solved or given up. */
-export interface FinishedPractice {
-  readonly attempt: Attempt;
-  readonly evaluation: AttemptEvaluation;
-  readonly feedback: Feedback;
-}
+/** An attempt that ended, solved or given up. Declared by the hook both views share (T8). */
+export type { FinishedPractice };
 
 interface PracticeScreenProps {
   readonly exercise: Exercise;
@@ -48,7 +40,7 @@ interface PracticeScreenProps {
 }
 
 interface PracticeSessionProps extends Omit<PracticeScreenProps, "exercise"> {
-  /** The two views this screen can render: a Vim buffer or a shell terminal. */
+  /** The two views this screen renders: a Vim buffer or a shell terminal. */
   readonly exercise: VimExercise | ShellExercise;
 }
 
@@ -56,12 +48,16 @@ interface PracticeSessionProps extends Omit<PracticeScreenProps, "exercise"> {
  * The practice loop for one exercise: instruction, editor, mode and immediate feedback. It is the
  * same screen for free practice, calibration probes and session items; the caller decides what
  * happens at the end (`onFinish`, `renderResult`). Keyboard capture is scoped to the editor.
+ *
+ * Which editor an exercise gets is decided once, here: a workspace story is drawn by the panes view
+ * (T8) and the two simulators by theirs, and all three share the frame, the hints, the result and the
+ * attempt hook (`usePracticeScreen`).
  */
 export function PracticeScreen(props: PracticeScreenProps) {
-  // A workspace exercise is content like any other (T3), but this screen renders the Vim buffer and
-  // the shell terminal; the workspace view is T8. Say so instead of drawing an editor that would
-  // reject every key the learner presses.
-  if (props.exercise.kind === "workspace") return <WorkspacePractice {...props} />;
+  if (props.exercise.kind === "workspace") {
+    const { exercise, ...rest } = props;
+    return <WorkspacePractice exercise={exercise} {...rest} />;
+  }
   return <PracticeSession {...props} exercise={props.exercise} />;
 }
 
@@ -78,59 +74,24 @@ function PracticeSession({
   nextSlug = null,
 }: PracticeSessionProps) {
   const t = useT();
-  const { attempt, evaluation, hints, sendInput, requestHint, giveUp, reset } =
-    usePracticeAttempt(exercise);
+  const {
+    attempt,
+    hints,
+    hintReady,
+    finished,
+    finishedPractice,
+    sendInput,
+    requestHint,
+    giveUp,
+    reset,
+  } = usePracticeScreen(exercise, { onStart, onFinish });
   const editorRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
-  const finished = evaluation !== null;
-
-  // The hint button wakes up when the next hint becomes available. A timer can fire a hair before
-  // the clock reaches `nextHintAt`, so the effect depends on `now` and re-arms until it has passed.
-  const [now, setNow] = useState(() => performance.now());
-  const nextHintAt = hints.next?.availableAt ?? null;
-  useEffect(() => {
-    if (nextHintAt === null || now >= nextHintAt) return;
-    const timer = setTimeout(
-      () => setNow(performance.now()),
-      Math.max(nextHintAt - performance.now(), 1),
-    );
-    return () => clearTimeout(timer);
-  }, [nextHintAt, now]);
-  const hintReady = !finished && nextHintAt !== null && now >= nextHintAt;
 
   // The editor owns the keyboard on arrival and again after "Try again" (which restarts the clock).
   useEffect(() => {
     editorRef.current?.focus();
   }, [attempt.startedAt]);
-
-  // Told once per exercise shown. The ref keeps React's double-invoked dev effects from telling twice.
-  const started = useRef(false);
-  const onStartRef = useRef(onStart);
-  useEffect(() => {
-    onStartRef.current = onStart;
-  });
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    onStartRef.current?.();
-  }, []);
-
-  // Reported once per ended attempt. The ref also keeps React's double-invoked dev effects from
-  // reporting the same attempt twice, which would count it as two attempts.
-  const reported = useRef<Attempt | null>(null);
-  const onFinishRef = useRef(onFinish);
-  useEffect(() => {
-    onFinishRef.current = onFinish;
-  });
-  const feedback = useMemo(
-    () => (evaluation ? describeFeedback(exercise, attempt, evaluation) : null),
-    [exercise, attempt, evaluation],
-  );
-  useEffect(() => {
-    if (evaluation === null || feedback === null || reported.current === attempt) return;
-    reported.current = attempt;
-    onFinishRef.current?.({ attempt, evaluation, feedback });
-  }, [attempt, evaluation, feedback]);
 
   useEffect(() => {
     // The editor is frozen once the attempt ended: hand keyboard focus to the next action.
@@ -154,299 +115,120 @@ function PracticeSession({
 
   const { events } = attempt;
   const lastEvent = events[events.length - 1];
-  const finishedPractice: FinishedPractice | null =
-    evaluation && feedback ? { attempt, evaluation, feedback } : null;
-  // "3 of 12" (in any language) draws a thin bar next to the text; any other wording is shown as it is.
-  const counted = progress ? /^(\d+)\D+(\d+)$/.exec(progress) : null;
-  const fraction = counted
-    ? Math.min(1, Number(counted[1]) / Math.max(1, Number(counted[2])))
-    : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-canvas text-ink">
-      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-8 py-4">
-        <a
-          href="#/"
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-[15px] font-semibold text-ink-2 no-underline hover:text-ink"
-        >
-          <svg
-            aria-hidden
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
+    <PracticeFrame
+      eyebrow={eyebrow}
+      progress={progress}
+      instruction={exercise.instruction}
+      rail={<LayerRail exercise={exercise} events={attempt.events} />}
+    >
+      <div className="group flex flex-col gap-3">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+          <div
+            ref={editorRef}
+            role="application"
+            aria-label={
+              attempt.kind === "shell" ? t.practice.terminalLabel : t.practice.editorLabel
+            }
+            aria-describedby="instruction"
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            className="focus-visible:outline-offset-[-2px]"
           >
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
-          {t.practice.exit}
-        </a>
-        {progress ? (
-          <div className="flex items-center gap-3 text-sm text-ink-2">
-            <span data-testid="practice-progress">{progress}</span>
-            {fraction !== null ? (
-              <span aria-hidden className="h-1 w-[120px] overflow-hidden rounded-sm bg-line">
-                <span className="block h-full bg-amber" style={{ width: `${fraction * 100}%` }} />
-              </span>
+            {attempt.kind === "shell" ? (
+              <TerminalView state={attempt.state} />
+            ) : attempt.kind === "vim" ? (
+              <EditorView
+                lines={attempt.state.buffer.lines}
+                cursor={attempt.state.cursor}
+                mode={attempt.state.mode}
+                pending={attempt.state.pending !== null}
+              />
             ) : null}
           </div>
-        ) : null}
-      </header>
-
-      <div className="mx-auto flex w-full max-w-[1360px] flex-1 flex-col gap-6 px-8 pb-12 pt-8 lg:flex-row lg:items-start">
-        <main className="flex min-w-0 flex-1 flex-col gap-7">
-          <header className="flex flex-col gap-3.5">
-            <p className="text-[15px] font-bold tracking-[0.04em] text-amber">
-              {eyebrow ?? t.practice.defaultEyebrow}
-            </p>
-            <h1 id="instruction" className="text-balance text-[32px] font-bold leading-tight">
-              {exercise.instruction}
-            </h1>
-          </header>
-
-          <div className="group flex flex-col gap-3">
-            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-              <div
-                ref={editorRef}
-                role="application"
-                aria-label={
-                  attempt.kind === "shell" ? t.practice.terminalLabel : t.practice.editorLabel
-                }
-                aria-describedby="instruction"
-                tabIndex={0}
-                onKeyDown={handleKeyDown}
-                className="focus-visible:outline-offset-[-2px]"
-              >
-                {attempt.kind === "shell" ? (
-                  <TerminalView state={attempt.state} />
-                ) : attempt.kind === "vim" ? (
-                  <EditorView
-                    lines={attempt.state.buffer.lines}
-                    cursor={attempt.state.cursor}
-                    mode={attempt.state.mode}
-                    pending={attempt.state.pending !== null}
-                  />
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line bg-sunken px-4 py-2.5 font-mono text-sm">
-                <div className="flex items-center gap-3.5">
-                  {attempt.kind === "shell" ? (
-                    <>
-                      <span
-                        data-testid="shell-mode"
-                        className="rounded-md border border-line-strong px-2.5 py-1 text-sm font-bold tracking-[0.04em] text-ink-2"
-                      >
-                        TERMINAL
-                      </span>
-                      <span className="text-ink-3">{promptOf(attempt.state)}</span>
-                    </>
-                  ) : attempt.kind === "vim" ? (
-                    <>
-                      <ModePill
-                        mode={attempt.state.mode}
-                        pending={attempt.state.pending !== null}
-                      />
-                      <output
-                        data-testid="pending-command"
-                        aria-label={t.practice.pendingCommand}
-                        aria-live="off"
-                        className="text-ink"
-                      >
-                        {pendingKeys(attempt.state.pending)}
-                      </output>
-                    </>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-ink-2">
-                  {lastEvent && !lastEvent.accepted ? (
-                    <span role="status" className="flex items-center gap-1.5 text-ember-ink">
-                      <svg
-                        aria-hidden
-                        width="14"
-                        height="14"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                      >
-                        <path d="M4 4l8 8M12 4l-8 8" />
-                      </svg>
-                      {t.practice.notAccepted(lastEvent.logicalKey)}
-                    </span>
-                  ) : null}
-                  {attempt.kind === "vim" ? (
-                    <span
-                      aria-label={t.practice.cursorPosition}
-                    >{`${attempt.state.cursor.line + 1}:${attempt.state.cursor.column + 1}`}</span>
-                  ) : null}
-                  {combo > 0 ? (
-                    <span data-testid="combo">
-                      {t.practice.combo} <strong className="text-ink">×{combo}</strong>
-                    </span>
-                  ) : null}
-                  <span data-testid="keystroke-count">{t.practice.keys(events.length)}</span>
-                </div>
-              </div>
-            </div>
-            <p className="text-sm text-ink-3 group-focus-within:invisible">
-              {t.practice.focusHint}
-            </p>
-          </div>
-
-          {!finished && (exercise.hints.length > 0 || giveUpLabel) ? (
-            <div className="flex flex-col gap-3">
-              <ol
-                data-testid="hints"
-                aria-live="polite"
-                className="flex flex-col gap-2 text-[17px] text-ink-2"
-              >
-                {hints.revealed.map((hint) => (
-                  <li key={hint.level} className="flex items-center gap-3">
-                    <svg
-                      aria-hidden
-                      width="22"
-                      height="22"
-                      viewBox="0 0 22 22"
-                      fill="none"
-                      className="flex-none"
-                    >
-                      <circle cx="11" cy="11" r="9.5" stroke="#848c96" strokeWidth="1.6" />
-                      <path
-                        d="M8.6 8.6a2.5 2.5 0 114 2c-.9.6-1.6 1.1-1.6 2.2"
-                        stroke="#b0b7c0"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                      />
-                      <circle cx="11" cy="15.8" r="1.1" fill="#b0b7c0" />
-                    </svg>
-                    <span>
-                      <span className="text-ink-3">{t.practice.hintLabel(hint.level)}</span>
-                      {hint.text}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-              <div className="flex flex-wrap gap-3">
-                {hints.next ? (
-                  <button
-                    type="button"
-                    onClick={handleHint}
-                    disabled={!hintReady}
-                    className={quietButton}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line bg-sunken px-4 py-2.5 font-mono text-sm">
+            <div className="flex items-center gap-3.5">
+              {attempt.kind === "shell" ? (
+                <>
+                  <span
+                    data-testid="shell-mode"
+                    className="rounded-md border border-line-strong px-2.5 py-1 text-sm font-bold tracking-[0.04em] text-ink-2"
                   >
-                    {hintReady ? t.practice.showHint : t.practice.hintSoon}
-                  </button>
-                ) : null}
-                {giveUpLabel ? (
-                  <button type="button" onClick={giveUp} className={quietButton}>
-                    {giveUpLabel}
-                  </button>
-                ) : null}
-              </div>
+                    TERMINAL
+                  </span>
+                  <span className="text-ink-3">{promptOf(attempt.state)}</span>
+                </>
+              ) : attempt.kind === "vim" ? (
+                <>
+                  <ModePill mode={attempt.state.mode} pending={attempt.state.pending !== null} />
+                  <output
+                    data-testid="pending-command"
+                    aria-label={t.practice.pendingCommand}
+                    aria-live="off"
+                    className="text-ink"
+                  >
+                    {pendingKeys(attempt.state.pending)}
+                  </output>
+                </>
+              ) : null}
             </div>
-          ) : null}
-
-          {finishedPractice ? (
-            <div ref={resultRef}>
-              {renderResult ? (
-                renderResult(finishedPractice, reset)
-              ) : (
-                <ResultPanel
-                  evaluation={finishedPractice.evaluation}
-                  exercise={exercise}
-                  onRetry={reset}
-                  nextHref={nextSlug ? `?exercise=${encodeURIComponent(nextSlug)}` : null}
-                />
-              )}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-ink-2">
+              {lastEvent && !lastEvent.accepted ? (
+                <span role="status" className="flex items-center gap-1.5 text-ember-ink">
+                  <svg
+                    aria-hidden
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  >
+                    <path d="M4 4l8 8M12 4l-8 8" />
+                  </svg>
+                  {t.practice.notAccepted(lastEvent.logicalKey)}
+                </span>
+              ) : null}
+              {attempt.kind === "vim" ? (
+                <span
+                  aria-label={t.practice.cursorPosition}
+                >{`${attempt.state.cursor.line + 1}:${attempt.state.cursor.column + 1}`}</span>
+              ) : null}
+              {combo > 0 ? (
+                <span data-testid="combo">
+                  {t.practice.combo} <strong className="text-ink">×{combo}</strong>
+                </span>
+              ) : null}
+              <span data-testid="keystroke-count">{t.practice.keys(events.length)}</span>
             </div>
-          ) : null}
-        </main>
-
-        {/* The rail labels the keys of the attempt; it never decides whether they were accepted. */}
-        <LayerRail exercise={exercise} events={attempt.events} />
-      </div>
-    </div>
-  );
-}
-
-/** No keystroke was typed: the rail labels an attempt, not the absence of one. */
-const NO_EVENTS = [] as const;
-
-/**
- * What a workspace exercise shows until its view exists (T8).
- *
- * It starts no attempt: there is no editor to type in, and an attempt the learner cannot drive
- * would be a screen that pretends (T4). The instruction and the layer rail stay, so the exercise is
- * still readable, and the way out is the same one the practice area always has.
- */
-function WorkspacePractice({ exercise, eyebrow, progress }: PracticeScreenProps) {
-  const t = useT();
-  const counted = progress ? /^(\d+)\D+(\d+)$/.exec(progress) : null;
-  const fraction = counted
-    ? Math.min(1, Number(counted[1]) / Math.max(1, Number(counted[2])))
-    : null;
-
-  return (
-    <div className="flex min-h-screen flex-col bg-canvas text-ink">
-      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-8 py-4">
-        <a
-          href="#/"
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-[15px] font-semibold text-ink-2 no-underline hover:text-ink"
-        >
-          <svg
-            aria-hidden
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
-          {t.practice.exit}
-        </a>
-        {progress ? (
-          <div className="flex items-center gap-3 text-sm text-ink-2">
-            <span data-testid="practice-progress">{progress}</span>
-            {fraction !== null ? (
-              <span aria-hidden className="h-1 w-[120px] overflow-hidden rounded-sm bg-line">
-                <span className="block h-full bg-amber" style={{ width: `${fraction * 100}%` }} />
-              </span>
-            ) : null}
           </div>
-        ) : null}
-      </header>
-
-      <div className="mx-auto flex w-full max-w-[1360px] flex-1 flex-col gap-6 px-8 pb-12 pt-8 lg:flex-row lg:items-start">
-        <main className="flex min-w-0 flex-1 flex-col gap-7">
-          <header className="flex flex-col gap-3.5">
-            <p className="text-[15px] font-bold tracking-[0.04em] text-amber">
-              {eyebrow ?? t.practice.defaultEyebrow}
-            </p>
-            <h1 id="instruction" className="text-balance text-[32px] font-bold leading-tight">
-              {exercise.instruction}
-            </h1>
-          </header>
-
-          <section
-            data-testid="workspace-notice"
-            aria-labelledby="workspace-notice-h"
-            className="rounded-2xl border border-line bg-surface p-6"
-          >
-            <h2 id="workspace-notice-h" className="text-[20px] font-bold">
-              {t.practice.workspaceNotice.title}
-            </h2>
-            <p className="mt-2 text-[17px] text-ink-2">{t.practice.workspaceNotice.detail}</p>
-          </section>
-        </main>
-
-        <LayerRail exercise={exercise} events={NO_EVENTS} />
+        </div>
+        <p className="text-sm text-ink-3 group-focus-within:invisible">{t.practice.focusHint}</p>
       </div>
-    </div>
+
+      {!finished && (exercise.hints.length > 0 || giveUpLabel) ? (
+        <PracticeHints
+          revealed={hints.revealed}
+          hasNext={hints.next !== null}
+          hintReady={hintReady}
+          onHint={handleHint}
+          giveUpLabel={giveUpLabel}
+          onGiveUp={giveUp}
+        />
+      ) : null}
+
+      {finishedPractice ? (
+        <PracticeResult
+          finished={finishedPractice}
+          exercise={exercise}
+          onRetry={reset}
+          nextSlug={nextSlug}
+          renderResult={renderResult}
+          resultRef={resultRef}
+        />
+      ) : null}
+    </PracticeFrame>
   );
 }

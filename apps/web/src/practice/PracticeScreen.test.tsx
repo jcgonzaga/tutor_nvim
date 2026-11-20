@@ -29,6 +29,17 @@ function inEnglish(node: ReactNode) {
   );
 }
 
+/** The same screen with the tool layers a learner enabled: the workspace view resolves keys with them. */
+function inEnglishWithLayers(node: ReactNode, enabledLayers: readonly string[]) {
+  const storage = memoryStorage();
+  storage.setItem(PREFS_KEY, JSON.stringify({ ...DEFAULT_PREFS, language: "en", enabledLayers }));
+  return (
+    <PrefsProvider storage={storage}>
+      <I18nProvider>{node}</I18nProvider>
+    </PrefsProvider>
+  );
+}
+
 const giveUp = () => screen.getByRole("button", { name: "I don't know this" });
 const retry = () => screen.getByRole("button", { name: "Try again" });
 
@@ -54,7 +65,7 @@ describe("free practice: an exercise the learner cannot solve", () => {
   });
 });
 
-/** A workspace exercise: files, windows and panes, none of which this screen can draw yet (T8). */
+/** A workspace exercise: two files on the disk and a window to split (T8). */
 const workspace = parseWorkspaceExercise({
   schemaVersion: 1,
   kind: "workspace",
@@ -65,20 +76,126 @@ const workspace = parseWorkspaceExercise({
   skillIds: ["vim.navigation.atomic"],
   mode: "learn",
   difficulty: 1,
-  initialState: { files: { "src/main.ts": "one" }, path: "src/main.ts", cwd: "/project" },
-  objective: { type: "layout", text: "side(leaf, leaf)" },
+  initialState: {
+    files: { "src/main.ts": "one", "src/other.ts": "two" },
+    path: "src/main.ts",
+    cwd: "/project",
+  },
+  objective: {
+    type: "all",
+    goals: [
+      { type: "layout", text: "side(leaf, leaf)" },
+      { type: "focus", leaf: 1 },
+    ],
+  },
   solutions: [{ actions: ["window.split-side-by-side"], classification: "optimal" }],
 });
 
-describe("the practice screen and a workspace exercise", () => {
-  it("says the workspace view is not here yet instead of drawing an editor it cannot drive", () => {
-    render(inEnglish(<PracticeScreen exercise={workspace} />));
+/** A workspace exercise whose story happens at a terminal prompt (T7a3, story 19). */
+const terminalWorkspace = parseWorkspaceExercise({
+  schemaVersion: 1,
+  kind: "workspace",
+  id: "workspace-screen-002",
+  slug: "workspace.screen.terminal-001",
+  title: "Run the suite in a terminal",
+  instruction: "Open a terminal and run the tests.",
+  skillIds: ["vim.navigation.atomic"],
+  mode: "learn",
+  difficulty: 1,
+  initialState: {
+    files: { "src/main.ts": "one" },
+    path: "src/main.ts",
+    cwd: "/project",
+    terminal: { title: "shell", commands: { "npm test": ["ok 3 tests"] } },
+  },
+  objective: { type: "terminal_output", lines: ["ok 3 tests"] },
+  solutions: [
+    {
+      actions: ["app.launch-terminal", { action: "shell.run", command: "npm test" }],
+      classification: "optimal",
+    },
+  ],
+});
 
-    expect(screen.getByTestId("workspace-notice")).toBeTruthy();
-    expect(screen.getByText("This exercise is about the workspace")).toBeTruthy();
-    // The instruction stays readable and nothing pretends to accept keys.
+const application = () => screen.getByRole("application");
+const panes = () => screen.getAllByTestId("workspace-pane");
+const focusedPanes = () => panes().map((pane) => pane.getAttribute("data-focused") === "true");
+
+/** One key press in the practice area, the way the browser reports it. */
+function press(
+  key: string,
+  modifiers: Partial<Record<"ctrlKey" | "metaKey" | "shiftKey", true>> = {},
+) {
+  fireEvent.keyDown(application(), { key, code: `Key${key.toUpperCase()}`, ...modifiers });
+}
+
+describe("the practice screen and a workspace exercise", () => {
+  it("draws the panes the engine holds, instead of a notice about a view that does not exist", () => {
+    render(inEnglishWithLayers(<PracticeScreen exercise={workspace} />, ["nvim"]));
+
+    expect(screen.queryByTestId("workspace-notice")).toBeNull();
+    expect(screen.getByTestId("workspace-panes")).toBeTruthy();
+    expect(panes().length).toBe(1);
+    expect(focusedPanes()).toEqual([true]);
+    // One pane, the file it shows, and the text that file holds through the existing editor view.
+    expect(screen.getByTestId("workspace-pane-label").textContent).toBe("src/main.ts");
+    expect(screen.getByTestId("buffer").textContent).toContain("one");
+    // The useful state is in words beside the panes, never only in the colour of a ring.
+    expect(screen.getByTestId("workspace-mode").textContent).toBe("NORMAL");
+    expect(screen.getByTestId("workspace-session").textContent).toContain("attached");
+    expect(screen.getByTestId("workspace-focus").textContent).toContain("Pane 1 of 1");
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(workspace.instruction);
-    expect(screen.queryByRole("application")).toBeNull();
-    expect(screen.queryByTestId("keystroke-count")).toBeNull();
+  });
+
+  it("moves the focus when a key an enabled layer claims reaches an action", () => {
+    render(inEnglishWithLayers(<PracticeScreen exercise={workspace} />, ["nvim"]));
+
+    // nvim's `C-w v` splits the window side by side: a key the layer claims, resolved to an action.
+    press("w", { ctrlKey: true });
+    press("v");
+
+    expect(panes().length).toBe(2);
+    expect(focusedPanes()).toEqual([false, true]);
+    // The split is what the objective asks for, so the attempt ended by itself.
+    expect(screen.getByTestId("result-outcome").textContent).toBe("SUCCESS");
+  });
+
+  it("types into the focused buffer when no layer claims the key", () => {
+    render(inEnglishWithLayers(<PracticeScreen exercise={workspace} />, ["nvim"]));
+
+    // `i` is a layer binding the workspace does not apply, and `Z` is a key no layer claims: both
+    // reach the buffer through the engine, so a learner can still edit text.
+    press("i");
+    press("Z", { shiftKey: true });
+
+    expect(screen.getByTestId("buffer").textContent).toContain("Zone");
+  });
+
+  it("shows what was typed at the focused terminal's prompt", () => {
+    render(inEnglishWithLayers(<PracticeScreen exercise={terminalWorkspace} />, ["omarchy"]));
+
+    // Omarchy opens a terminal beside the window; the new pane has the keys (T7a1).
+    press("Enter", { metaKey: true });
+    expect(panes().length).toBe(2);
+    expect(focusedPanes()).toEqual([false, true]);
+
+    press("n");
+    press("p");
+    press("m");
+
+    expect(screen.getByTestId("workspace-terminal-prompt").textContent).toBe("npm");
+  });
+
+  it("runs the line the learner typed at the prompt, and shows what it printed", () => {
+    render(inEnglishWithLayers(<PracticeScreen exercise={terminalWorkspace} />, ["omarchy"]));
+    press("Enter", { metaKey: true });
+
+    for (const key of ["n", "p", "m", " ", "t", "e", "s", "t"]) press(key);
+    fireEvent.keyDown(application(), { key: "Enter", code: "Enter" });
+
+    expect(screen.getByTestId("workspace-terminal").textContent).toContain("npm test");
+    expect(screen.getByTestId("workspace-terminal-output").textContent).toBe("ok 3 tests");
+    expect(screen.getByTestId("workspace-terminal-prompt").textContent).toBe("");
+    expect(screen.getByTestId("result-outcome").textContent).toBe("SUCCESS");
   });
 });

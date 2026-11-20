@@ -19,6 +19,7 @@
     "@tutor-nvim/shared": "workspace:*",
     "@tutor-nvim/shell-engine": "workspace:*",
     "@tutor-nvim/vim-engine": "workspace:*",
+    "@tutor-nvim/workspace-engine": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "zod": "^4.1.0"
