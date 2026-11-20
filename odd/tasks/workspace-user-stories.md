@@ -653,3 +653,42 @@ TerminalWindow`), so focus, split, zoom, resize, swap and close needed no specia
   (the twenty stories exist, five per skill do not); `tests/gamification-sync.test.ts` because the API
   cannot replay a workspace attempt yet (T9); and the DB-backed API files, whose ten-second hook is
   beaten by `openTestDb` taking 15.1 s on this machine while `syncContent` takes 0.43 s.
+
+**L16 — evidence (T9 and the last green gates): the attempt is a sequence, and one language ships**
+
+- T9 could not be done as written, and the reason matters: the wire contract carried no `actions` field at
+  all (`packages/shared/src/api.ts`), so the browser could not deliver what the server was supposed to
+  replay. Adding it exposed a worse problem, measured rather than guessed: a story solved by *typing*
+  (`:e src/util.ts`, `i`, text, `Esc`, `:w`) produced `actions: []`, `keystrokes: 0`, `accuracy: 0`,
+  `performance: 21.25`, and the action-only API refused it. Narrowing the case to actions-only would have
+  shipped a server that throws away a legitimate solve.
+- So an attempt is an ordered list of **steps**: an action a layer resolved, or a key the engine accepted.
+  `packages/evaluation` records both (`recordWorkspaceKey` is the body `advanceWorkspaceKey` builds on), the
+  wire carries one `steps` field, and `apps/api` replays them in order — actions through
+  `applyWorkspaceAction`, keys through `dispatchWorkspace` — evaluating once, afterwards. The refusals left
+  are `unsatisfied_objective` (only when the learner did not give up), `workspace_action_refused`, and a 400
+  from the strict vocabulary gate. The pin is a typing-only solve accepted with
+  `metrics.keystrokes === steps.length`, and the same steps emptied refused 422.
+- Cost is counted in steps for the metrics and for the efficiency rule. All declared solutions are
+  all-action, so no content changed, but a long typed paste now grades `inefficient` where it used to grade
+  on actions alone: a pedagogy call made to avoid the lost attempt, worth a reviewer's eye.
+- Two things T9 deliberately does not have. The steps are replayed and then dropped — `attempt_events` stays
+  empty for this kind and no column holds the sequence, so a ghost replay of a workspace attempt needs a
+  storage decision. And a refused key records no step, so a submission is state-equivalent to the attempt,
+  not byte-faithful.
+- The DB-backed suites grew a 120 s hook. Measured, not guessed: `openTestDb` (pglite) takes ~15 s on this
+  machine and four files died at the ten-second default while passing alone.
+- The shipped bundle is one language now (`95a652e`). Every learner downloaded the English strings, the
+  Spanish strings and the Spanish content overlay. A language is two lazy packs — interface catalog and
+  content overlay — fetched once when the stored language needs them, falling back to English with a warning.
+  The budget is untouched at 300 KB and still measures what the first load downloads: **264.9 KB**, with
+  50.3 KB fetched later. A Spanish learner still spends ~312 KB, because Spanish is a download and gzip
+  shares less across chunks; the perf suite prints both numbers.
+- The budget's *metric* changed and that is a judgment call, written here rather than buried: it used to sum
+  every `.js` in `dist/assets`, which counts chunks a learner never fetches and would have made lazy loading
+  pointless. It now reads what `index.html` loads, and adds assertions that both packs are separate and not
+  preloaded, so the entry cannot quietly regain them.
+- Known red after this slice: `tests/pedagogy-flow.test.ts` (1) still wants context variation for 18 skills
+  — five exercises per skill is content work, not a code defect; the shell-engine oracle against this host's
+  bash (42); and the perf suite's keypress p95 sits at 41–49 ms against a 50 ms budget on this machine, which
+  is an edge worth watching rather than a pass.
