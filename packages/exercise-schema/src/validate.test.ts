@@ -77,7 +77,11 @@ describe("exercise schema v1", () => {
 
   it("applies defaults for optional sections", () => {
     const exercise = parseVimExercise(validInput());
-    expect(exercise.environment).toEqual({ type: "simulator", profile: "vim-basic-v1", layers: [] });
+    expect(exercise.environment).toEqual({
+      type: "simulator",
+      profile: "vim-basic-v1",
+      layers: [],
+    });
     expect(exercise.antiPatterns).toEqual([]);
     expect(exercise.hints).toEqual([]);
     expect(exercise.metadata).toEqual({ transferTags: [] });

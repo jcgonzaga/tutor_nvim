@@ -1,135 +1,494 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sistema visual — Tutor NeoVim</title>
-<style>
-  :root {
-    --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
-    --color-canvas: #0f1113; --color-sunken: #131619; --color-surface: #16191c;
-    --color-panel: #1a1d21; --color-raised: #1d2125; --color-line: #2b3036;
-    --color-line-strong: #3a4048; --color-line-faint: #22262b; --color-dash: #4a515a;
-    --color-ink: #edeff2; --color-ink-2: #b0b7c0; --color-ink-3: #848c96;
-    --color-amber: #f4b740; --color-amber-hi: #ffd27a; --color-amber-ink: #17130a;
-    --color-azure: #7cc4ff; --color-azure-deep: #4f96d1;
-    --color-ember: #e5683e; --color-ember-ink: #ff9b78; --color-ember-bg: #2a1810;
-    --color-ember-line: #5a2e1c; --color-code-string: #d7b98a;
-    color-scheme: dark;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--color-canvas); color: var(--color-ink);
-    font-family: var(--font-sans); font-size: 17px; line-height: 1.5; padding: 40px;
-  }
-  :focus-visible { outline: 2px solid var(--color-amber); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-  }
-  h1 { font-size: 34px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.02em; }
-  h2 { font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--color-ink-3); margin: 40px 0 14px; }
-  .sub { color: var(--color-ink-2); margin: 0 0 8px; max-width: 68ch; }
-  .note { color: var(--color-ink-3); font-size: 14px; margin: 6px 0 0; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema visual — Tutor NeoVim</title>
+    <style>
+      :root {
+        --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+        --color-canvas: #0f1113;
+        --color-sunken: #131619;
+        --color-surface: #16191c;
+        --color-panel: #1a1d21;
+        --color-raised: #1d2125;
+        --color-line: #2b3036;
+        --color-line-strong: #3a4048;
+        --color-line-faint: #22262b;
+        --color-dash: #4a515a;
+        --color-ink: #edeff2;
+        --color-ink-2: #b0b7c0;
+        --color-ink-3: #848c96;
+        --color-amber: #f4b740;
+        --color-amber-hi: #ffd27a;
+        --color-amber-ink: #17130a;
+        --color-azure: #7cc4ff;
+        --color-azure-deep: #4f96d1;
+        --color-ember: #e5683e;
+        --color-ember-ink: #ff9b78;
+        --color-ember-bg: #2a1810;
+        --color-ember-line: #5a2e1c;
+        --color-code-string: #d7b98a;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--color-canvas);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 17px;
+        line-height: 1.5;
+        padding: 40px;
+      }
+      :focus-visible {
+        outline: 2px solid var(--color-amber);
+        outline-offset: 2px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+      h1 {
+        font-size: 34px;
+        font-weight: 800;
+        margin: 0 0 6px;
+        letter-spacing: -0.02em;
+      }
+      h2 {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-ink-3);
+        margin: 40px 0 14px;
+      }
+      .sub {
+        color: var(--color-ink-2);
+        margin: 0 0 8px;
+        max-width: 68ch;
+      }
+      .note {
+        color: var(--color-ink-3);
+        font-size: 14px;
+        margin: 6px 0 0;
+      }
 
-  .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .swatch { border: 1px solid var(--color-line); border-radius: 8px; overflow: hidden; background: var(--color-surface); }
-  .swatch .chip { height: 56px; display: block; border-bottom: 1px solid var(--color-line); }
-  .swatch .meta { padding: 9px 11px; }
-  .swatch .name { font-family: var(--font-mono); font-size: 12.5px; color: var(--color-ink); }
-  .swatch .val { font-family: var(--font-mono); font-size: 12.5px; color: var(--color-ink-3); }
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .swatch {
+        border: 1px solid var(--color-line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--color-surface);
+      }
+      .swatch .chip {
+        height: 56px;
+        display: block;
+        border-bottom: 1px solid var(--color-line);
+      }
+      .swatch .meta {
+        padding: 9px 11px;
+      }
+      .swatch .name {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        color: var(--color-ink);
+      }
+      .swatch .val {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        color: var(--color-ink-3);
+      }
 
-  .grid2 { display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: start; }
-  .panel { background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 10px; padding: 18px 20px; }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        align-items: start;
+      }
+      .panel {
+        background: var(--color-panel);
+        border: 1px solid var(--color-line);
+        border-radius: 10px;
+        padding: 18px 20px;
+      }
 
-  .type-row { display: flex; align-items: baseline; gap: 16px; border-bottom: 1px dashed var(--color-line-faint); padding: 10px 0; }
-  .type-row:last-child { border-bottom: 0; }
-  .type-row .sample { flex: 1; }
-  .type-row .label { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink-3); white-space: nowrap; }
+      .type-row {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        border-bottom: 1px dashed var(--color-line-faint);
+        padding: 10px 0;
+      }
+      .type-row:last-child {
+        border-bottom: 0;
+      }
+      .type-row .sample {
+        flex: 1;
+      }
+      .type-row .label {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--color-ink-3);
+        white-space: nowrap;
+      }
 
-  .code { font-family: var(--font-mono); font-size: 15px; background: var(--color-sunken); border: 1px solid var(--color-line); border-radius: 8px; padding: 14px 16px; }
-  .code .str { color: var(--color-code-string); }
-  .cursor { background: var(--color-amber); color: var(--color-amber-ink); border-radius: 2px; padding: 0 1px; }
+      .code {
+        font-family: var(--font-mono);
+        font-size: 15px;
+        background: var(--color-sunken);
+        border: 1px solid var(--color-line);
+        border-radius: 8px;
+        padding: 14px 16px;
+      }
+      .code .str {
+        color: var(--color-code-string);
+      }
+      .cursor {
+        background: var(--color-amber);
+        color: var(--color-amber-ink);
+        border-radius: 2px;
+        padding: 0 1px;
+      }
 
-  .states { display: flex; flex-wrap: wrap; gap: 10px; }
-  .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; border-radius: 999px; padding: 5px 12px; border: 1px solid var(--color-line); }
-  .badge .dot { width: 8px; height: 8px; border-radius: 999px; }
-  .b-amber { background: rgba(244,183,64,.12); border-color: rgba(244,183,64,.42); color: var(--color-amber-hi); }
-  .b-amber .dot { background: var(--color-amber); }
-  .b-azure { background: rgba(124,196,255,.1); border-color: rgba(124,196,255,.4); color: var(--color-azure); }
-  .b-azure .dot { background: var(--color-azure); }
-  .b-ember { background: var(--color-ember-bg); border-color: var(--color-ember-line); color: var(--color-ember-ink); }
-  .b-ember .dot { background: var(--color-ember); }
-  .b-ink { color: var(--color-ink-2); }
-  .b-ink .dot { background: var(--color-dash); }
+      .states {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 5px 12px;
+        border: 1px solid var(--color-line);
+      }
+      .badge .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+      }
+      .b-amber {
+        background: rgba(244, 183, 64, 0.12);
+        border-color: rgba(244, 183, 64, 0.42);
+        color: var(--color-amber-hi);
+      }
+      .b-amber .dot {
+        background: var(--color-amber);
+      }
+      .b-azure {
+        background: rgba(124, 196, 255, 0.1);
+        border-color: rgba(124, 196, 255, 0.4);
+        color: var(--color-azure);
+      }
+      .b-azure .dot {
+        background: var(--color-azure);
+      }
+      .b-ember {
+        background: var(--color-ember-bg);
+        border-color: var(--color-ember-line);
+        color: var(--color-ember-ink);
+      }
+      .b-ember .dot {
+        background: var(--color-ember);
+      }
+      .b-ink {
+        color: var(--color-ink-2);
+      }
+      .b-ink .dot {
+        background: var(--color-dash);
+      }
 
-  .keys { display: inline-flex; gap: 6px; }
-  kbd { font-family: var(--font-mono); font-size: 13px; background: var(--color-raised); border: 1px solid var(--color-line-strong); border-bottom-width: 2px; border-radius: 5px; padding: 2px 7px; color: var(--color-ink); }
+      .keys {
+        display: inline-flex;
+        gap: 6px;
+      }
+      kbd {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        background: var(--color-raised);
+        border: 1px solid var(--color-line-strong);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        padding: 2px 7px;
+        color: var(--color-ink);
+      }
 
-  .focus-demo { display: flex; gap: 14px; align-items: center; }
-  .btn { font: inherit; font-weight: 600; background: var(--color-raised); color: var(--color-ink); border: 1px solid var(--color-line-strong); border-radius: 7px; padding: 8px 14px; cursor: pointer; }
-  .btn-primary { background: var(--color-amber); color: var(--color-amber-ink); border-color: var(--color-amber-hi); }
-</style>
-</head>
-<body>
-  <h1>Tutor NeoVim — sistema visual</h1>
-  <p class="sub">Grafito y ámbar. El fondo se calla para que el código sea lo único que brille, y el cursor ámbar guía la mirada en cada pantalla. Todos los valores de esta lámina salen de <code>apps/web/src/index.css</code>.</p>
-  <p class="note">Los tokens de abajo son los únicos del proyecto. No hay escalas de espaciado, radios ni sombras tokenizadas: los artboards usan valores puntuales.</p>
+      .focus-demo {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .btn {
+        font: inherit;
+        font-weight: 600;
+        background: var(--color-raised);
+        color: var(--color-ink);
+        border: 1px solid var(--color-line-strong);
+        border-radius: 7px;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: var(--color-amber);
+        color: var(--color-amber-ink);
+        border-color: var(--color-amber-hi);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tutor NeoVim — sistema visual</h1>
+    <p class="sub">
+      Grafito y ámbar. El fondo se calla para que el código sea lo único que brille, y el cursor
+      ámbar guía la mirada en cada pantalla. Todos los valores de esta lámina salen de
+      <code>apps/web/src/index.css</code>.
+    </p>
+    <p class="note">
+      Los tokens de abajo son los únicos del proyecto. No hay escalas de espaciado, radios ni
+      sombras tokenizadas: los artboards usan valores puntuales.
+    </p>
 
-  <h2>Color</h2>
-  <div class="swatches">
-    <div class="swatch"><span class="chip" style="background:var(--color-canvas)"></span><div class="meta"><div class="name">canvas</div><div class="val">#0f1113</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-sunken)"></span><div class="meta"><div class="name">sunken</div><div class="val">#131619</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-surface)"></span><div class="meta"><div class="name">surface</div><div class="val">#16191c</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-panel)"></span><div class="meta"><div class="name">panel</div><div class="val">#1a1d21</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-raised)"></span><div class="meta"><div class="name">raised</div><div class="val">#1d2125</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-line)"></span><div class="meta"><div class="name">line</div><div class="val">#2b3036</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-line-strong)"></span><div class="meta"><div class="name">line-strong</div><div class="val">#3a4048</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-line-faint)"></span><div class="meta"><div class="name">line-faint</div><div class="val">#22262b</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-dash)"></span><div class="meta"><div class="name">dash</div><div class="val">#4a515a</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-ink)"></span><div class="meta"><div class="name">ink</div><div class="val">#edeff2 · 16:1</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-ink-2)"></span><div class="meta"><div class="name">ink-2</div><div class="val">#b0b7c0 · 9.4:1</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-ink-3)"></span><div class="meta"><div class="name">ink-3</div><div class="val">#848c96 · 5.5:1</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-amber)"></span><div class="meta"><div class="name">amber</div><div class="val">#f4b740</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-amber-hi)"></span><div class="meta"><div class="name">amber-hi</div><div class="val">#ffd27a</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-azure)"></span><div class="meta"><div class="name">azure</div><div class="val">#7cc4ff</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-azure-deep)"></span><div class="meta"><div class="name">azure-deep</div><div class="val">#4f96d1</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-ember)"></span><div class="meta"><div class="name">ember</div><div class="val">#e5683e</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-ember-bg)"></span><div class="meta"><div class="name">ember-bg</div><div class="val">#2a1810</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-ember-line)"></span><div class="meta"><div class="name">ember-line</div><div class="val">#5a2e1c</div></div></div>
-    <div class="swatch"><span class="chip" style="background:var(--color-code-string)"></span><div class="meta"><div class="name">code-string</div><div class="val">#d7b98a</div></div></div>
-  </div>
-
-  <div class="grid2" style="margin-top:28px">
-    <section class="panel">
-      <h2 style="margin-top:0">Tipografía</h2>
-      <div class="type-row"><div class="sample" style="font-size:34px;font-weight:800;letter-spacing:-.02em">Cambiá el valor</div><div class="label">sans 800 / 34</div></div>
-      <div class="type-row"><div class="sample" style="font-size:22px;font-weight:700">Sesión diaria</div><div class="label">sans 700 / 22</div></div>
-      <div class="type-row"><div class="sample" style="font-size:17px;font-weight:400">Cuerpo a 17 px, que es la base del proyecto.</div><div class="label">sans 400 / 17</div></div>
-      <div class="type-row"><div class="sample" style="font-size:14px;font-weight:600;color:var(--color-ink-2)">Etiqueta secundaria en 14 px</div><div class="label">sans 600 / 14</div></div>
-      <div class="type-row"><div class="sample" style="font-family:var(--font-mono);font-size:15px">const mode = <span style="color:var(--color-code-string)">"development"</span>;</div><div class="label">mono 400 / 15</div></div>
-      <div class="type-row"><div class="sample" style="font-family:var(--font-mono);font-size:12.5px;color:var(--color-ink-3);letter-spacing:.14em">NORMAL</div><div class="label">mono 500 / 12.5</div></div>
-      <p class="note">Sans: Atkinson Hyperlegible Next (400–800). Mono: JetBrains Mono (400–700). Ambas self-hosted: la práctica funciona sin red.</p>
-    </section>
-
-    <section class="panel">
-      <h2 style="margin-top:0">Foco, código y estados</h2>
-      <div class="focus-demo">
-        <button class="btn" type="button">Enfocado</button>
-        <button class="btn btn-primary" type="button" id="focus-sample">Tab para ver el foco</button>
+    <h2>Color</h2>
+    <div class="swatches">
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-canvas)"></span>
+        <div class="meta">
+          <div class="name">canvas</div>
+          <div class="val">#0f1113</div>
+        </div>
       </div>
-      <p class="note">Anillo de foco único: 2 px ámbar con 2 px de separación, en todo elemento enfocable.</p>
-      <div class="code" style="margin-top:16px">const mode = <span class="str">"development"</span>;<br>const target = <span class="cursor">"</span>production";</div>
-      <p class="note">El cursor es un bloque ámbar con tinta oscura encima: se lee aun sobre el código.</p>
-      <div class="states" style="margin-top:14px">
-        <span class="badge b-amber"><span class="dot"></span>Óptima</span>
-        <span class="badge b-azure"><span class="dot"></span>Válida</span>
-        <span class="badge b-ember"><span class="dot"></span>No aceptada</span>
-        <span class="badge b-ink"><span class="dot"></span>Bloqueada</span>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-sunken)"></span>
+        <div class="meta">
+          <div class="name">sunken</div>
+          <div class="val">#131619</div>
+        </div>
       </div>
-      <p class="note">Ningún estado depende solo del color: cada uno lleva además punto, palabra y, en la app, ícono.</p>
-      <div class="keys" style="margin-top:14px"><kbd>c</kbd><kbd>i</kbd><kbd>"</kbd><kbd>Esc</kbd></div>
-    </section>
-  </div>
-</body>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-surface)"></span>
+        <div class="meta">
+          <div class="name">surface</div>
+          <div class="val">#16191c</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-panel)"></span>
+        <div class="meta">
+          <div class="name">panel</div>
+          <div class="val">#1a1d21</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-raised)"></span>
+        <div class="meta">
+          <div class="name">raised</div>
+          <div class="val">#1d2125</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-line)"></span>
+        <div class="meta">
+          <div class="name">line</div>
+          <div class="val">#2b3036</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-line-strong)"></span>
+        <div class="meta">
+          <div class="name">line-strong</div>
+          <div class="val">#3a4048</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-line-faint)"></span>
+        <div class="meta">
+          <div class="name">line-faint</div>
+          <div class="val">#22262b</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-dash)"></span>
+        <div class="meta">
+          <div class="name">dash</div>
+          <div class="val">#4a515a</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-ink)"></span>
+        <div class="meta">
+          <div class="name">ink</div>
+          <div class="val">#edeff2 · 16:1</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-ink-2)"></span>
+        <div class="meta">
+          <div class="name">ink-2</div>
+          <div class="val">#b0b7c0 · 9.4:1</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-ink-3)"></span>
+        <div class="meta">
+          <div class="name">ink-3</div>
+          <div class="val">#848c96 · 5.5:1</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-amber)"></span>
+        <div class="meta">
+          <div class="name">amber</div>
+          <div class="val">#f4b740</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-amber-hi)"></span>
+        <div class="meta">
+          <div class="name">amber-hi</div>
+          <div class="val">#ffd27a</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-azure)"></span>
+        <div class="meta">
+          <div class="name">azure</div>
+          <div class="val">#7cc4ff</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-azure-deep)"></span>
+        <div class="meta">
+          <div class="name">azure-deep</div>
+          <div class="val">#4f96d1</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-ember)"></span>
+        <div class="meta">
+          <div class="name">ember</div>
+          <div class="val">#e5683e</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-ember-bg)"></span>
+        <div class="meta">
+          <div class="name">ember-bg</div>
+          <div class="val">#2a1810</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-ember-line)"></span>
+        <div class="meta">
+          <div class="name">ember-line</div>
+          <div class="val">#5a2e1c</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <span class="chip" style="background: var(--color-code-string)"></span>
+        <div class="meta">
+          <div class="name">code-string</div>
+          <div class="val">#d7b98a</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top: 28px">
+      <section class="panel">
+        <h2 style="margin-top: 0">Tipografía</h2>
+        <div class="type-row">
+          <div class="sample" style="font-size: 34px; font-weight: 800; letter-spacing: -0.02em">
+            Cambiá el valor
+          </div>
+          <div class="label">sans 800 / 34</div>
+        </div>
+        <div class="type-row">
+          <div class="sample" style="font-size: 22px; font-weight: 700">Sesión diaria</div>
+          <div class="label">sans 700 / 22</div>
+        </div>
+        <div class="type-row">
+          <div class="sample" style="font-size: 17px; font-weight: 400">
+            Cuerpo a 17 px, que es la base del proyecto.
+          </div>
+          <div class="label">sans 400 / 17</div>
+        </div>
+        <div class="type-row">
+          <div class="sample" style="font-size: 14px; font-weight: 600; color: var(--color-ink-2)">
+            Etiqueta secundaria en 14 px
+          </div>
+          <div class="label">sans 600 / 14</div>
+        </div>
+        <div class="type-row">
+          <div class="sample" style="font-family: var(--font-mono); font-size: 15px">
+            const mode = <span style="color: var(--color-code-string)">"development"</span>;
+          </div>
+          <div class="label">mono 400 / 15</div>
+        </div>
+        <div class="type-row">
+          <div
+            class="sample"
+            style="
+              font-family: var(--font-mono);
+              font-size: 12.5px;
+              color: var(--color-ink-3);
+              letter-spacing: 0.14em;
+            "
+          >
+            NORMAL
+          </div>
+          <div class="label">mono 500 / 12.5</div>
+        </div>
+        <p class="note">
+          Sans: Atkinson Hyperlegible Next (400–800). Mono: JetBrains Mono (400–700). Ambas
+          self-hosted: la práctica funciona sin red.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2 style="margin-top: 0">Foco, código y estados</h2>
+        <div class="focus-demo">
+          <button class="btn" type="button">Enfocado</button>
+          <button class="btn btn-primary" type="button" id="focus-sample">
+            Tab para ver el foco
+          </button>
+        </div>
+        <p class="note">
+          Anillo de foco único: 2 px ámbar con 2 px de separación, en todo elemento enfocable.
+        </p>
+        <div class="code" style="margin-top: 16px">
+          const mode = <span class="str">"development"</span>;<br />const target =
+          <span class="cursor">"</span>production";
+        </div>
+        <p class="note">
+          El cursor es un bloque ámbar con tinta oscura encima: se lee aun sobre el código.
+        </p>
+        <div class="states" style="margin-top: 14px">
+          <span class="badge b-amber"><span class="dot"></span>Óptima</span>
+          <span class="badge b-azure"><span class="dot"></span>Válida</span>
+          <span class="badge b-ember"><span class="dot"></span>No aceptada</span>
+          <span class="badge b-ink"><span class="dot"></span>Bloqueada</span>
+        </div>
+        <p class="note">
+          Ningún estado depende solo del color: cada uno lleva además punto, palabra y, en la app,
+          ícono.
+        </p>
+        <div class="keys" style="margin-top: 14px">
+          <kbd>c</kbd><kbd>i</kbd><kbd>"</kbd><kbd>Esc</kbd>
+        </div>
+      </section>
+    </div>
+  </body>
 </html>

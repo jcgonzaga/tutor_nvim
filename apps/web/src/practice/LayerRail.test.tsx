@@ -72,11 +72,15 @@ describe("the layer rail lists the catalogs content has, and remembers the choic
     render(inApp(storageWith([]), <LayerRail events={[]} exercise={exercise} />));
 
     // The switch announces the surface in the learner's language, exactly like the visible line.
-    const surfaces = { shell: "shell", editor: "editor", multiplexer: "multiplexer", "window-manager": "window manager" } as const;
+    const surfaces = {
+      shell: "shell",
+      editor: "editor",
+      multiplexer: "multiplexer",
+      "window-manager": "window manager",
+    } as const;
     expect(screen.getAllByRole("switch").map((node) => node.getAttribute("aria-label"))).toEqual(
       keymapLayers.map(
-        (layer) =>
-          `${layer.label}, ${layer.owns.map((surface) => surfaces[surface]).join(", ")}`,
+        (layer) => `${layer.label}, ${layer.owns.map((surface) => surfaces[surface]).join(", ")}`,
       ),
     );
     expect(screen.getByTestId("rail-count").textContent).toBe(`0 of ${keymapLayers.length} on`);

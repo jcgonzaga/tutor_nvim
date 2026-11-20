@@ -65,8 +65,7 @@ export interface ActionAttempt {
 
 export type ActionAttemptEvaluation =
   /** The exercise declares no action: this decides nothing about it, it is not a failure. */
-  | { readonly kind: "not-an-action-exercise" }
-  | ActionAttempt;
+  { readonly kind: "not-an-action-exercise" } | ActionAttempt;
 
 /** The exercise's declaration, or nothing: an exercise that names no action is not judged here. */
 export interface DeclaredActions {

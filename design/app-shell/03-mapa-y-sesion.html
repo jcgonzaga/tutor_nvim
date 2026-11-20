@@ -1,271 +1,744 @@
 <!doctype html>
 <html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mapa y sesión — Tutor NeoVim</title>
-<style>
-  :root {
-    --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
-    --canvas: #0f1113; --sunken: #131619; --surface: #16191c; --panel: #1a1d21; --raised: #1d2125;
-    --line: #2b3036; --line-strong: #3a4048; --line-faint: #22262b; --dash: #4a515a;
-    --ink: #edeff2; --ink-2: #b0b7c0; --ink-3: #848c96;
-    --amber: #f4b740; --amber-hi: #ffd27a; --amber-ink: #17130a;
-    --azure: #7cc4ff; --ember: #e5683e; --ember-ink: #ff9b78; --ember-bg: #2a1810; --ember-line: #5a2e1c;
-    --string: #d7b98a;
-    color-scheme: dark;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); font-size: 17px; line-height: 1.5; }
-  :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mapa y sesión — Tutor NeoVim</title>
+    <style>
+      :root {
+        --font-sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+        --canvas: #0f1113;
+        --sunken: #131619;
+        --surface: #16191c;
+        --panel: #1a1d21;
+        --raised: #1d2125;
+        --line: #2b3036;
+        --line-strong: #3a4048;
+        --line-faint: #22262b;
+        --dash: #4a515a;
+        --ink: #edeff2;
+        --ink-2: #b0b7c0;
+        --ink-3: #848c96;
+        --amber: #f4b740;
+        --amber-hi: #ffd27a;
+        --amber-ink: #17130a;
+        --azure: #7cc4ff;
+        --ember: #e5683e;
+        --ember-ink: #ff9b78;
+        --ember-bg: #2a1810;
+        --ember-line: #5a2e1c;
+        --string: #d7b98a;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 17px;
+        line-height: 1.5;
+      }
+      :focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 2px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
 
-  .app { max-width: 1440px; margin: 0 auto; min-height: 900px; padding: 20px 36px 20px; display: flex; flex-direction: column; }
+      .app {
+        max-width: 1440px;
+        margin: 0 auto;
+        min-height: 900px;
+        padding: 20px 36px 20px;
+        display: flex;
+        flex-direction: column;
+      }
 
-  header.top { display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--line-faint); padding-bottom: 12px; }
-  .crumb { font-size: 14px; font-weight: 600; color: var(--ink-2); letter-spacing: .02em; }
-  header.top .spacer { flex: 1; }
-  .stat { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
-  .stat b { color: var(--ink); font-weight: 700; }
+      header.top {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        border-bottom: 1px solid var(--line-faint);
+        padding-bottom: 12px;
+      }
+      .crumb {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-2);
+        letter-spacing: 0.02em;
+      }
+      header.top .spacer {
+        flex: 1;
+      }
+      .stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .stat b {
+        color: var(--ink);
+        font-weight: 700;
+      }
 
-  .layerbar { display: flex; align-items: center; gap: 8px; padding: 12px 0 0; }
-  .layerbar-label { font-size: 13px; color: var(--ink-3); }
-  .layer-chip { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 2px 10px; }
-  .layerbar .spacer { flex: 1; }
-  .link { font-size: 13.5px; font-weight: 700; color: var(--amber-hi); text-decoration: none; border-bottom: 1px solid rgba(244,183,64,.45); padding-bottom: 1px; border-radius: 2px; }
-  .link:hover { color: var(--amber); }
+      .layerbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 0 0;
+      }
+      .layerbar-label {
+        font-size: 13px;
+        color: var(--ink-3);
+      }
+      .layer-chip {
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 999px;
+        padding: 2px 10px;
+      }
+      .layerbar .spacer {
+        flex: 1;
+      }
+      .link {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--amber-hi);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(244, 183, 64, 0.45);
+        padding-bottom: 1px;
+        border-radius: 2px;
+      }
+      .link:hover {
+        color: var(--amber);
+      }
 
-  .layout { flex: 1; display: grid; grid-template-columns: 944px 396px; gap: 28px; align-items: start; padding-top: 18px; }
+      .layout {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 944px 396px;
+        gap: 28px;
+        align-items: start;
+        padding-top: 18px;
+      }
 
-  /* Map */
-  .map { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 16px 21px 20px; }
-  .map-head { display: flex; align-items: baseline; gap: 12px; }
-  .map-head h1 { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
-  .map-meta { font-size: 12.5px; color: var(--ink-3); }
-  .map-note { margin: 3px 0 14px; font-size: 13px; color: var(--ink-3); }
-  .map-wrap { position: relative; width: 900px; height: 538px; }
-  .edges { position: absolute; top: 0; left: 0; width: 900px; height: 538px; }
-  .edges path { fill: none; stroke: var(--dash); stroke-width: 1.5; stroke-linecap: round; }
-  .edges path.hot { stroke: var(--dash); stroke-dasharray: 4 4; }
+      /* Map */
+      .map {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        padding: 16px 21px 20px;
+      }
+      .map-head {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .map-head h1 {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      .map-meta {
+        font-size: 12.5px;
+        color: var(--ink-3);
+      }
+      .map-note {
+        margin: 3px 0 14px;
+        font-size: 13px;
+        color: var(--ink-3);
+      }
+      .map-wrap {
+        position: relative;
+        width: 900px;
+        height: 538px;
+      }
+      .edges {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 900px;
+        height: 538px;
+      }
+      .edges path {
+        fill: none;
+        stroke: var(--dash);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+      }
+      .edges path.hot {
+        stroke: var(--dash);
+        stroke-dasharray: 4 4;
+      }
 
-  .grid { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 440px); grid-auto-rows: 112px; gap: 30px 20px; }
-  .node { display: flex; flex-direction: column; justify-content: space-between; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; }
-  .node-name { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
-  .node-meta { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-3); }
-  .node-meta code { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
-  .state { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--line-strong); border-radius: 999px; padding: 2px 9px 2px 7px; }
-  .ico { width: 14px; height: 14px; flex: none; }
+      .grid {
+        position: relative;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(2, 440px);
+        grid-auto-rows: 112px;
+        gap: 30px 20px;
+      }
+      .node {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 13px;
+      }
+      .node-name {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .node-meta {
+        margin: 3px 0 0;
+        font-size: 12.5px;
+        color: var(--ink-3);
+      }
+      .node-meta code {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--ink-2);
+      }
+      .state {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        padding: 2px 9px 2px 7px;
+      }
+      .ico {
+        width: 14px;
+        height: 14px;
+        flex: none;
+      }
 
-  .is-dominado { border-color: var(--line-strong); }
-  .is-dominado .state { color: var(--amber-hi); border-color: rgba(244,183,64,.5); background: rgba(244,183,64,.1); }
-  .is-fluyendo .state { color: var(--azure); border-color: rgba(124,196,255,.45); background: rgba(124,196,255,.1); }
-  .is-practicando { border-style: dashed; border-color: var(--line-strong); }
-  .is-practicando .state { color: var(--ink-2); background: var(--raised); }
-  .is-bloqueado { border-style: dashed; border-color: var(--line); background: var(--sunken); }
-  .is-bloqueado .node-name { color: var(--ink-2); }
-  .is-bloqueado .state { color: var(--ink-3); border-color: var(--line); background: var(--canvas); }
+      .is-dominado {
+        border-color: var(--line-strong);
+      }
+      .is-dominado .state {
+        color: var(--amber-hi);
+        border-color: rgba(244, 183, 64, 0.5);
+        background: rgba(244, 183, 64, 0.1);
+      }
+      .is-fluyendo .state {
+        color: var(--azure);
+        border-color: rgba(124, 196, 255, 0.45);
+        background: rgba(124, 196, 255, 0.1);
+      }
+      .is-practicando {
+        border-style: dashed;
+        border-color: var(--line-strong);
+      }
+      .is-practicando .state {
+        color: var(--ink-2);
+        background: var(--raised);
+      }
+      .is-bloqueado {
+        border-style: dashed;
+        border-color: var(--line);
+        background: var(--sunken);
+      }
+      .is-bloqueado .node-name {
+        color: var(--ink-2);
+      }
+      .is-bloqueado .state {
+        color: var(--ink-3);
+        border-color: var(--line);
+        background: var(--canvas);
+      }
 
-  /* Session card */
-  .session { border: 1px solid var(--line-strong); border-radius: 12px; background: var(--panel); padding: 16px 16px 14px; align-self: stretch; display: flex; flex-direction: column; }
-  .session h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
-  .session-sub { margin: 2px 0 12px; font-size: 12.5px; color: var(--ink-3); }
-  .blocks { list-style: none; margin: 0; padding: 0; }
-  .block { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line-faint); padding: 11px 0; }
-  .block:first-child { border-top: 0; }
-  .b-name { font-size: 15px; font-weight: 600; color: var(--ink); }
-  .b-chip { font-size: 11.5px; font-weight: 700; color: var(--ember-ink); border: 1px solid var(--ember-line); background: var(--ember-bg); border-radius: 999px; padding: 1px 8px; }
-  .block .spacer { flex: 1; }
-  .b-detail { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); }
-  .total { display: flex; align-items: baseline; gap: 8px; border-top: 1px solid var(--line-strong); margin-top: 2px; padding-top: 10px; font-size: 13px; color: var(--ink-3); }
-  .total .spacer { flex: 1; }
-  .total b { font-family: var(--font-mono); font-size: 14px; color: var(--ink); font-weight: 700; }
-  .btn { font: inherit; font-weight: 700; font-size: 15px; border-radius: 8px; padding: 10px 16px; border: 1px solid var(--line-strong); background: var(--raised); color: var(--ink); cursor: pointer; }
-  .btn-primary { background: var(--amber); color: var(--amber-ink); border-color: var(--amber-hi); }
-  .btn.wide { width: 100%; margin-top: 14px; }
-  .marks { margin-top: auto; border-top: 1px solid var(--line-faint); padding-top: 12px; display: grid; gap: 7px; }
-  .queue { margin-top: 16px; border-top: 1px solid var(--line-faint); padding-top: 12px; }
-  .queue-head { display: flex; align-items: baseline; justify-content: space-between; font-size: 11.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
-  .queue-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
-  .queue-list li { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
-  .q-name { color: var(--ink-2); font-weight: 600; }
-  .queue-list .spacer { flex: 1; }
-  .q-when { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
-  .mark-row { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
-  .mk-label { color: var(--ink-3); }
-  .mark-row .spacer { flex: 1; }
-  .mk-val { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); }
-  .session-note { margin: 12px 0 0; border-left: 2px solid var(--line-strong); padding-left: 10px; font-size: 12.5px; color: var(--ink-3); }
-  kbd { font-family: var(--font-mono); font-size: 12px; background: var(--raised); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; color: var(--ink); }
+      /* Session card */
+      .session {
+        border: 1px solid var(--line-strong);
+        border-radius: 12px;
+        background: var(--panel);
+        padding: 16px 16px 14px;
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+      }
+      .session h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .session-sub {
+        margin: 2px 0 12px;
+        font-size: 12.5px;
+        color: var(--ink-3);
+      }
+      .blocks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .block {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-top: 1px solid var(--line-faint);
+        padding: 11px 0;
+      }
+      .block:first-child {
+        border-top: 0;
+      }
+      .b-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .b-chip {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ember-ink);
+        border: 1px solid var(--ember-line);
+        background: var(--ember-bg);
+        border-radius: 999px;
+        padding: 1px 8px;
+      }
+      .block .spacer {
+        flex: 1;
+      }
+      .b-detail {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        color: var(--ink-2);
+      }
+      .total {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        border-top: 1px solid var(--line-strong);
+        margin-top: 2px;
+        padding-top: 10px;
+        font-size: 13px;
+        color: var(--ink-3);
+      }
+      .total .spacer {
+        flex: 1;
+      }
+      .total b {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .btn {
+        font: inherit;
+        font-weight: 700;
+        font-size: 15px;
+        border-radius: 8px;
+        padding: 10px 16px;
+        border: 1px solid var(--line-strong);
+        background: var(--raised);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: var(--amber);
+        color: var(--amber-ink);
+        border-color: var(--amber-hi);
+      }
+      .btn.wide {
+        width: 100%;
+        margin-top: 14px;
+      }
+      .marks {
+        margin-top: auto;
+        border-top: 1px solid var(--line-faint);
+        padding-top: 12px;
+        display: grid;
+        gap: 7px;
+      }
+      .queue {
+        margin-top: 16px;
+        border-top: 1px solid var(--line-faint);
+        padding-top: 12px;
+      }
+      .queue-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .queue-list {
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+      }
+      .queue-list li {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 13px;
+      }
+      .q-name {
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+      .queue-list .spacer {
+        flex: 1;
+      }
+      .q-when {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+      .mark-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 12.5px;
+      }
+      .mk-label {
+        color: var(--ink-3);
+      }
+      .mark-row .spacer {
+        flex: 1;
+      }
+      .mk-val {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        color: var(--ink-2);
+      }
+      .session-note {
+        margin: 12px 0 0;
+        border-left: 2px solid var(--line-strong);
+        padding-left: 10px;
+        font-size: 12.5px;
+        color: var(--ink-3);
+      }
+      kbd {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        background: var(--raised);
+        border: 1px solid var(--line-strong);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        padding: 1px 5px;
+        color: var(--ink);
+      }
 
-  footer.tag { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line-faint); color: var(--ink-3); font-size: 12.5px; display: flex; justify-content: space-between; }
-</style>
-</head>
-<body>
+      footer.tag {
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid var(--line-faint);
+        color: var(--ink-3);
+        font-size: 12.5px;
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="sr-only" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs>
+        <symbol id="i-check" viewBox="0 0 14 14">
+          <circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4" />
+          <path
+            d="M4.3 7.2l1.9 1.9 3.6-3.9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </symbol>
+        <symbol id="i-flow" viewBox="0 0 14 14">
+          <circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4" />
+          <path
+            d="M3.8 7h6.1M7.5 4.6L9.9 7 7.5 9.4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </symbol>
+        <symbol id="i-practice" viewBox="0 0 14 14">
+          <circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4" />
+          <path d="M7 1.4a5.6 5.6 0 0 1 0 11.2z" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 14 14">
+          <rect
+            x="3.1"
+            y="6.3"
+            width="7.8"
+            height="6"
+            rx="1.3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+          />
+          <path
+            d="M5.1 6.3V4.7a1.9 1.9 0 0 1 3.8 0v1.6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+          />
+        </symbol>
+      </defs>
+    </svg>
 
-<svg class="sr-only" aria-hidden="true" focusable="false" width="0" height="0">
-  <defs>
-    <symbol id="i-check" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.3 7.2l1.9 1.9 3.6-3.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-flow" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.8 7h6.1M7.5 4.6L9.9 7 7.5 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-practice" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M7 1.4a5.6 5.6 0 0 1 0 11.2z" fill="currentColor" stroke="none"/></symbol>
-    <symbol id="i-lock" viewBox="0 0 14 14"><rect x="3.1" y="6.3" width="7.8" height="6" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.1 6.3V4.7a1.9 1.9 0 0 1 3.8 0v1.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
-  </defs>
-</svg>
+    <div class="app">
+      <header class="top">
+        <span class="crumb">Tu mapa de habilidades</span>
+        <span class="spacer"></span>
+        <span class="stat">Nivel <b>4</b></span>
+        <span class="stat">Racha <b>6</b> días</span>
+        <span class="stat"><b>1 240</b> XP</span>
+      </header>
 
-<div class="app">
-  <header class="top">
-    <span class="crumb">Tu mapa de habilidades</span>
-    <span class="spacer"></span>
-    <span class="stat">Nivel <b>4</b></span>
-    <span class="stat">Racha <b>6</b> días</span>
-    <span class="stat"><b>1 240</b> XP</span>
-  </header>
+      <div class="layerbar">
+        <span class="layerbar-label">Practicando con:</span>
+        <span class="layer-chip">Linux</span>
+        <span class="layer-chip">Neovim</span>
+        <span class="layer-chip">LazyVim</span>
+        <span class="spacer"></span>
+        <a class="link" href="02-practica-capas.html" title="Abrir el selector de capas"
+          >Cambiar capas</a
+        >
+      </div>
 
-  <div class="layerbar">
-    <span class="layerbar-label">Practicando con:</span>
-    <span class="layer-chip">Linux</span>
-    <span class="layer-chip">Neovim</span>
-    <span class="layer-chip">LazyVim</span>
-    <span class="spacer"></span>
-    <a class="link" href="02-practica-capas.html" title="Abrir el selector de capas">Cambiar capas</a>
-  </div>
+      <div class="layout">
+        <main>
+          <section class="map" aria-labelledby="map-h">
+            <div class="map-head">
+              <h1 id="map-h">Tu mapa</h1>
+              <span class="map-meta"
+                >8 habilidades · 2 bloqueadas · los conectores son prerequisitos</span
+              >
+            </div>
+            <p class="map-note">
+              No se practica lo que todavía no se apoya en algo. Lo bloqueado se muestra igual:
+              sabés qué falta, no adivinás.
+            </p>
 
-  <div class="layout">
-    <main>
-      <section class="map" aria-labelledby="map-h">
-        <div class="map-head">
-          <h1 id="map-h">Tu mapa</h1>
-          <span class="map-meta">8 habilidades · 2 bloqueadas · los conectores son prerequisitos</span>
-        </div>
-        <p class="map-note">No se practica lo que todavía no se apoya en algo. Lo bloqueado se muestra igual: sabés qué falta, no adivinás.</p>
+            <div class="map-wrap">
+              <svg
+                class="edges"
+                viewBox="0 0 900 538"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M440 56 H460" />
+                <path d="M220 112 V142" />
+                <path d="M680 112 V142" />
+                <path d="M680 254 V284" />
+                <path d="M500 112 V127 H450 V269 H290 V284" />
+                <path d="M220 254 V284" />
+                <path class="hot" d="M680 396 V426" />
+              </svg>
 
-        <div class="map-wrap">
-          <svg class="edges" viewBox="0 0 900 538" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <path d="M440 56 H460"/>
-            <path d="M220 112 V142"/>
-            <path d="M680 112 V142"/>
-            <path d="M680 254 V284"/>
-            <path d="M500 112 V127 H450 V269 H290 V284"/>
-            <path d="M220 254 V284"/>
-            <path class="hot" d="M680 396 V426"/>
-          </svg>
+              <ul class="grid" role="list">
+                <li class="node is-dominado">
+                  <div>
+                    <h2 class="node-name">mover por palabras</h2>
+                    <p class="node-meta">
+                      <code>w b e</code> · 5 aciertos seguidos, sin repaso pendiente
+                    </p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-check" /></svg>dominado</span
+                  >
+                </li>
 
-          <ul class="grid" role="list">
-            <li class="node is-dominado">
-              <div>
-                <h2 class="node-name">mover por palabras</h2>
-                <p class="node-meta"><code>w b e</code> · 5 aciertos seguidos, sin repaso pendiente</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>dominado</span>
+                <li class="node is-fluyendo">
+                  <div>
+                    <h2 class="node-name">operador change</h2>
+                    <p class="node-meta">
+                      <code>c</code> con movimiento · 3 de 4 intentos sin error
+                    </p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-flow" /></svg>fluyendo</span
+                  >
+                </li>
+
+                <li class="node is-fluyendo">
+                  <div>
+                    <h2 class="node-name">buscar con f y t</h2>
+                    <p class="node-meta"><code>f t ; ,</code> · 2 de 3 a la primera pasada</p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-flow" /></svg>fluyendo</span
+                  >
+                </li>
+
+                <li class="node is-practicando">
+                  <div>
+                    <h2 class="node-name">text objects</h2>
+                    <p class="node-meta"><code>iw i" a(</code> · repaso hoy, 4 min</p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-practice" /></svg
+                    >practicando</span
+                  >
+                </li>
+
+                <li class="node is-dominado">
+                  <div>
+                    <h2 class="node-name">deshacer</h2>
+                    <p class="node-meta">
+                      <code>u</code> <code>C-r</code> · 4 aciertos seguidos, vuelve en 5 días
+                    </p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-check" /></svg>dominado</span
+                  >
+                </li>
+
+                <li class="node is-practicando">
+                  <div>
+                    <h2 class="node-name">comillas</h2>
+                    <p class="node-meta">
+                      <code>ci"</code> <code>di"</code> · 4,2 s de mejor marca, repaso mañana
+                    </p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-practice" /></svg
+                    >practicando</span
+                  >
+                </li>
+
+                <li class="node is-bloqueado">
+                  <div>
+                    <h2 class="node-name">paneles tmux</h2>
+                    <p class="node-meta">necesita la capa <code>tmux</code>, hoy apagada</p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-lock" /></svg>bloqueado</span
+                  >
+                </li>
+
+                <li class="node is-bloqueado">
+                  <div>
+                    <h2 class="node-name">editar en LazyVim</h2>
+                    <p class="node-meta">
+                      llega cuando <code>comillas</code> esté fluyendo, no antes
+                    </p>
+                  </div>
+                  <span class="state"
+                    ><svg class="ico" aria-hidden="true"><use href="#i-lock" /></svg>bloqueado</span
+                  >
+                </li>
+              </ul>
+            </div>
+          </section>
+        </main>
+
+        <aside class="session" aria-labelledby="session-h">
+          <h2 id="session-h">Sesión de hoy</h2>
+          <p class="session-sub">3 bloques · 9 min · ordenado para no repetir el mismo patrón</p>
+
+          <ul class="blocks" role="list">
+            <li class="block">
+              <span class="b-name">Calentamiento</span>
+              <span class="spacer"></span>
+              <span class="b-detail">2 min</span>
             </li>
-
-            <li class="node is-fluyendo">
-              <div>
-                <h2 class="node-name">operador change</h2>
-                <p class="node-meta"><code>c</code> con movimiento · 3 de 4 intentos sin error</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-flow"/></svg>fluyendo</span>
+            <li class="block">
+              <span class="b-name">Repaso</span>
+              <span class="b-chip">2 vencidas</span>
+              <span class="spacer"></span>
+              <span class="b-detail">4 min</span>
             </li>
-
-            <li class="node is-fluyendo">
-              <div>
-                <h2 class="node-name">buscar con f y t</h2>
-                <p class="node-meta"><code>f t ; ,</code> · 2 de 3 a la primera pasada</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-flow"/></svg>fluyendo</span>
-            </li>
-
-            <li class="node is-practicando">
-              <div>
-                <h2 class="node-name">text objects</h2>
-                <p class="node-meta"><code>iw i" a(</code> · repaso hoy, 4 min</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-practice"/></svg>practicando</span>
-            </li>
-
-            <li class="node is-dominado">
-              <div>
-                <h2 class="node-name">deshacer</h2>
-                <p class="node-meta"><code>u</code> <code>C-r</code> · 4 aciertos seguidos, vuelve en 5 días</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>dominado</span>
-            </li>
-
-            <li class="node is-practicando">
-              <div>
-                <h2 class="node-name">comillas</h2>
-                <p class="node-meta"><code>ci"</code> <code>di"</code> · 4,2 s de mejor marca, repaso mañana</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-practice"/></svg>practicando</span>
-            </li>
-
-            <li class="node is-bloqueado">
-              <div>
-                <h2 class="node-name">paneles tmux</h2>
-                <p class="node-meta">necesita la capa <code>tmux</code>, hoy apagada</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>bloqueado</span>
-            </li>
-
-            <li class="node is-bloqueado">
-              <div>
-                <h2 class="node-name">editar en LazyVim</h2>
-                <p class="node-meta">llega cuando <code>comillas</code> esté fluyendo, no antes</p>
-              </div>
-              <span class="state"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>bloqueado</span>
+            <li class="block">
+              <span class="b-name">Nuevo</span>
+              <span class="spacer"></span>
+              <span class="b-detail">3 min</span>
             </li>
           </ul>
-        </div>
-      </section>
-    </main>
 
-    <aside class="session" aria-labelledby="session-h">
-      <h2 id="session-h">Sesión de hoy</h2>
-      <p class="session-sub">3 bloques · 9 min · ordenado para no repetir el mismo patrón</p>
+          <div class="total"><span>Total</span><span class="spacer"></span><b>9 min</b></div>
 
-      <ul class="blocks" role="list">
-        <li class="block">
-          <span class="b-name">Calentamiento</span>
-          <span class="spacer"></span>
-          <span class="b-detail">2 min</span>
-        </li>
-        <li class="block">
-          <span class="b-name">Repaso</span>
-          <span class="b-chip">2 vencidas</span>
-          <span class="spacer"></span>
-          <span class="b-detail">4 min</span>
-        </li>
-        <li class="block">
-          <span class="b-name">Nuevo</span>
-          <span class="spacer"></span>
-          <span class="b-detail">3 min</span>
-        </li>
-      </ul>
+          <button class="btn btn-primary wide" type="button">Empezar sesión</button>
 
-      <div class="total"><span>Total</span><span class="spacer"></span><b>9 min</b></div>
+          <div class="queue">
+            <div class="queue-head"><span>Lo que vuelve</span><span>2 vencidas</span></div>
+            <ul class="queue-list" role="list">
+              <li>
+                <span class="q-name">text objects</span><span class="spacer"></span
+                ><span class="q-when">vencida hace 1 día</span>
+              </li>
+              <li>
+                <span class="q-name">buscar con f y t</span><span class="spacer"></span
+                ><span class="q-when">vencida hace 2 días</span>
+              </li>
+            </ul>
+          </div>
 
-      <button class="btn btn-primary wide" type="button">Empezar sesión</button>
+          <div class="marks">
+            <div class="mark-row">
+              <span class="mk-label">Mejor marca personal</span><span class="spacer"></span
+              ><span class="mk-val">8 teclas · 4,2 s</span>
+            </div>
+            <div class="mark-row">
+              <span class="mk-label">Combo</span><span class="spacer"></span
+              ><span class="mk-val">×4 seguidos</span>
+            </div>
+          </div>
 
-      <div class="queue">
-        <div class="queue-head"><span>Lo que vuelve</span><span>2 vencidas</span></div>
-        <ul class="queue-list" role="list">
-          <li><span class="q-name">text objects</span><span class="spacer"></span><span class="q-when">vencida hace 1 día</span></li>
-          <li><span class="q-name">buscar con f y t</span><span class="spacer"></span><span class="q-when">vencida hace 2 días</span></li>
-        </ul>
+          <p class="session-note">
+            Arranca con lo vencido: si el repaso falla, el bloque nuevo se acorta y lo débil vuelve
+            antes. <kbd>Enter</kbd> empieza, <kbd>Esc</kbd> pausa.
+          </p>
+        </aside>
       </div>
 
-      <div class="marks">
-        <div class="mark-row"><span class="mk-label">Mejor marca personal</span><span class="spacer"></span><span class="mk-val">8 teclas · 4,2 s</span></div>
-        <div class="mark-row"><span class="mk-label">Combo</span><span class="spacer"></span><span class="mk-val">×4 seguidos</span></div>
-      </div>
-
-      <p class="session-note">Arranca con lo vencido: si el repaso falla, el bloque nuevo se acorta y lo débil vuelve antes. <kbd>Enter</kbd> empieza, <kbd>Esc</kbd> pausa.</p>
-    </aside>
-  </div>
-
-  <footer class="tag"><span>Dirección 03 · hub de progreso</span><span>Mapa y sesión en la misma vista: el contexto pesa más que el ancho del editor</span></footer>
-</div>
-
-</body>
+      <footer class="tag">
+        <span>Dirección 03 · hub de progreso</span
+        ><span>Mapa y sesión en la misma vista: el contexto pesa más que el ancho del editor</span>
+      </footer>
+    </div>
+  </body>
 </html>

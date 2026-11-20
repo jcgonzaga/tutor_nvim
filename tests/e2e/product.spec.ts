@@ -1,5 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
-import { currentExercise, onboardSkippingCheck, onboardUntilCalibration, solveCurrent } from "./helpers";
+import {
+  currentExercise,
+  onboardSkippingCheck,
+  onboardUntilCalibration,
+  solveCurrent,
+} from "./helpers";
 
 const DAY_ONE = new Date("2026-10-21T09:00:00");
 const DAY_THREE = new Date("2026-10-23T09:00:00");

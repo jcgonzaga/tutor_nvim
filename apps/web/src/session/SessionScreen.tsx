@@ -131,12 +131,13 @@ export function SessionScreen({ navigate }: { readonly navigate: (route: Route) 
         at,
         null,
       );
-      update((current: Profile) =>
-        recordRetryAttempt(current, skills, {
-          exercise,
-          metrics: finished.evaluation.metrics,
-          at,
-        }).profile,
+      update(
+        (current: Profile) =>
+          recordRetryAttempt(current, skills, {
+            exercise,
+            metrics: finished.evaluation.metrics,
+            at,
+          }).profile,
       );
       setRetries((count) => count + 1);
       return;

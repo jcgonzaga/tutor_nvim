@@ -127,9 +127,21 @@ describe("resolving a key against the enabled layers (S5)", () => {
   });
 
   it("asks the focused surface first: the same prefix belongs to whichever layer is in front", () => {
-    const nvimFirst = captureOrder(parseKeymapLayers([{ path: "nvim.yaml", text: NVIM }, { path: "tmux.yaml", text: TMUX }]), "editor");
+    const nvimFirst = captureOrder(
+      parseKeymapLayers([
+        { path: "nvim.yaml", text: NVIM },
+        { path: "tmux.yaml", text: TMUX },
+      ]),
+      "editor",
+    );
     expect(nvimFirst.map((item) => item.id)).toEqual(["nvim", "tmux"]);
-    const multiplexerFirst = captureOrder(parseKeymapLayers([{ path: "nvim.yaml", text: NVIM }, { path: "tmux.yaml", text: TMUX }]), "multiplexer");
+    const multiplexerFirst = captureOrder(
+      parseKeymapLayers([
+        { path: "nvim.yaml", text: NVIM },
+        { path: "tmux.yaml", text: TMUX },
+      ]),
+      "multiplexer",
+    );
     expect(multiplexerFirst.map((item) => item.id)).toEqual(["tmux", "nvim"]);
 
     // Two enabled layers that own the same surface resolve in the order they are given.

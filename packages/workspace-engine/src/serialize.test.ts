@@ -189,7 +189,8 @@ describe("workspaceObjectiveView projects the state an objective is judged again
     expect(view.zoomedPath).toBeNull();
   });
 
-  it("prints the path of the zoomed window, and none once it is restored", () => {    const opened = apply(createWorkspace(INIT), "window.split-side-by-side");
+  it("prints the path of the zoomed window, and none once it is restored", () => {
+    const opened = apply(createWorkspace(INIT), "window.split-side-by-side");
     expect(workspaceObjectiveView(opened).zoomedPath).toBeNull();
     const zoomed = apply(opened, "window.zoom");
     expect(workspaceObjectiveView(zoomed).zoomedPath).toBe(MAIN);

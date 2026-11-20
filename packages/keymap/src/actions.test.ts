@@ -18,7 +18,9 @@ bindings:
 
 const catalogsOf = (...yaml: readonly string[]) =>
   catalogFor(
-    parseKeymapLayers(yaml.map((text, index) => ({ path: "layer-" + String(index) + ".yaml", text }))),
+    parseKeymapLayers(
+      yaml.map((text, index) => ({ path: "layer-" + String(index) + ".yaml", text })),
+    ),
   );
 
 const split = { action: "window.split-side-by-side" as const, classification: "optimal" as const };

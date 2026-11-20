@@ -28,12 +28,12 @@ window manager (omarchy)   Super+Return, Super+Q, workspaces, resize mode
 
 ```ts
 interface WorkspaceState {
-  readonly fs: FileTree;            // shared with the shell engine's model
-  readonly buffers: readonly Buffer[];   // nvim buffers: path + text + cursor + modified
-  readonly windows: WindowTree;     // splits, panes, tabs, workspaces: a tree, not a list
-  readonly focus: FocusPath;        // which leaf owns the next key
-  readonly layers: readonly LayerId[];   // what the learner enabled
-  readonly pending: PendingKeys;    // leader or prefix partly typed
+  readonly fs: FileTree; // shared with the shell engine's model
+  readonly buffers: readonly Buffer[]; // nvim buffers: path + text + cursor + modified
+  readonly windows: WindowTree; // splits, panes, tabs, workspaces: a tree, not a list
+  readonly focus: FocusPath; // which leaf owns the next key
+  readonly layers: readonly LayerId[]; // what the learner enabled
+  readonly pending: PendingKeys; // leader or prefix partly typed
 }
 ```
 
@@ -43,14 +43,14 @@ final state` is testable without a browser.
 
 ## Phases
 
-| Phase | Scope | Done when |
-| --- | --- | --- |
-| **M12-A** | `packages/workspace-engine`: file tree, buffers, window tree, focus path, resize, layout invariants | unit tests for layout/focus; an oracle test against real tmux + nvim keystroke transcripts for the modelled subset |
-| **M12-B** | `content/keymaps/*.yaml` + schema: six catalogs (`linux`, `nvim`, `lazyvim`, `tmux`, `herdr`, `omarchy`), prefix/leader handling, `extends` | every catalog validates; a key resolves to exactly one action per enabled set; unresolvable keys are reported, not guessed |
-| **M12-C** | Schema + evaluation: `environment.layers`, workspace objectives (`active_file`, `buffers`, `layout`, `focus`, `buffer_text`), action-based solutions, strategy classification | every declared solution is replayed by the engine in CI (AGENTS.md 10); one objective is solved with two different layers |
-| **M12-D** | Content: the 20 developer stories of the catalog below as skills and exercises with prerequisites | each story is solvable in the simulated workspace; transfer tags per story |
-| **M12-E** | Web: layer selection in settings (one, several, all), workspace view (tiling layout, focus ring), an indicator of which layer owns the next key | keyboard-only, reduced motion, no color-only status (AGENTS.md 19) |
-| **M12-F** | API replay of workspace attempts with the same engine | the server recomputes the same outcome; no client score is read |
+| Phase     | Scope                                                                                                                                                                         | Done when                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **M12-A** | `packages/workspace-engine`: file tree, buffers, window tree, focus path, resize, layout invariants                                                                           | unit tests for layout/focus; an oracle test against real tmux + nvim keystroke transcripts for the modelled subset         |
+| **M12-B** | `content/keymaps/*.yaml` + schema: six catalogs (`linux`, `nvim`, `lazyvim`, `tmux`, `herdr`, `omarchy`), prefix/leader handling, `extends`                                   | every catalog validates; a key resolves to exactly one action per enabled set; unresolvable keys are reported, not guessed |
+| **M12-C** | Schema + evaluation: `environment.layers`, workspace objectives (`active_file`, `buffers`, `layout`, `focus`, `buffer_text`), action-based solutions, strategy classification | every declared solution is replayed by the engine in CI (AGENTS.md 10); one objective is solved with two different layers  |
+| **M12-D** | Content: the 20 developer stories of the catalog below as skills and exercises with prerequisites                                                                             | each story is solvable in the simulated workspace; transfer tags per story                                                 |
+| **M12-E** | Web: layer selection in settings (one, several, all), workspace view (tiling layout, focus ring), an indicator of which layer owns the next key                               | keyboard-only, reduced motion, no color-only status (AGENTS.md 19)                                                         |
+| **M12-F** | API replay of workspace attempts with the same engine                                                                                                                         | the server recomputes the same outcome; no client score is read                                                            |
 
 ## The developer stories (M12-D)
 

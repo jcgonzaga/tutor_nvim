@@ -18,19 +18,20 @@ Feature 1 of 3 requested by the owner. Scope: the practice loop only (web app). 
 
 ## Tasks
 
-| ID | Spec | Route | Commit |
-| --- | --- | --- | --- |
-| T1 | S1, S6 | inline | pending |
-| T2 | S2, S4 | inline | pending |
-| T3 | S3 | inline | pending |
-| T4 | S5 | inline | pending |
-| T5 | S1-S6 | inline | pending |
+| ID  | Spec   | Route  | Commit  |
+| --- | ------ | ------ | ------- |
+| T1  | S1, S6 | inline | pending |
+| T2  | S2, S4 | inline | pending |
+| T3  | S3     | inline | pending |
+| T4  | S5     | inline | pending |
+| T5  | S1-S6  | inline | pending |
 
 ## Log
 
 **L1 — original request (verbatim)**
 
 > Revisa el proyecto y quiero hacer modificaciones:
+>
 > - Hay que añadir la opcion de volver a hacer el ejercicio cuando el usuario no lo puede hacer.
 > - Vamos a añadir los atajos de teclado de Herdr, Omarchy, se tiene que poder elegir si el sistema ejecuta comandos y keybindings de Linux, nvim, Lazyvim, Herdr, Tmux, Omarchy, uno, varios o todos.
 > - Hay que añadir mas historias de usuario, tipo, elegir un archivo, editarlo, volver a seleccionar otro archivo, pasar de un archivo a otro, es decir, procesos usuales de usuario, igual que con Omarchy, abrir mas ventanas, cerrarlas, redimensionarlas, etc. obten estos procesos usuales de usuario dev y añadelos

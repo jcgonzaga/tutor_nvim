@@ -12,7 +12,7 @@ Today two engines exist and each one owns a single surface:
 
 An exercise declares `environment: { type: simulator, profile: shell-basic-v1 }` and its goal is text
 (buffer, file tree, last output). That teaches a command in isolation, which is what the MVP needed.
-Real development is *compositional*: the same physical key press means different things depending on
+Real development is _compositional_: the same physical key press means different things depending on
 which tool owns it — a leader chord in LazyVim, a prefix in tmux, a `Super` chord in the window
 manager, a readline binding in the shell. A learner who knows `dd` but not how to get back to the
 file they were editing has not transferred the skill.
@@ -27,13 +27,13 @@ The owner asked for three things this ADR and M12 have to serve:
 The contract of AGENTS.md 2.5 (deterministic evaluation), 2.3 (framework-free engines), 2.8 (multiple
 valid strategies) and 2.10 (low latency) all have to survive the expansion.
 
-## Decision 1: an objective judges the *state*, never a keystroke string
+## Decision 1: an objective judges the _state_, never a keystroke string
 
 An exercise keeps declaring an end state, now over a workspace: which file is active, what is open in
 which window, where the focus is, how the windows are laid out, what each buffer contains. The
 keystrokes are evidence and cost, not the answer.
 
-This is the same rule the Vim side already follows: `ci"` is *a* way to reach the target buffer, and
+This is the same rule the Vim side already follows: `ci"` is _a_ way to reach the target buffer, and
 `x`-repeated is another one that classifies worse. Extending it to windows means "split a pane
 horizontally" is solved by whichever tool the learner has enabled.
 
@@ -60,7 +60,7 @@ bindings:
   - keys: "%"
     action: window.split-side-by-side
     description: "Split the current pane side by side."
-  - keys: "\""
+  - keys: '"'
     action: window.split-stacked
   - keys: "z"
     action: pane.zoom

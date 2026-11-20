@@ -79,8 +79,10 @@ jobs:
       - run: pnpm vitest run apps/api tests/cloud-sync.test.ts tests/gamification-sync.test.ts
 
   # End to end in a real browser: the web app against the real API.
+  # Pinned to 24.04 because `ubuntu-latest` moved to 26.04, which this Playwright publishes no Chromium
+  # build for (`ERROR: Playwright does not support chromium on ubuntu26.04-x64`).
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -98,9 +100,9 @@ jobs:
           path: test-results/
           retention-days: 7
 
-  # Performance budgets on the production build (T-902).
+  # Performance budgets on the production build (T-902). Pinned for the same reason as `e2e`.
   performance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

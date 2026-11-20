@@ -5,6 +5,9 @@ apps/api/src/content.embedded.ts
 playwright-report
 test-results
 
+# Tool caches another program writes: formatting them changes nothing a reader sees.
+.atl
+
 # Canonical source-of-truth documents are kept verbatim.
 AGENTS.md
 IMPLEMENTATION_PLAN.md

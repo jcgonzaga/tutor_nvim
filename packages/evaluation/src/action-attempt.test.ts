@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { parseKeymapLayers, type ActionSolution } from "@tutor-nvim/exercise-schema";
 import { catalogFor } from "@tutor-nvim/keymap";
 
-import { evaluateActionAttempt, type ActionAttemptEvaluation, type RecordedInput } from "./action-attempt";
+import {
+  evaluateActionAttempt,
+  type ActionAttemptEvaluation,
+  type RecordedInput,
+} from "./action-attempt";
 import { DEFAULT_STRATEGY_CONFIG } from "./strategy";
 
 /** The real content input shape: one file per catalog. */
@@ -280,11 +284,7 @@ bindings:
 `;
     const word = { action: "edit.delete" as const, classification: "optimal" as const };
     const evaluation = solved(
-      evaluateActionAttempt(
-        { actionSolutions: [word] },
-        typed("d", "i", "w"),
-        catalogsOf(NVIM),
-      ),
+      evaluateActionAttempt({ actionSolutions: [word] }, typed("d", "i", "w"), catalogsOf(NVIM)),
     );
     expect(evaluation.solvedBy?.target).toBe("inner-word");
     // Three keys is the cheapest way to delete a word here, so three keys is the optimal cost.

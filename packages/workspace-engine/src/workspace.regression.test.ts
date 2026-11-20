@@ -1,4 +1,10 @@
-import { bufferToText, createVimState, dispatch, splitLines, type KeyInput } from "@tutor-nvim/vim-engine";
+import {
+  bufferToText,
+  createVimState,
+  dispatch,
+  splitLines,
+  type KeyInput,
+} from "@tutor-nvim/vim-engine";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -15,8 +21,10 @@ import {
  */
 const key = (pressed: string): KeyInput => ({ key: pressed });
 const keys = (text: string): KeyInput[] => [...text].map(key);
-const start = (path = "a.ts", files: Record<string, string> = { "a.ts": "alpha" }): WorkspaceState =>
-  createWorkspace({ files, path, cwd: "/w" });
+const start = (
+  path = "a.ts",
+  files: Record<string, string> = { "a.ts": "alpha" },
+): WorkspaceState => createWorkspace({ files, path, cwd: "/w" });
 const command = (state: WorkspaceState, line: string): WorkspaceState =>
   runWorkspaceKeys(state, [...keys(`:${line}`), key("Enter")]);
 
@@ -46,7 +54,7 @@ describe("workspace purity (S4)", () => {
 });
 
 describe("workspace delegates editing to vim-engine (S4)", () => {
-  it("matches vim-engine on the same buffer for ci\"production<Esc>", () => {
+  it('matches vim-engine on the same buffer for ci"production<Esc>', () => {
     const files = { "a.ts": 'const mode = "development";' };
     let workspace = start("a.ts", files);
     let editor = createVimState({ lines: splitLines(files["a.ts"] ?? "") });
@@ -67,9 +75,9 @@ describe("workspace delegates editing to vim-engine (S4)", () => {
 
   it("clears modified when undo returns to the file text", () => {
     const state = runWorkspaceKeys(start(), [...keys("x"), ...keys("u")]);
-    expect(bufferToText(state.buffers[0]?.editor.buffer ?? createVimState({ lines: [] }).buffer)).toBe(
-      "alpha",
-    );
+    expect(
+      bufferToText(state.buffers[0]?.editor.buffer ?? createVimState({ lines: [] }).buffer),
+    ).toBe("alpha");
     expect(state.buffers[0]?.modified).toBe(false);
   });
 
@@ -86,7 +94,9 @@ describe("workspace paths and files (S4)", () => {
   it("opens an off-disk starting path as an empty buffer, and :w creates it", () => {
     const fresh = start("new.ts", {});
     expect(fresh.buffers[0]?.id).toBe(bufferId("new.ts"));
-    expect(bufferToText(fresh.buffers[0]?.editor.buffer ?? createVimState({ lines: [] }).buffer)).toBe("");
+    expect(
+      bufferToText(fresh.buffers[0]?.editor.buffer ?? createVimState({ lines: [] }).buffer),
+    ).toBe("");
     expect(fresh.buffers[0]?.modified).toBe(false);
     const saved = runWorkspaceKeys(fresh, [
       ...keys("ihello"),

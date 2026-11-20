@@ -34,37 +34,37 @@ YAML file and its exercises, not a new engine.
 
 ## Tasks
 
-| ID | Spec | Route | Commit |
-| --- | --- | --- | --- |
-| T1 | S2, S3 | schema + validation, `content/keymaps/linux.yaml` | 6b5c33d |
-| T1c | S3 | vocabulary v2: layout-named splits, `motion.*`/`edit.*`, binding `target` | f860f89 |
-| T1b | S3 | `nvim`, `tmux`, `tmux-omarchy`, `omarchy` catalogs from sourced research | 184c01e |
-| T2 | S3 | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog | pending commit |
-| T3 | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer` | pending commit |
-| T4 | S5 | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit |
-| T5 | S6 | `actionSolutions`, `planActionSolutions`, `traceKeymapActions`, `evaluateActionAttempt` | b2e13ee + pending commit |
-| T6 | S1, S5 | layer rail in the practice screen: toggles, "next key belongs to", cost table | f69aa25 (design `app-shell/02-practica-capas.html` chosen) |
-| T7 | S1-S7 | CI: every catalog binding resolves to itself; every declared action solution is provided | 48be2b7 + pending commit |
+| ID  | Spec   | Route                                                                                                                          | Commit                                                     |
+| --- | ------ | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| T1  | S2, S3 | schema + validation, `content/keymaps/linux.yaml`                                                                              | 6b5c33d                                                    |
+| T1c | S3     | vocabulary v2: layout-named splits, `motion.*`/`edit.*`, binding `target`                                                      | f860f89                                                    |
+| T1b | S3     | `nvim`, `tmux`, `tmux-omarchy`, `omarchy` catalogs from sourced research                                                       | 184c01e                                                    |
+| T2  | S3     | research Herdr's own documentation, then its catalog; `lazyvim` leader catalog                                                 | pending commit                                             |
+| T3  | S1, S4 | `environment.layers`, `isExerciseAvailable`/`availableExercises`, `prefs.enabledLayers` + `withLayer`                          | pending commit                                             |
+| T4  | S5     | `packages/keymap`: capture order, prefix/leader openers, inheritance and overrides, `pending`/`action`/`not-accepted` outcomes | pending commit                                             |
+| T5  | S6     | `actionSolutions`, `planActionSolutions`, `traceKeymapActions`, `evaluateActionAttempt`                                        | b2e13ee + pending commit                                   |
+| T6  | S1, S5 | layer rail in the practice screen: toggles, "next key belongs to", cost table                                                  | f69aa25 (design `app-shell/02-practica-capas.html` chosen) |
+| T7  | S1-S7  | CI: every catalog binding resolves to itself; every declared action solution is provided                                       | 48be2b7 + pending commit                                   |
 
 ## Frozen schema for T1 (keymap layer v1)
 
 This is the interface T1 implements and later tasks consume. Decided here, not by the implementer.
 
 ```yaml
-schemaVersion: 1              # required, literal 1
-id: tmux                      # stable public id, ^[a-z][a-z0-9-]*$, unique across files
-label: "tmux"                 # learner-facing name, non-empty
-owns: [multiplexer]           # non-empty, unique, from SURFACES
-extends: []                   # optional layer ids this one builds on (no cycles)
-prefix: "C-b"                 # optional: the key(s) that open this layer's command group
-leader: " "                   # optional: the leader this layer's bindings are written after
-bindings:                     # required, non-empty
-  - keys: "%"                  # required: what is pressed AFTER prefix/leader, when the layer has one
-    action: window.split-horizontal   # required, from ACTIONS
-    description: "Split the pane side by side."   # required, one line, learner-facing
-    modes: [normal]            # optional subset of MODES; empty means any mode
-    override: false            # optional; must be true to replace an inherited (keys, modes) pair
-    notModelled: "needs a running tmux server"     # optional; why this binding cannot be exercised yet
+schemaVersion: 1 # required, literal 1
+id: tmux # stable public id, ^[a-z][a-z0-9-]*$, unique across files
+label: "tmux" # learner-facing name, non-empty
+owns: [multiplexer] # non-empty, unique, from SURFACES
+extends: [] # optional layer ids this one builds on (no cycles)
+prefix: "C-b" # optional: the key(s) that open this layer's command group
+leader: " " # optional: the leader this layer's bindings are written after
+bindings: # required, non-empty
+  - keys: "%" # required: what is pressed AFTER prefix/leader, when the layer has one
+    action: window.split-horizontal # required, from ACTIONS
+    description: "Split the pane side by side." # required, one line, learner-facing
+    modes: [normal] # optional subset of MODES; empty means any mode
+    override: false # optional; must be true to replace an inherited (keys, modes) pair
+    notModelled: "needs a running tmux server" # optional; why this binding cannot be exercised yet
 ```
 
 - `SURFACES` = `shell`, `editor`, `multiplexer`, `window-manager`.
@@ -95,7 +95,7 @@ API is T3/T4, and the remaining catalogs are T1b and T2.
 The research for T1b found two contradictions that a catalog writer cannot resolve alone. Decided here:
 
 **1. Split actions are named by the resulting layout, not by the word "horizontal".** Tools disagree:
-tmux `%` (`split-window -h`) leaves panes side by side, while Neovim's `:split` splits *horizontally*
+tmux `%` (`split-window -h`) leaves panes side by side, while Neovim's `:split` splits _horizontally_
 and stacks windows. One name cannot carry both:
 
 - `window.split-side-by-side` replaces `window.split-horizontal` (tmux `%`, nvim `C-wv`).
@@ -104,10 +104,10 @@ and stacks windows. One name cannot carry both:
 **2. The `nvim` layer is inexpressible in v1**, because `KEYMAP_ACTIONS` had no motion or edit verbs
 while the engine models exactly those. Added, covering only what `packages/vim-engine` already does:
 
-| Namespace | Actions |
-| --- | --- |
+| Namespace | Actions                                                                                                                                                                                                                                                                            |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `motion.` | `char-left`, `char-right`, `char-up`, `char-down`, `word-forward`, `word-backward`, `word-end`, `word-forward-big`, `word-backward-big`, `word-end-big`, `line-start`, `line-first-non-blank`, `line-end`, `find-char`, `find-char-backward`, `repeat-find`, `repeat-find-reverse` |
-| `edit.` | `insert-before`, `insert-after`, `open-line-below`, `normal-mode`, `delete`, `change`, `yank`, `delete-char`, `put-after`, `put-before`, `undo`, `redo`, `repeat` |
+| `edit.`   | `insert-before`, `insert-after`, `open-line-below`, `normal-mode`, `delete`, `change`, `yank`, `delete-char`, `put-after`, `put-before`, `undo`, `redo`, `repeat`                                                                                                                  |
 
 **3. A binding may carry an optional `target`**, so text objects do not explode the vocabulary:
 `target` ∈ `char`, `line`, `word`, `inner-word`, `inner-quotes`, `inner-parens`, `inner-braces`,
@@ -115,14 +115,14 @@ while the engine models exactly those. Added, covering only what `packages/vim-e
 `edit.change` and `edit.yank`; anywhere else it is a validation error. Example:
 
 ```yaml
-  - keys: 'ci"'
-    action: edit.change
-    target: inner-quotes
-    description: "Change the text inside the double quotes."
+- keys: 'ci"'
+  action: edit.change
+  target: inner-quotes
+  description: "Change the text inside the double quotes."
 ```
 
 **4. Omarchy ships its own tmux configuration** (prefix `Ctrl-Space`, splits on `v`/`h`), so tmux
-*defaults* are factually wrong on the machine the `omarchy` layer models. Two layers, not one:
+_defaults_ are factually wrong on the machine the `omarchy` layer models. Two layers, not one:
 `tmux` (upstream defaults, prefix `C-b`) and `tmux-omarchy` (`extends: [tmux]`, prefix `C-Space`,
 overrides only what Omarchy changes).
 
@@ -136,6 +136,7 @@ are recorded here as a notation task, not modelled with a wrong character.
 **L1 — original request (verbatim)**
 
 > Revisa el proyecto y quiero hacer modificaciones:
+>
 > - Hay que añadir la opcion de volver a hacer el ejercicio cuando el usuario no lo puede hacer.
 > - Vamos a añadir los atajos de teclado de Herdr, Omarchy, se tiene que poder elegir si el sistema ejecuta comandos y keybindings de Linux, nvim, Lazyvim, Herdr, Tmux, Omarchy, uno, varios o todos.
 > - Hay que añadir mas historias de usuario, tipo, elegir un archivo, editarlo, volver a seleccionar otro archivo, pasar de un archivo a otro, es decir, procesos usuales de usuario, igual que con Omarchy, abrir mas ventanas, cerrarlas, redimensionarlas, etc. obten estos procesos usuales de usuario dev y añadelos
@@ -174,7 +175,7 @@ are recorded here as a notation task, not modelled with a wrong character.
   so the Vim and shell exercises declare it the same way; it defaults to `[]`, which keeps the
   existing 168 exercises available whatever is enabled. Both defaults now carry `layers: []`, and the
   two assertions that compared the whole environment were updated instead of loosened.
-- The filter is domain code, not React: `isExerciseAvailable` requires *every* declared layer,
+- The filter is domain code, not React: `isExerciseAvailable` requires _every_ declared layer,
   `availableExercises` keeps the order. `prefs.enabledLayers` stores the choice and `withLayer` toggles
   one id idempotently, so the object identity React sees does not change when nothing changed.
 - Applying the filter at the practice entry points (free practice, session builder) ships with T6: it is
@@ -281,7 +282,7 @@ are recorded here as a notation task, not modelled with a wrong character.
 **L12 — the two verification advisories, closed**
 
 - **A catalog can no longer declare the same row twice.** The schema's set validator refuses a repeat of
-  an *inherited* pair without `override`, and the reachability rule cannot tell a byte-identical copy
+  an _inherited_ pair without `override`, and the reachability rule cannot tell a byte-identical copy
   from the row above it (both complete as themselves), so the gate accepted it. `duplicateProblems`
   now compares each file's rows by `(keys, modes)`, exactly the pair the override rule reads, and says
   the second row can never be pressed. Pinned by a content-gate case that duplicates tmux's `z` row.

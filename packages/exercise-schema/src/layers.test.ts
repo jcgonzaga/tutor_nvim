@@ -17,14 +17,9 @@ const shellExercise = (layers: string | undefined): string =>
     "difficulty: 1",
     ...(layers === undefined
       ? []
-      : [
-          "environment:",
-          "  type: simulator",
-          "  profile: shell-basic-v1",
-          `  layers: ${layers}`,
-        ]),
+      : ["environment:", "  type: simulator", "  profile: shell-basic-v1", `  layers: ${layers}`]),
     "initialState:",
-    "  cwd: \"\"",
+    '  cwd: ""',
     "  files: {}",
     "objective:",
     "  type: last_output_contains",

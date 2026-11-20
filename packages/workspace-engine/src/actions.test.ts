@@ -883,7 +883,10 @@ describe("picker-shaped actions are deterministic queries now (T5c)", () => {
  * `lastCommand`, which records the line a learner typed and that no action typed, so it is blanked
  * before the comparison and asserted on its own in each test.
  */
-const paritySnapshot = (state: WorkspaceState): Snapshot => ({ ...snapshot(state), lastCommand: null });
+const paritySnapshot = (state: WorkspaceState): Snapshot => ({
+  ...snapshot(state),
+  lastCommand: null,
+});
 
 describe("parity — same state function, one command line and one action", () => {
   it(":e <path> and file.open reach the same state", () => {

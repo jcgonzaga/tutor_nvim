@@ -12,16 +12,16 @@ window command, needs `notModelled` until M12-A lands.
 
 Source: `key-bindings.c#key_bindings_init`, <https://github.com/tmux/tmux/blob/master/key-bindings.c>
 
-| keys | action | description (tmux's own wording) |
-| --- | --- | --- |
-| `%` | `window.split-side-by-side` | Split window horizontally (panes side by side) |
-| `"` | `window.split-stacked` | Split window vertically (one above the other) |
-| `Up` / `Down` / `Left` / `Right` | `window.focus-up` / `-down` / `-left` / `-right` | Select pane in that direction |
-| `z` | `window.zoom` | Zoom the active pane |
-| `x` | `window.close` | Kill the active pane (asks for confirmation) |
-| `c` | `tab.new` | Create a new window |
-| `n` / `p` | `tab.next` / `tab.previous` | Select next / previous window |
-| `d` | `session.detach` | Detach the current client |
+| keys                             | action                                           | description (tmux's own wording)               |
+| -------------------------------- | ------------------------------------------------ | ---------------------------------------------- |
+| `%`                              | `window.split-side-by-side`                      | Split window horizontally (panes side by side) |
+| `"`                              | `window.split-stacked`                           | Split window vertically (one above the other)  |
+| `Up` / `Down` / `Left` / `Right` | `window.focus-up` / `-down` / `-left` / `-right` | Select pane in that direction                  |
+| `z`                              | `window.zoom`                                    | Zoom the active pane                           |
+| `x`                              | `window.close`                                   | Kill the active pane (asks for confirmation)   |
+| `c`                              | `tab.new`                                        | Create a new window                            |
+| `n` / `p`                        | `tab.next` / `tab.previous`                      | Select next / previous window                  |
+| `d`                              | `session.detach`                                 | Detach the current client                      |
 
 Left out on purpose (real bindings, no vocabulary yet): `o` (next pane), `;` (last pane), `w`
 (choose-tree), `,` (rename window), `[` (copy mode), `0`-`9`, `s`, `{`/`}`. See gaps.
@@ -37,18 +37,18 @@ Sources: Omarchy's manual, <https://omarchy.org/manual/hotkeys/> and its shipped
 
 Source: Omarchy's own manual, section "Navigating", <https://omarchy.org/manual/hotkeys/>
 
-| keys | action | manual row |
-| --- | --- | --- |
-| `Super-Return` | `app.launch-terminal` | `Super + Return` → Terminal |
-| `Super-q`, `Super-w` | `window.close` | `Super + W` or `Super + Q` → Close window |
-| `Super-Left/Right/Up/Down` | `window.focus-left/right/up/down` | Move focus in that direction |
-| `Super-Shift-Left/Right/Up/Down` | `window.swap` | Swap window with another |
-| `Super-Tab` | `workspace.switch` | Next workspace on this monitor |
-| `Super-1`…`Super-4` | `workspace.switch` | Jump to workspace N |
-| `Super-f` | `window.zoom` | Go full screen |
+| keys                             | action                            | manual row                                |
+| -------------------------------- | --------------------------------- | ----------------------------------------- |
+| `Super-Return`                   | `app.launch-terminal`             | `Super + Return` → Terminal               |
+| `Super-q`, `Super-w`             | `window.close`                    | `Super + W` or `Super + Q` → Close window |
+| `Super-Left/Right/Up/Down`       | `window.focus-left/right/up/down` | Move focus in that direction              |
+| `Super-Shift-Left/Right/Up/Down` | `window.swap`                     | Swap window with another                  |
+| `Super-Tab`                      | `workspace.switch`                | Next workspace on this monitor            |
+| `Super-1`…`Super-4`              | `workspace.switch`                | Jump to workspace N                       |
+| `Super-f`                        | `window.zoom`                     | Go full screen                            |
 
 Left out: the resize chords. Omarchy has no resize submap; resizing is `Super+Minus`/`Super+Equal`,
-bound to *physical key codes* (`code:20`/`code:21`) whose characters differ per layout (US `-`/`=`,
+bound to _physical key codes_ (`code:20`/`code:21`) whose characters differ per layout (US `-`/`=`,
 ES `'`/`¡`). The `keys` notation has no key-code form, and guessing a character would violate
 AGENTS.md 2.9. This is a notation gap, recorded, not a binding.
 
@@ -63,16 +63,16 @@ Modeled subset, executable today by `packages/vim-engine` (its `MOTIONS`, `TEXT_
 
 Not modelled (`vim-engine` has one buffer and one window and parses no Ex command line):
 
-| keys | action | source |
-| --- | --- | --- |
-| `:e` | `file.open` | `editing.txt` `:e[dit] {file}` |
-| `:w` | `file.save` | `editing.txt` `:w[rite]` |
-| `:ls` | `buffer.list` | `windows.txt` `:ls` |
+| keys          | action                            | source                                   |
+| ------------- | --------------------------------- | ---------------------------------------- |
+| `:e`          | `file.open`                       | `editing.txt` `:e[dit] {file}`           |
+| `:w`          | `file.save`                       | `editing.txt` `:w[rite]`                 |
+| `:ls`         | `buffer.list`                     | `windows.txt` `:ls`                      |
 | `:bn` / `:bp` | `buffer.next` / `buffer.previous` | `windows.txt` `:bn[ext]`, `:bp[revious]` |
-| `C-wv` | `window.split-side-by-side` | `windows.txt` `:vsplit` |
-| `C-ws` | `window.split-stacked` | `windows.txt` `:split` |
-| `C-wh/j/k/l` | `window.focus-left/down/up/right` | `windows.txt` section 4 |
-| `C-wq` | `window.close` | `windows.txt` `CTRL-W q` |
+| `C-wv`        | `window.split-side-by-side`       | `windows.txt` `:vsplit`                  |
+| `C-ws`        | `window.split-stacked`            | `windows.txt` `:split`                   |
+| `C-wh/j/k/l`  | `window.focus-left/down/up/right` | `windows.txt` section 4                  |
+| `C-wq`        | `window.close`                    | `windows.txt` `CTRL-W q`                 |
 
 ## herdr — `owns: [multiplexer]`, `prefix: "C-b"`, no `extends` (T2)
 
@@ -80,15 +80,15 @@ Source: Herdr's own keyboard guide, <https://herdr.dev/tui/docs/keyboard/> (chec
 Herdr is a standalone Rust multiplexer (<https://github.com/herdrdev/herdr>), not a tmux config: it
 shares the default prefix `ctrl+b` but not tmux's keys, so it extends nothing.
 
-| keys | action | guide row |
-| --- | --- | --- |
-| `c` / `n` / `p` | `tab.new` / `tab.next` / `tab.previous` | New tab; Next / previous tab |
-| `v` / `-` | `window.split-side-by-side` / `window.split-stacked` | Split right / down (`prefix+minus`) |
-| `h` `j` `k` `l` | `window.focus-left/down/up/right` | Move between panes |
-| `S-h` `S-j` `S-k` `S-l` | `window.swap` | Swap panes |
-| `z` / `x` | `window.zoom` / `window.close` | Zoom the focused pane; Close pane |
-| `w` | `workspace.switch` | Workspace navigation |
-| `q` | `session.detach` | Detach, leave everything running |
+| keys                    | action                                               | guide row                           |
+| ----------------------- | ---------------------------------------------------- | ----------------------------------- |
+| `c` / `n` / `p`         | `tab.new` / `tab.next` / `tab.previous`              | New tab; Next / previous tab        |
+| `v` / `-`               | `window.split-side-by-side` / `window.split-stacked` | Split right / down (`prefix+minus`) |
+| `h` `j` `k` `l`         | `window.focus-left/down/up/right`                    | Move between panes                  |
+| `S-h` `S-j` `S-k` `S-l` | `window.swap`                                        | Swap panes                          |
+| `z` / `x`               | `window.zoom` / `window.close`                       | Zoom the focused pane; Close pane   |
+| `w`                     | `workspace.switch`                                   | Workspace navigation                |
+| `q`                     | `session.detach`                                     | Detach, leave everything running    |
 
 Left out (no vocabulary): `r` resize mode, `[` copy mode, `1`-`9`, `g` goto picker, `b` sidebar, `?`
 help, `S-t`/`S-x` rename/close tab, `S-n`/`S-w`/`S-d` new/rename/close workspace.
@@ -111,8 +111,8 @@ keys and would flag it as an un-`override`n repeat of nvim's `,` (see gaps).
   `buffer.alternate` (nvim `:b N`, `C-^`), `app.launch-editor` / `app.launch-browser` /
   `app.open-menu` (omarchy), `window.toggle-split` (omarchy `Super+J`), `workspace.next` /
   `workspace.previous` / `workspace.select-N`.
-- Notation: no named key for `-`, `=`, `\`` yet, and `keys` is a *sequence* — a literal space is a
-  key, so write `C-wh` and never `C-w h`.
+- Notation: no named key for `-`, `=`, `\`` yet, and `keys`is a *sequence* — a literal space is a
+key, so write`C-wh`and never`C-w h`.
 - `modes` has no value for "after the tmux prefix": leave `modes` empty and rely on `prefix`.
 - A layer cannot mix leader and direct bindings (LazyVim `S-h`, `C-s`), and the inherited-pair check
   compares raw `keys` without the leader, so `<leader>,` collides with nvim's `,`. Both belong to T4
@@ -126,4 +126,4 @@ keys and would flag it as an un-`override`n repeat of nvim's `,` (see gaps).
   source the man page describes. Older releases may differ slightly.
 - Omarchy's `config/hypr/bindings.conf` was not read (fetch aborted); the manual is the source used,
   so exact `bind` lines and the current version number are unconfirmed.
-- Whether Omarchy *unbinds* tmux's `%`/`"` or only shadows them was not confirmed.
+- Whether Omarchy _unbinds_ tmux's `%`/`"` or only shadows them was not confirmed.

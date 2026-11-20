@@ -1,7 +1,13 @@
 import { formatKey } from "@tutor-nvim/vim-engine";
 import { z } from "zod";
 import { actionSolutionsSchema } from "./action-solutions";
-import { difficultySchema, environmentSchema, explanationSchema, idSchema, slugSchema } from "./primitives";
+import {
+  difficultySchema,
+  environmentSchema,
+  explanationSchema,
+  idSchema,
+  slugSchema,
+} from "./primitives";
 import {
   EXERCISE_MODES,
   EXERCISE_SCHEMA_VERSION,

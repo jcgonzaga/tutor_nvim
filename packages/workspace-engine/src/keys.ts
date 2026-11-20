@@ -67,9 +67,10 @@ export function dispatchWorkspace(state: WorkspaceState, input: KeyInput): Works
   if (input.key === ":" && !hasCommandModifiers(input) && buffer.editor.mode === "normal") {
     // Vim cancels a half-typed operator when a command line opens: leaving `d` armed behind a saved
     // file would make the next key in the editor delete something the learner never asked for.
-    const cancelled = buffer.editor.pending === null
-      ? buffer.editor
-      : dispatch(buffer.editor, { key: "Escape" }).state;
+    const cancelled =
+      buffer.editor.pending === null
+        ? buffer.editor
+        : dispatch(buffer.editor, { key: "Escape" }).state;
     const buffers =
       cancelled === buffer.editor
         ? state.buffers

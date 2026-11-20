@@ -49,7 +49,10 @@ describe("preferences", () => {
     const storage = memoryStorage();
     storage.setItem(PREFS_KEY, JSON.stringify({ ...DEFAULT_PREFS, enabledLayers: ["Nvim"] }));
     expect(loadPrefs(storage)).toEqual(DEFAULT_PREFS);
-    storage.setItem(PREFS_KEY, JSON.stringify({ ...DEFAULT_PREFS, enabledLayers: ["tmux", "tmux"] }));
+    storage.setItem(
+      PREFS_KEY,
+      JSON.stringify({ ...DEFAULT_PREFS, enabledLayers: ["tmux", "tmux"] }),
+    );
     expect(loadPrefs(storage)).toEqual(DEFAULT_PREFS);
   });
 
