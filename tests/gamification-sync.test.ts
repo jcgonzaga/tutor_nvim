@@ -21,7 +21,13 @@ import {
   type Profile,
 } from "@tutor-nvim/pedagogy";
 import { fakeToken } from "../apps/api/src/auth/fake";
-import { bundle, createTestApi, T0, type TestApi } from "../apps/api/src/test-util";
+import {
+  bundle,
+  createTestApi,
+  DB_BOOT_TIMEOUT_MS,
+  T0,
+  type TestApi,
+} from "../apps/api/src/test-util";
 import { createCloudApi } from "../apps/web/src/cloud/api";
 import {
   EMPTY_OUTBOX,
@@ -42,7 +48,7 @@ const dayOf = (at: number) => new Date(at).toISOString().slice(0, 10);
 let api: TestApi;
 beforeEach(async () => {
   api = await createTestApi();
-});
+}, DB_BOOT_TIMEOUT_MS);
 afterEach(async () => api.close());
 
 function fetchInto(testApi: TestApi): typeof fetch {

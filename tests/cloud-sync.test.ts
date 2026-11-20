@@ -21,6 +21,7 @@ import { fakeToken } from "../apps/api/src/auth/fake";
 import {
   bundle,
   createTestApi,
+  DB_BOOT_TIMEOUT_MS,
   exerciseNamed,
   solved,
   T0,
@@ -48,7 +49,7 @@ const WORKSPACE = "neovim.buffers.close.001";
 let api: TestApi;
 beforeEach(async () => {
   api = await createTestApi();
-});
+}, DB_BOOT_TIMEOUT_MS);
 afterEach(async () => api.close());
 
 /** A `fetch` that talks to the in-process API, so the real client runs against the real server. */
