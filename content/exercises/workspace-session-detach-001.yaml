@@ -6,7 +6,7 @@ title: "Detach from the session and find the editor still open"
 instruction: 'Put src/lib/format.ts beside src/main.ts, add the comment "// Helpers shared by the app." as its first line and save it, then run pnpm test in a terminal beside it. Detach from the session and attach again: the two files in their panes, the saved comment and what the tests printed must all be exactly where you left them.'
 skillIds:
   - neovim.session.detach
-mode: transfer
+mode: recall
 difficulty: 4
 environment:
   type: simulator

@@ -94,6 +94,7 @@ bindings:
     action: window.enter-resize-mode
     description: "Enter resize mode, where the resize keys give the focused pane more or less room."
     modes: [normal]
+    notModelled: "packages/workspace-engine applies this action, but no exercise kind simulates Herdr: the row records what a Herdr pane answers to, and nothing can be pressed here yet."
   # What leaves the mode is pressed *inside* it, with no prefix, and this layer writes every binding
   # after C-b: the row records the action and the gap rather than inventing a prefixed chord for a
   # key Herdr presses on its own.

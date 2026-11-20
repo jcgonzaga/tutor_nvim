@@ -156,15 +156,30 @@ describe("curriculum coverage", () => {
       if (objective.type === "all") objective.goals.forEach(collect);
     };
     bundle.exercises.forEach((exercise) => collect(exercise.objective));
+    // One line per goal kind the three exercise kinds offer: vim (`buffer_equals`, `cursor_at`,
+    // `mode_equals`), shell (`cwd_equals`, `fs_matches`, `last_output_*`) and workspace (the rest).
     expect([...goalTypes].sort()).toEqual([
+      "active_file",
       "all",
       "buffer_equals",
+      "buffer_text",
       "cursor_at",
       "cwd_equals",
+      "file_text",
+      "focus",
       "fs_matches",
+      "grep_matches",
       "last_output_contains",
       "last_output_equals",
+      "layout",
+      "mode",
       "mode_equals",
+      "open_buffers",
+      "session",
+      "split_ratio",
+      "terminal_output",
+      "windows",
+      "zoom",
     ]);
   });
 
