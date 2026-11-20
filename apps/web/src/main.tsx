@@ -2,7 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { AnalyticsProvider } from "./analytics/AnalyticsProvider";
 import { App } from "./App";
-import { I18nProvider, catalogs } from "./i18n/I18nProvider";
+import { I18nProvider } from "./i18n/I18nProvider";
+import { catalogFor } from "./i18n/catalogs";
 import { PrefsProvider } from "./prefs/PrefsProvider";
 import { loadPrefs } from "./prefs/prefs";
 import { ErrorBoundary } from "./monitoring/ErrorBoundary";
@@ -41,9 +42,13 @@ const reporter = createErrorReporter({
 installGlobalErrorHandlers(reporter);
 const cloudConfig = readCloudConfig(import.meta.env);
 
+// The crash screen is above the providers, so it gets its text here: the stored language if its
+// pack is already in memory, the source language otherwise (T-902).
+const errorMessages = catalogFor(loadPrefs(storage).language).app;
+
 createRoot(root).render(
   <StrictMode>
-    <ErrorBoundary reporter={reporter} messages={catalogs[loadPrefs(storage).language].app}>
+    <ErrorBoundary reporter={reporter} messages={errorMessages}>
       <PrefsProvider storage={storage}>
         <I18nProvider>
           <AnalyticsProvider

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { loadCatalog } from "./catalogs";
 import { en } from "./en";
 import { es } from "./es";
 
@@ -21,6 +22,12 @@ function leaves(tree: Tree, prefix = ""): [string, string][] {
 describe("interface catalog", () => {
   const english = leaves(en as unknown as Tree);
   const spanish = leaves(es as unknown as Tree);
+
+  it("checks the Spanish catalog the app actually serves", async () => {
+    // Spanish ships as its own language pack, reached through a dynamic import (T-902). If that
+    // import ever resolved to something else, the parity below would be checking a dead catalog.
+    expect(await loadCatalog("es")).toBe(es);
+  });
 
   it("has the same entries in every language", () => {
     expect(spanish.map(([path]) => path)).toEqual(english.map(([path]) => path));

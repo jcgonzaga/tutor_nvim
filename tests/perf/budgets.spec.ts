@@ -14,14 +14,38 @@ const KEYPRESS_BUDGET_MS = 50;
 const TRANSITION_BUDGET_MS = 150;
 const LONG_TASK_BUDGET_MS = 200;
 /**
- * Gzipped JavaScript the first load downloads. The content bundle dominates; see m9 notes. Raised
- * from 260 KB to 300 KB for ADR-0005: the Spanish translation (~28 KB), the interface catalogs in
- * two languages (~16 KB) and the lessons and explanations (~12 KB) all ship in the one chunk. A
- * learner uses one language, so splitting the language packs out would save about a third of that.
+ * Gzipped JavaScript the first load downloads: the entry module and everything `index.html`
+ * preloads with it. The content bundle dominates; see m9 notes. Raised from 260 KB to 300 KB for
+ * ADR-0005. Both language packs used to ship in that one chunk even though a learner reads one
+ * language; the Spanish interface catalog and the Spanish content overlay are now assets of their
+ * own, fetched by a learner who reads Spanish (T-902), so neither is part of this number.
  */
 const JS_GZIP_BUDGET_BYTES = 300 * 1024;
 const CSS_GZIP_BUDGET_BYTES = 20 * 1024;
 const FIRST_CONTENTFUL_PAINT_BUDGET_MS = 2000;
+
+/** The production build written by `pnpm --filter @tutor-nvim/web build`. */
+const DIST = join(process.cwd(), "apps/web/dist");
+const ASSETS = join(DIST, "assets");
+
+/** The scripts `index.html` asks for: the entry module and whatever it preloads with it. */
+const firstLoadScripts = (): string[] =>
+  [
+    ...readFileSync(join(DIST, "index.html"), "utf8").matchAll(
+      /(?:src|href)="\.?\/assets\/([^"]+\.js)"/g,
+    ),
+  ].map((match) => match[1]!);
+
+/**
+ * The Spanish language packs, as the build names them: the interface catalog is a named chunk
+ * (`apps/web/vite.config.ts`) and the content overlay is the chunk of `src/i18n/esContent.ts`.
+ * Matched against asset file names and against request URLs.
+ */
+const CATALOG_CHUNK = /catalog-es-[^/]+\.js/;
+const CONTENT_CHUNK = /esContent-[^/]+\.js/;
+const LANGUAGE_CHUNKS = [CATALOG_CHUNK, CONTENT_CHUNK] as const;
+const isLanguageChunk = (value: string): boolean =>
+  LANGUAGE_CHUNKS.some((chunk) => chunk.test(value));
 
 const percentile = (values: readonly number[], p: number): number => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -40,16 +64,72 @@ const watchLongTasks = (page: Page) =>
 const longTasks = (page: Page) =>
   page.evaluate(() => (window as unknown as { __longTasks: number[] }).__longTasks);
 
+/** Switches the seeded device preferences to Spanish before the app boots (ADR-0005). */
+const asSpanishLearner = (page: Page) =>
+  page.addInitScript(() => {
+    const key = "tutor-nvim:prefs";
+    const stored: Record<string, unknown> = JSON.parse(localStorage.getItem(key) ?? "{}");
+    localStorage.setItem(key, JSON.stringify({ ...stored, language: "es" }));
+  });
+
+const watchLanguagePack = (page: Page): string[] => {
+  const fetched: string[] = [];
+  page.on("request", (request) => {
+    if (isLanguageChunk(request.url())) fetched.push(request.url());
+  });
+  return fetched;
+};
+
+/** Walks the first-run steps of a Spanish learner: the buttons read Spanish (ADR-0005). */
+const onboardInSpanish = async (page: Page): Promise<void> => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Empezar" }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("button", { name: /Saltar la prueba/ }).click();
+  await page.getByRole("button", { name: "Empezar a entrenar" }).click();
+  await expect(page.getByRole("heading", { name: "Hoy" })).toBeVisible();
+};
+
 test.describe("T-902 performance budgets (production build)", () => {
   test("the shipped bundle stays within its size budget", () => {
-    const dist = join(process.cwd(), "apps/web/dist/assets");
-    const gzipped = (extension: string) =>
-      readdirSync(dist)
-        .filter((file) => file.endsWith(extension) && statSync(join(dist, file)).isFile())
-        .reduce((sum, file) => sum + gzipSync(readFileSync(join(dist, file))).length, 0);
-    const js = gzipped(".js");
-    const css = gzipped(".css");
-    console.log(`bundle: js ${(js / 1024).toFixed(1)} KB gzip, css ${(css / 1024).toFixed(1)} KB`);
+    const gzipped = (files: readonly string[]) =>
+      files.reduce((sum, file) => sum + gzipSync(readFileSync(join(ASSETS, file))).length, 0);
+    const inAssets = (extension: string) =>
+      readdirSync(ASSETS).filter(
+        (file) => file.endsWith(extension) && statSync(join(ASSETS, file)).isFile(),
+      );
+    const firstLoad = firstLoadScripts();
+    // Chunks reached only through a dynamic import: a learner on the practice screen never asks for
+    // a language they do not read, so those bytes are not part of the first load.
+    const later = inAssets(".js").filter((file) => !firstLoad.includes(file));
+
+    const js = gzipped(firstLoad);
+    const css = gzipped(inAssets(".css"));
+    console.log(
+      `bundle: js ${(js / 1024).toFixed(1)} KB gzip on first load, css ${(css / 1024).toFixed(1)} KB`,
+    );
+    console.log(
+      `bundle: fetched later: ${(gzipped(later) / 1024).toFixed(1)} KB gzip (${later.join(", ")})`,
+    );
+
+    // Neither language pack is in the entry chunk: one asset each, not preloaded.
+    for (const chunk of LANGUAGE_CHUNKS) {
+      expect(later.filter((file) => chunk.test(file)), String(chunk)).toHaveLength(1);
+    }
+    expect(firstLoad.some((file) => isLanguageChunk(file))).toBe(false);
+
+    // The Spanish overlay really is inside its chunk, recognised by its own text, and the entry
+    // carries only the source content every learner needs as the base.
+    const sourceAndEntry = firstLoad
+      .map((file) => readFileSync(join(ASSETS, file), "utf8"))
+      .join("\n");
+    expect(sourceAndEntry).not.toContain('title: "Cambiar"');
+    const spanishContent = later.filter((file) =>
+      readFileSync(join(ASSETS, file), "utf8").includes('title: "Cambiar"'),
+    );
+    expect(spanishContent, "the Spanish content overlay is a chunk of its own").toHaveLength(1);
+    expect(CONTENT_CHUNK.test(spanishContent[0]!)).toBe(true);
+
     expect(js).toBeLessThan(JS_GZIP_BUDGET_BYTES);
     expect(css).toBeLessThan(CSS_GZIP_BUDGET_BYTES);
   });
@@ -191,5 +271,46 @@ test.describe("T-902 performance budgets (production build)", () => {
     page.on("request", (request) => requests.push(request.url()));
     await pressTokens(page, [..."llllhhhhjjkk", "<Esc>"]);
     expect(requests).toEqual([]);
+  });
+
+  test("a learner who reads English never downloads the Spanish packs", async ({ page }) => {
+    const fetched = watchLanguagePack(page);
+    await page.goto("/?exercise=vim.ci-quotes.shell-001");
+    await expect(editor(page)).toBeFocused();
+    await pressTokens(page, [..."llllhhhh"]);
+    expect(fetched).toEqual([]);
+  });
+
+  test("a learner who reads Spanish gets Spanish, interface and exercise text", async ({
+    page,
+  }) => {
+    await asSpanishLearner(page);
+    const fetched = watchLanguagePack(page);
+    // The interface comes from the catalog pack.
+    await onboardInSpanish(page);
+
+    // The skill title comes from the content overlay, not from the interface catalog: it only reads
+    // "Cambiar" once the content pack has arrived.
+    await page.goto("/#/skill/vim.operator.change");
+    await expect(page.getByRole("heading", { name: "Cambiar" })).toBeVisible();
+
+    expect(fetched.some((url) => CATALOG_CHUNK.test(url))).toBe(true);
+    expect(fetched.some((url) => CONTENT_CHUNK.test(url))).toBe(true);
+  });
+
+  test("without its packs the screen reads in English, never a raw key", async ({ page }) => {
+    await asSpanishLearner(page);
+    // Packs that cannot be fetched must not take the screen down with them.
+    await page.route(CATALOG_CHUNK, (route) => route.abort());
+    await page.route(CONTENT_CHUNK, (route) => route.abort());
+    // English interface text: this learner's packs are unreachable, the source language is not.
+    await onboardSkippingCheck(page);
+    await expect(page.locator("html")).toHaveAttribute("lang", "es");
+
+    // English exercise text too, never a key and never a crash screen.
+    await page.goto("/#/skill/vim.operator.change");
+    await expect(page.getByRole("heading", { name: "Change" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Today" })).toBeVisible();
+    await expect(page.getByRole("alert")).toHaveCount(0);
   });
 });
