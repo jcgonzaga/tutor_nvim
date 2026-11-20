@@ -4,6 +4,7 @@ import {
   onboardSkippingCheck,
   onboardUntilCalibration,
   solveCurrent,
+  solveOrSkip,
 } from "./helpers";
 
 const DAY_ONE = new Date("2026-10-21T09:00:00");
@@ -17,7 +18,10 @@ async function playSessionItem(page: Page, giveUp: boolean): Promise<string> {
     await page.getByRole("button", { name: "I don't know this" }).click();
     await expect(page.getByTestId("feedback-kind")).toHaveText("Not solved");
   } else {
-    await solveCurrent(page);
+    // A workspace story is practiced when the learner's layers reach its actions, and skipped with
+    // its reason when they cannot: this journey is about onboarding, training and reviews, so an
+    // item the catalogs cannot press must not stop it (see `solveOrSkip`).
+    await solveOrSkip(page);
   }
   await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
   return eyebrow;
@@ -40,6 +44,11 @@ test.describe("M5 local product", () => {
   test("onboard, calibrate, train, close the app and come back to stored reviews", async ({
     context,
   }) => {
+    // Two days, two sessions and several full page loads: a daily session now also holds workspace
+    // stories (a story the catalogs cannot press is skipped with its reason), and a skipped skill
+    // comes back for review, so this journey is longer than the default budget allows on a slow
+    // dev server. Nothing it asserts is about speed.
+    test.slow();
     // --- Day one: onboarding -------------------------------------------------------------
     const first = await context.newPage();
     await first.clock.install({ time: DAY_ONE });

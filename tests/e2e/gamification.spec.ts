@@ -112,6 +112,10 @@ test.describe("M8 gamification and feedback", () => {
   test("the streak forgives one missed day and welcomes someone back without scolding", async ({
     context,
   }) => {
+    // Three browsers, two whole sessions and a session the day after a skip: a workspace story the
+    // catalogs cannot press is skipped with its reason, and its skill then comes back for review, so
+    // the day-three session is longer than the default budget allows here. Nothing asserted is speed.
+    test.slow();
     const first = await context.newPage();
     await first.clock.install({ time: DAY_ONE });
     await onboardSkippingCheck(first);

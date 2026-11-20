@@ -169,9 +169,11 @@ test.describe("M3 exercise platform in the browser", () => {
     await page.getByRole("link", { name: "Next exercise" }).click();
 
     await expect(page).toHaveURL(/exercise=vim\.ci-quotes\.python-001/);
+    // The link is a plain navigation, so the whole app is fetched and mounted again: the dev server
+    // takes seconds for that here, and the default five is not a budget this assertion is about.
     await expect(
       page.getByText('Change only the text inside the quotes to "db.internal"'),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("application", { name: "Vim practice editor" })).toBeFocused();
   });
 });

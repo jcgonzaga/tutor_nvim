@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { currentExercise, editor, onboardSkippingCheck, solveCurrent } from "./helpers";
+import { currentExercise, editor, onboardSkippingCheck, solveOrSkip } from "./helpers";
 
 const PWD = "/?exercise=shell.navigation.pwd-001";
 const MKDIR_P = "/?exercise=shell.create.mkdir-p-001";
@@ -97,11 +97,14 @@ test.describe("M10 the daily session mixes Vim and the shell from day one", () =
       await expect(
         page.getByTestId(exercise.kind === "shell" ? "terminal" : "buffer"),
       ).toBeVisible();
-      await solveCurrent(page);
+      // Vim and shell are what this session is about. A workspace story is practiced when the
+      // learner's layers reach its actions and skipped with its reason when they do not, so
+      // `kinds` may hold "workspace" as well; the assertion below says what must be there.
+      await solveOrSkip(page);
       await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
       await expect(summary.or(page.locator("#instruction"))).toBeVisible();
     }
-    expect([...kinds].sort()).toEqual(["shell", "vim"]);
+    expect([...kinds]).toEqual(expect.arrayContaining(["shell", "vim"]));
     await expect(summary).toBeVisible();
   });
 

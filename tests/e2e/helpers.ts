@@ -4,10 +4,10 @@ import {
   localizeBundle,
   validateLocale,
   type Exercise,
-  type ShellExercise,
   type VimExercise,
 } from "@tutor-nvim/exercise-schema";
 import { readContentInput, readLocaleInput } from "../../scripts/content-fs";
+import { planWorkspaceSolution, pressKeymapTokens } from "./workspace";
 
 const source = loadContent(readContentInput());
 const spanish = validateLocale("es", source, readLocaleInput("es")).texts;
@@ -29,10 +29,21 @@ for (const bundle of [source, localizeBundle(source, spanish)]) {
   }
 }
 
+/**
+ * The practice area of whatever is on screen, in either language: `role="application"` names itself
+ * after the view that owns it, and there are three views (T8).
+ *
+ * English: "Vim practice editor", "Shell practice terminal", "Workspace practice area".
+ * Spanish: "Editor de práctica de Vim", "Terminal de práctica de shell",
+ * "Zona de práctica del espacio de trabajo".
+ *
+ * One pattern for all three on purpose: a fourth view, or a flow that moves from a Vim exercise to a
+ * workspace story, would otherwise fail with "element(s) not found" in whichever spec forgot it.
+ */
+const PRACTICE_AREA = /practice (editor|terminal|area)|práctica (de vim|de shell|del espacio)/i;
+
 export const editor = (page: Page): Locator =>
-  page.getByRole("application", {
-    name: /practice (editor|terminal)|(editor|terminal) de práctica/i,
-  });
+  page.getByRole("application", { name: PRACTICE_AREA });
 
 /** Types key tokens (`c`, `"`, `<Esc>`, `<C-r>`) into the focused editor. */
 export async function pressTokens(page: Page, tokens: readonly string[]): Promise<void> {
@@ -55,31 +66,98 @@ export async function currentExercise(page: Page): Promise<Exercise> {
   return exercise;
 }
 
+/** The attempt's end, whichever panel this screen shows: a session's feedback, or free practice's result. */
+const expectEnded = (page: Page): Promise<void> =>
+  expect(page.getByTestId("feedback").or(page.getByTestId("result"))).toBeVisible();
+
 /**
- * Solves the exercise on screen by typing its declared optimal keys. A workspace exercise has no key
- * solution: its view is T8, so nothing on screen can be typed.
+ * The tool layers the learner has on, as the practice area reads them: the catalogs that decide
+ * which keys reach a workspace action. Empty until the layer rail is used, which is the default.
  */
-export async function solveCurrent(page: Page): Promise<VimExercise | ShellExercise> {
-  const exercise = await currentExercise(page);
+async function enabledLayers(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() => {
+    try {
+      const stored: unknown = JSON.parse(window.localStorage.getItem("tutor-nvim:prefs") ?? "{}");
+      const layers = (stored as { enabledLayers?: unknown }).enabledLayers;
+      return Array.isArray(layers)
+        ? layers.filter((id): id is string => typeof id === "string")
+        : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
+/**
+ * Presses the keys of the exercise's declared optimal solution.
+ *
+ * A vim or shell exercise declares key tokens and they are typed as before. A workspace exercise
+ * declares actions, so its keys are the ones the learner's enabled layers offer for each action
+ * (T8). When a solution has no pressable form this throws before pressing anything, with the action
+ * that stopped it and why: the suite never types keys for an explanation it does not have.
+ */
+export async function pressSolution(page: Page, exercise: Exercise): Promise<void> {
   if (exercise.kind === "workspace") {
-    throw new Error(`${exercise.slug} is a workspace exercise: its view is not on screen yet`);
+    const plan = planWorkspaceSolution(exercise, await enabledLayers(page));
+    if (plan.kind === "unpressable") {
+      throw new Error(`${exercise.slug}: "${plan.action}" has no pressable key — ${plan.reason}`);
+    }
+    await pressKeymapTokens(page, plan.keys);
+    return;
   }
   const optimal = exercise.solutions.find((solution) => solution.classification === "optimal");
   if (!optimal) throw new Error(`${exercise.slug} declares no optimal solution`);
   await pressTokens(page, optimal.keys);
-  await expect(page.getByTestId("feedback")).toBeVisible();
+}
+
+/** Solves the exercise on screen by pressing the keys its content declares. */
+export async function solveCurrent(page: Page): Promise<Exercise> {
+  const exercise = await currentExercise(page);
+  await pressSolution(page, exercise);
+  await expectEnded(page);
   return exercise;
 }
 
+/** What one session item turned into: the exercise, and why the suite could not solve it, if not. */
+export interface PlayedItem {
+  readonly exercise: Exercise;
+  /** The action that had no pressable key, or `null` when the item was solved for real. */
+  readonly skipped: string | null;
+}
+
 /**
- * Plays the session's items with their optimal solutions until a Vim exercise is on screen, then
- * solves that one and returns it. Sessions mix shell and Vim exercises, and some checks (the
- * replay, for example) only exist for Vim.
+ * Plays the item on screen the way this suite can, and says so when it cannot.
+ *
+ * A workspace story whose actions the learner's layers reach is practised for real. One that cannot
+ * be pressed — no layer offers the action, or it carries a path, a text, a query, a command or a tab
+ * that no key can say (see `./workspace`) — is ended the way a learner who does not know it ends it:
+ * `I don't know this`, which is honest about what happened, leaves the engine's state untouched, and
+ * lets the session move on. The caller gets the reason instead of a quiet pass.
+ */
+export async function solveOrSkip(page: Page): Promise<PlayedItem> {
+  const exercise = await currentExercise(page);
+  if (exercise.kind === "workspace") {
+    const plan = planWorkspaceSolution(exercise, await enabledLayers(page));
+    if (plan.kind === "unpressable") {
+      await page.getByRole("button", { name: /^I don't know this/ }).click();
+      await expectEnded(page);
+      return { exercise, skipped: `${plan.action}: ${plan.reason}` };
+    }
+  }
+  await pressSolution(page, exercise);
+  await expectEnded(page);
+  return { exercise, skipped: null };
+}
+
+/**
+ * Plays the session's items with their declared solutions until a Vim exercise is on screen, then
+ * solves that one and returns it. Sessions mix shell, Vim and workspace exercises, and some checks
+ * (the replay, for example) only exist for Vim; an item the suite cannot press is skipped the way
+ * `solveOrSkip` skips it.
  */
 export async function solveNextVim(page: Page): Promise<VimExercise> {
   for (let guard = 0; guard < 12; guard++) {
-    const exercise = await currentExercise(page);
-    await solveCurrent(page);
+    const { exercise } = await solveOrSkip(page);
     if (exercise.kind === "vim") return exercise;
     await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
     await expect(page.locator("#instruction")).toBeVisible();
@@ -98,15 +176,20 @@ export async function onboardUntilCalibration(
   await page.getByRole("button", { name: "Start the check" }).click();
 }
 
-/** Plays every item of the daily session, solving each with its optimal solution. */
-export async function playWholeSession(page: Page): Promise<number> {
+/**
+ * Plays every item of the daily session, solving each with its declared solution and skipping the
+ * ones the catalogs cannot press (see `solveOrSkip`). A workspace story in the session is therefore
+ * either practised or reported, never failed by accident.
+ *
+ * Returns what each item turned into, so a caller can assert on what was practised and what was not.
+ */
+export async function playWholeSession(page: Page): Promise<PlayedItem[]> {
   const summary = page.getByRole("heading", { name: "Session complete" });
-  let played = 0;
+  const played: PlayedItem[] = [];
   for (let guard = 0; guard < 60; guard++) {
     if (await summary.isVisible()) break;
-    await solveCurrent(page);
+    played.push(await solveOrSkip(page));
     await page.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
-    played += 1;
     await expect(summary.or(page.locator("#instruction"))).toBeVisible();
   }
   await expect(summary).toBeVisible();
