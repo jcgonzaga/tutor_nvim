@@ -440,3 +440,45 @@ describe("a frozen or resizing workspace refuses the terminal's keys", () => {
     expect(state.terminals[0]?.pending).toBe("l");
   });
 });
+
+/**
+ * A frozen workspace is frozen for the keyboard too.
+ *
+ * The gate that refuses an action while detached or resizing has to stand in front of the keys, or a
+ * learner could edit the buffer of a session they cannot even see: `:` would still open, `x` would
+ * still delete and the tree would still move. The key path asks the same question the action path
+ * asks, so the two cannot answer differently.
+ */
+describe("a frozen or resizing workspace refuses the editor's keys", () => {
+  it("refuses a buffer key while the session is detached, naming the state", () => {
+    const detached = apply(initial(), "session.detach");
+
+    for (const pressed of ["x", "i", ":"]) {
+      const { state, accepted, reason } = dispatchWorkspace(detached, key(pressed));
+      expect(accepted).toBe(false);
+      expect(reason).toBe("typing: the session is detached; attach to it first");
+      expect(state).toBe(detached);
+    }
+    expect(workspaceObjectiveView(detached).buffers[0]?.text).toBe(MAIN_TEXT);
+  });
+
+  it("refuses a buffer key in resize mode, naming the mode", () => {
+    const resizing = apply(initial(), "window.enter-resize-mode");
+
+    for (const pressed of ["x", "i", ":"]) {
+      const { state, accepted, reason } = dispatchWorkspace(resizing, key(pressed));
+      expect(accepted).toBe(false);
+      expect(reason).toBe("typing: the workspace is in resize mode; leave it first");
+      expect(state).toBe(resizing);
+    }
+  });
+
+  it("edits again once the session is attached and the mode left", () => {
+    const frozen = apply(apply(initial(), "window.enter-resize-mode"), "session.detach");
+    const back = apply(apply(frozen, "session.attach"), "window.leave-resize-mode");
+
+    const { state, accepted } = dispatchWorkspace(back, key("x"));
+    expect(accepted).toBe(true);
+    expect(workspaceObjectiveView(state).buffers[0]?.text).not.toBe(MAIN_TEXT);
+  });
+});

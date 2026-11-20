@@ -43,10 +43,17 @@ const isPrintable = (input: KeyInput): boolean =>
 const TERMINAL_ACTION = "shell.run";
 
 export function dispatchWorkspace(state: WorkspaceState, input: KeyInput): WorkspaceDispatchResult {
-  if (state.pending !== null) return dispatchCommandLine(state, state.pending, input);
-
   const tab = activeTab(state);
   const leaf = tab === undefined ? undefined : focusedNode(tab);
+
+  // The gate stands in front of every key, not only in front of the actions: a frozen session whose
+  // buffer still answered `x` would be frozen in name only, and `:` would open a command line in a
+  // workspace the learner cannot see (T7a2). The label is the surface the key was aimed at, so a
+  // refused prompt and a refused `shell.run` say the same words (T7a3).
+  const refusal = stateRefusal(state, leaf?.kind === "terminal" ? TERMINAL_ACTION : "typing");
+  if (refusal !== null) return { state, accepted: false, reason: refusal };
+
+  if (state.pending !== null) return dispatchCommandLine(state, state.pending, input);
   // A terminal leaf routes on what the window shows, not on the active buffer: the buffer behind it
   // is still the file the learner left, and typing must never land there (T7a3).
   if (leaf !== undefined && leaf.kind === "terminal") {
@@ -101,9 +108,6 @@ function dispatchTerminalLine(
   leaf: TerminalWindow,
   input: KeyInput,
 ): WorkspaceDispatchResult {
-  const frozen = stateRefusal(state, TERMINAL_ACTION);
-  if (frozen !== null) return { state, accepted: false, reason: frozen };
-
   const terminal = state.terminals.find((candidate) => candidate.id === leaf.terminalId);
   // A terminal leaf without a session is a state that broke an invariant: no key reaches it.
   if (terminal === undefined) return { state, accepted: false };
