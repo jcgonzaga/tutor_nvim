@@ -1,0 +1,52 @@
+schemaVersion: 1
+kind: shell
+id: shell-rename-file-001
+slug: shell.rename-file.mv-001
+title: Rename a file and keep its contents
+instruction: You wrote draft.md and now it is no longer a draft. Rename it to post.md, keeping what is inside it.
+skillIds:
+  - linux.shell.rename-file
+mode: learn
+difficulty: 2
+environment:
+  type: simulator
+  profile: shell-basic-v1
+initialState:
+  files:
+    draft.md: |
+      # First post
+
+      A paragraph I want to keep.
+    notes.txt: |
+      Ideas for later.
+objective:
+  type: fs_matches
+  absent:
+    - draft.md
+  files:
+    post.md: |
+      # First post
+
+      A paragraph I want to keep.
+solutions:
+  - commands:
+      - mv draft.md post.md
+    classification: optimal
+  - commands:
+      - cp draft.md post.md
+      - rm draft.md
+    classification: inefficient
+antiPatterns: []
+hints:
+  - afterMs: 4000
+    level: 1
+    text: "Renaming is moving a file to a new name in the same folder: there is no separate rename command."
+  - afterMs: 8000
+    level: 2
+    text: mv draft.md post.md
+metadata:
+  language: bash
+  context: writing
+  estimatedSeconds: 15
+  transferTags: []
+explanation: "mv takes the file it moves and the name it moves to, and stopping in the same folder is what makes it a rename. The contents travel with it, so post.md is the same text and draft.md is gone, which is the difference from copying: cp would leave you with both names and two files to keep in sync."

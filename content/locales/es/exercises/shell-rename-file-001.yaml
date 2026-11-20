@@ -1,0 +1,7 @@
+id: shell-rename-file-001
+title: "Renombrar un archivo y conservar su contenido"
+instruction: "Escribiste draft.md y ya no es un borrador. Renómbralo a post.md conservando lo que tiene dentro."
+hints:
+  - "Renombrar es mover un archivo a otro nombre en la misma carpeta: no hay un comando aparte para renombrar."
+  - "mv draft.md post.md"
+explanation: "mv recibe el archivo que mueve y el nombre al que va, y quedarse en la misma carpeta es lo que lo convierte en un renombrado. El contenido viaja con él, así que post.md es el mismo texto y draft.md ya no está, que es la diferencia con copiar: cp te dejaría los dos nombres y dos archivos que mantener sincronizados."
