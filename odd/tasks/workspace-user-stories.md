@@ -60,7 +60,7 @@ pane · 20 detach the tmux session, reattach, find the editor still open.
 | T5c | S3, S4 | the picker as a deterministic query: `file.find`, `grep.project`, `buffer.list`, the `grep_matches` goal, stories 2, 3 and 5 | `7163d25`, `371267f`, `c6c8f5a` |
 | T6 | S3, S1 | windows and panes: the `windows` and `zoom` goals, the resize/swap catalog rows, six skills and stories 9-14 | `b168c44`, `57bcce9`, `d7e14da` |
 | T7 | S3, S2 | terminals, sessions, workspaces and resize mode in the engine, then six skills and stories 15-20 | `0f4d75c`, `e22e698`, `11cec6c`, `9843137` |
-| T8 | S7 | the practice view: an attempt that can advance, keys to actions, panes, terminal view, i18n | in progress |
+| T8 | S7, S1 | the practice view: an attempt that can advance, keys to actions, panes, terminal view, i18n | `61705a8`, `5d538b0` |
 | T8 | S7 | web: workspace view, layout rendering, focus ring, keyboard only | pending |
 | T9 | S4-S6 | API: replay of workspace attempts with the same engine | pending |
 
@@ -609,3 +609,36 @@ attempt at all. The view is built in this order:
 - `packages/workspace-engine/README.md` understates the engine again (no detached/mode, no session,
   move, resize-mode or terminal actions). It is stale by three slices now, and it is the one file this
   work has not kept up with; a follow-up unit should rewrite it from the action list the engine exports.
+
+**L15 — evidence (T8): the stories are playable, and what the screen refuses to fake**
+
+- Two units. `61705a8` gave the attempt a step: `recordWorkspaceAction` applies the action, appends it
+  with its options and hands back the engine's refusal untouched, so a refused action leaves the
+  attempt identical and a recorded run replays to the state it produced — the same
+  `engineOptions`/`recordedAction` pair now serves recording and replay, because two conversions of one
+  concept is how a replay starts disagreeing with a screen. `5d538b0` put the view in: panes from
+  `splitRatios`, `EditorView` for a buffer leaf, a scrollback plus prompt for a terminal leaf, the
+  focused pane ringed and named, zoom/mode/session spelled out, and keys resolved through
+  `packages/keymap` over the learner's enabled layers with everything else falling through to
+  `dispatchWorkspace`. The chrome three kinds share (frame, hints, result, hint clock) was extracted
+  into `PracticeFrame`/`PracticeHints`/`PracticeResult`/`usePracticeScreen`, and the vim and shell
+  practice tests stayed green through it.
+- **Packaging was the real blocker**, not the code: `apps/web` declared the engine but the lockfile had
+  no importer entry, so a `--frozen-lockfile` install — what Vercel runs — would have failed while a
+  local build passed. `pnpm install --no-frozen-lockfile` wrote exactly three lines and nothing else
+  moved; the temporary relative re-export became a bare specifier afterwards.
+- Four limits the screen states rather than hides: the layer rail cannot name who owns a key in a
+  workspace attempt, because an attempt records actions and `events` stays empty by design; the
+  terminal component test drives `Super-Enter` through the omarchy layer even though that catalog
+  records the chord as unpressed by a page; an objective is checked after every step, so content whose
+  initial state already met its objective would end on the first key (none does); and `recordInput`
+  still throws for this kind, which the new tests pin so nobody reaches for it by accident.
+- A bug review found on the way, fixed separately: the detached/resize gate stood in front of actions
+  and the terminal prompt but not in front of the editor, so a frozen workspace still answered `x`
+  (`db437b4`, test first). The engine README was rewritten from the code in `70927c3`, which is what
+  surfaced it.
+- Known red after this slice, all pre-existing or owned by T9: `packages/shell-engine`'s oracle against
+  this host's bash and coreutils (42); the curriculum coverage gates demanding five exercises per skill
+  (the twenty stories exist, five per skill do not); `tests/gamification-sync.test.ts` because the API
+  cannot replay a workspace attempt yet (T9); and the DB-backed API files, whose ten-second hook is
+  beaten by `openTestDb` taking 15.1 s on this machine while `syncContent` takes 0.43 s.
